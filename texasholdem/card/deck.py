@@ -1,5 +1,3 @@
-from typing import Union
-
 import random
 from texasholdem.card import card
 from texasholdem.card.card import Card
@@ -19,7 +17,7 @@ class Deck:
 
     def shuffle(self) -> None:
         """
-        Shuffles the remaining card in the deck using the random package.
+        Shuffles the remaining cards in the deck.
 
         """
         random.shuffle(self.cards)

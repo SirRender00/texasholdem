@@ -41,7 +41,7 @@ class TextGUI:
 
     def _get_player_summary(self, poker_game, id):
         card_ids = self.player_ids
-        if poker_game.hand_state == HandPhase.SETTLE:
+        if poker_game.hand_phase == HandPhase.SETTLE:
             card_ids = list(range(poker_game.max_players))
 
         lines = []
@@ -118,10 +118,6 @@ class TextGUI:
         text = "Player {} {}.".format(id, self._action_to_string(action, val))
         print(text)
 
-    def announce_winner(self, id, pot_id, amount):
-        text = "Player {} wins pot {} ({} chips)".format(id, pot_id, amount)
-        print(text)
-
     def print_state(self, poker_game):
         text = ""
         ordering = [[3], [2, 4], ["board"], [1, 5], [0]]
@@ -167,7 +163,3 @@ class TextGUI:
             text += "\n" * (self.spaces_between - 1)
 
         print(text)
-
-        if poker_game.hand_state == HandPhase.SETTLE:
-            for id, pot_id, win_amount in poker_game.hand_history[HandPhase.SETTLE]:
-                self.announce_winner(id, pot_id, win_amount)

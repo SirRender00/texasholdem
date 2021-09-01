@@ -1,5 +1,8 @@
 from __future__ import annotations
-from typing import Union
+
+import functools
+import math
+from typing import Union, Iterable
 
 
 class Card(int):
@@ -73,7 +76,7 @@ class Card(int):
         """
         Get a binary integer representation of a card, inspired by:
 
-        http://www.suffecool.net/poker/evaluator.html
+        http://suffe.cool/poker/evaluator.html
 
         See below:
 
@@ -259,10 +262,10 @@ class Card(int):
         return "".join(output)
 
 
-def card_strings_to_int(card_strs: list[str]) -> list[Card]:
+def card_strings_to_int(card_strs: Iterable[str]) -> list[Card]:
     """
     Args:
-        card_strs (list[str]): A list of card strings.
+        card_strs (Iterable[str]): An iterable of card strings.
     Returns:
         list[Card]: The cards in the corresponding int format.
 
@@ -273,21 +276,16 @@ def card_strings_to_int(card_strs: list[str]) -> list[Card]:
     return bhand
 
 
-def prime_product_from_hand(cards: list[Card]) -> int:
+def prime_product_from_hand(cards: Iterable[Card]) -> int:
     """
     Args:
-        cards (list[Card]): A list of cards
+        cards (Iterable[Card]): An Iterable of cards
     Returns:
         int: The product of all primes in the hand, corresponding to the rank of the
             card (See :meth:`Card.prime`)
     
     """
-
-    product = 1
-    for c in cards:
-        product *= c.prime
-
-    return product
+    return math.prod(c.prime for c in cards)
 
 
 def prime_product_from_rankbits(rankbits: int) -> int:
@@ -319,7 +317,6 @@ def prime_product_from_rankbits(rankbits: int) -> int:
         # if the ith bit is set
         if rankbits & (1 << i):
             product *= Card.PRIMES[i]
-
     return product
 
 
