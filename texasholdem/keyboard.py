@@ -66,19 +66,21 @@ def value_player(game: TexasHoldEm):
     print(f"value_bet: {value_bet}")
 
     if player.state == PlayerState.TO_CALL:
-        raise_adjuster = equity
-        if game.hand_state == HandPhase.PREFLOP:
-            fold_adjuster = math.pow(equity, 1.5) + 0.4
+        raise_adjuster = 0.5 * equity - 0.5
+        if game.hand_phase == HandPhase.PREFLOP:
+            fold_adjuster = math.pow(equity, 1.3) + 0.2
         else:
-            fold_adjuster = math.pow(equity, 1.5) - 0.4
+            fold_adjuster = math.pow(equity, 1.3) - 0.2
 
+        print(f"equity + fold_adjuster: {equity + fold_adjuster}")
+        print(f"equity + raise_adjuster: {equity + raise_adjuster}")
         if equity + fold_adjuster < pot_odds:
             return ActionType.FOLD, None
         elif equity + raise_adjuster > pot_odds and value_bet >= 0.25 * chips_at_stake:
+            value_bet = max(game.big_blind, value_bet)
+
             if player.chips <= value_bet:
                 return ActionType.ALL_IN, None
-            elif value_bet < game.big_blind:
-                return ActionType.CALL, None
             else:
                 raise_amt = game.player_bet_amount(player.id) + game.chips_to_call(player.id) + value_bet
                 return ActionType.RAISE, min(raise_amt, player.chips + game.player_bet_amount(player.id))
@@ -104,7 +106,7 @@ while game.is_game_running():
     for state in game.run_hand():
         gui.print_state(state)
 
-        if game.hand_state != HandPhase.SETTLE:
+        if game.hand_phase != HandPhase.SETTLE:
             action_type, val = value_player(state)
             game.set_action(action_type, val)
             gui.print_action(game.current_player, action_type, val)

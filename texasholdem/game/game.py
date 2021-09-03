@@ -1,10 +1,12 @@
 from __future__ import annotations
-from typing import Iterator, Callable, Dict, Tuple, Optional
+
+from typing import Iterator, Callable, Dict, Tuple, Union
 from enum import Enum, auto
 import random
 
 from texasholdem.card.card import Card
 from texasholdem.card.deck import Deck
+from texasholdem.game.history import *
 from texasholdem.game.action_type import ActionType
 from texasholdem.game.hand_phase import HandPhase
 from texasholdem.game.player_state import PlayerState
@@ -137,7 +139,7 @@ class TexasHoldEm:
     and the number of players.
 
     To interact with this class, call :meth:`TexasHoldEm.run_hand` which returns an
-    iterator that yields itself over each stage of the game that requires input from
+    iterator that yields this object over each stage of the game that requires input from
     a player.
     To input an action at each stage, call :meth:`TexasHoldEm.set_action` which will
     use the given action for the next state in the iterator.
@@ -146,6 +148,17 @@ class TexasHoldEm:
 
     def __init__(self, buyin: int, big_blind: int, small_blind: int, max_players=9):
         """
+        Represents a table of TexasHoldEm (tournament style).
+
+        Instantiate this object with the buyin, big blind, small blind,
+        and the number of players.
+
+        To interact with this class, call :meth:`TexasHoldEm.run_hand` which returns an
+        iterator that yields this object each stage of the game that requires input from
+        a player.
+        To input an action at each stage, call :meth:`TexasHoldEm.set_action` which will
+        use the given action for the next state in the iterator.
+
         Arguments:
             buyin (int): The buyin to register for this game.
             big_blind (int): Big blind
@@ -157,7 +170,7 @@ class TexasHoldEm:
         self.small_blind = small_blind
         self.max_players = max_players
 
-        self.players = tuple(Player(i, self.buyin) for i in range(max_players))
+        self.players: tuple[Player] = tuple(Player(i, self.buyin) for i in range(max_players))
 
         self.btn_loc = random.randrange(0, max_players)
         self.bb_loc = -1
@@ -165,11 +178,12 @@ class TexasHoldEm:
         self.current_player = -1
 
         self.pots = []
+        self._deck = None
         self.board = []
         self.hands = {}
 
         self.num_hands = 0
-        self.hand_state = HandPhase.PREHAND
+        self.hand_phase = HandPhase.PREHAND
         self.game_state = GameState.RUNNING
 
         self._handstate_handler: Dict[HandPhase, Callable[[], Iterator[TexasHoldEm]]] = {
@@ -181,22 +195,22 @@ class TexasHoldEm:
             HandPhase.SETTLE: self._settle
         }
 
-        self.hand_history = {}
+        self.hand_history: Dict[HandPhase, Union[PrehandHistory, BettingRoundHistory]] = {}
         self.action = None, None
 
     def _prehand(self):
         """
         Handles skips, not enough chips, rotation and posting of blinds,
-        dealing card and setup for preflop.
+        dealing cards and setup for preflop.
         """
-        if self.hand_state != HandPhase.PREHAND:
+        if self.hand_phase != HandPhase.PREHAND:
             raise PokerError("Not time for prehand!")
 
-        # set skip statuses for players with not enough chips
+        # set statuses for players
         for id in self.player_iter(loc=0):
             self.players[id].last_pot = 0
 
-            if self.players[id].chips < self.big_blind:
+            if self.players[id].chips == 0:
                 self.players[id].state = PlayerState.SKIP
             else:
                 self.players[id].state = PlayerState.TO_CALL
@@ -222,7 +236,16 @@ class TexasHoldEm:
         self.pots = [Pot()]
 
         # reset hand history
-        self.hand_history = {}
+        self.hand_history = {
+            HandPhase.PREHAND: PrehandHistory(
+                random_seed=random.getstate(),
+                btn_loc=self.btn_loc,
+                player_chips={
+                    i: self.players[i].chips
+                    for i in range(self.max_players)
+                }
+            )
+        }
         self.action = None, None
 
         # post blinds
@@ -230,12 +253,12 @@ class TexasHoldEm:
         self._player_post(self.bb_loc, self.big_blind)
 
         # deal cards
-        self.deck = Deck()
+        self._deck = Deck()
         self.hands = {}
         self.board = []
 
         for id in self.active_iter(self.btn_loc + 1):
-            self.hands[id] = self.deck.draw(n=2)
+            self.hands[id] = self._deck.draw(n=2)
 
         # action to left of BB
         self.current_player = next(self.active_iter(loc=self.bb_loc + 1))
@@ -334,12 +357,8 @@ class TexasHoldEm:
         Arguments:
             player_id (int) - The ID of the player posting
             amount (int)	- The amount to post
-        Raises:
-            PokerError		- If amount > player.chips
         """
-        if amount > self.players[player_id].chips:
-            raise PokerError("player does not have enough chips to post.")
-
+        amount = min(self.players[player_id].chips, amount)
         original_amount = amount
         last_pot = self.players[player_id].last_pot
         chips_to_call = self.get_pot(last_pot).chips_to_call(player_id)
@@ -421,7 +440,7 @@ class TexasHoldEm:
         """
         Runs the PREFLOP sequence
         """
-        if self.hand_state != HandPhase.PREFLOP:
+        if self.hand_phase != HandPhase.PREFLOP:
             raise PokerError("Not time for PREFLOP!")
 
         self.current_player = next(self.active_iter(loc=self.bb_loc + 1))
@@ -431,10 +450,10 @@ class TexasHoldEm:
         """
         Runs the FLOP sequence
         """
-        if self.hand_state != HandPhase.FLOP:
+        if self.hand_phase != HandPhase.FLOP:
             raise PokerError("Not time for PREFLOP!")
 
-        self.board.extend(self.deck.draw(n=3))
+        self.board.extend(self._deck.draw(n=3))
         self.current_player = next(self.active_iter(loc=self.btn_loc + 1))
         yield from self._betting_round()
 
@@ -442,10 +461,10 @@ class TexasHoldEm:
         """
         Runs the TURN sequence
         """
-        if self.hand_state != HandPhase.TURN:
+        if self.hand_phase != HandPhase.TURN:
             raise PokerError("Not time for Turn!")
 
-        self.board.extend(self.deck.draw(n=1))
+        self.board.extend(self._deck.draw(n=1))
         self.current_player = next(self.active_iter(loc=self.btn_loc + 1))
         yield from self._betting_round()
 
@@ -453,10 +472,10 @@ class TexasHoldEm:
         """
         Runs the RIVER sequence
         """
-        if self.hand_state != HandPhase.RIVER:
+        if self.hand_phase != HandPhase.RIVER:
             raise PokerError("Not time for River!")
 
-        self.board.extend(self.deck.draw(n=1))
+        self.board.extend(self._deck.draw(n=1))
         self.current_player = next(self.active_iter(loc=self.btn_loc + 1))
         yield from self._betting_round()
 
@@ -465,23 +484,21 @@ class TexasHoldEm:
         Settles the current hand. If players are all-in, makes sure
         the board has 5 card before settling.
         """
-        if self.hand_state != HandPhase.SETTLE:
+        if self.hand_phase != HandPhase.SETTLE:
             raise PokerError("Not time for Settle!")
 
-        if HandPhase.SETTLE not in self.hand_history:
-            self.hand_history[HandPhase.SETTLE] = []
+        self.current_player = next(self.active_iter(loc=self.btn_loc + 1))
 
         for i in range(len(self.pots)):
             players_in_pot = list(self.pots[i].players_in_pot())
             # only player left in pot wins
             if len(players_in_pot) == 1:
-                self.hand_history[HandPhase.SETTLE].append((players_in_pot[0], i, self.pots[i].get_total_amount()))
                 self.players[players_in_pot[0]].chips += self.pots[i].get_total_amount()
                 continue
 
             # make sure there is 5 cards on the board
-            elif len(self.board) < 5:
-                self.board.extend(self.deck.draw(n=(5 - len(self.board))))
+            if len(self.board) < 5:
+                self.board.extend(self._deck.draw(n=5 - len(self.board)))
 
             player_ranks = {}
             for id in players_in_pot:
@@ -491,9 +508,8 @@ class TexasHoldEm:
             winners = [id for id in player_ranks if player_ranks[id] == best_rank]
 
             win_amount = (self.pots[i].get_total_amount()) / len(winners)
-            win_amount = int(round(win_amount))
+            win_amount = round(win_amount)
             for id in winners:
-                self.hand_history[HandPhase.SETTLE].append((id, i, win_amount))
                 self.players[id].chips += win_amount
 
         yield self
@@ -550,9 +566,7 @@ class TexasHoldEm:
                 return False
 
             if (new_value < self.big_blind and action != ActionType.ALL_IN) or \
-                player_amount + self.players[id].chips < new_value or \
-                (new_value <= player_amount + chips_to_call and
-                 action != ActionType.ALL_IN):
+               player_amount + self.players[id].chips < new_value:
                 return False
 
             return True
@@ -585,7 +599,7 @@ class TexasHoldEm:
 
         # Execute move
         if action == ActionType.CALL:
-            self._player_post(id, min(chips_to_call, self.players[id].chips))
+            self._player_post(id, chips_to_call)
         elif action == ActionType.CHECK:
             pass
         elif action == ActionType.RAISE:
@@ -622,14 +636,14 @@ class TexasHoldEm:
             PokerError - If self.hand_state is not a valid betting round
         """
 
-        if self.hand_state == HandPhase.PREHAND or \
-                self.hand_state == HandPhase.SETTLE:
+        if self.hand_phase == HandPhase.PREHAND or \
+                self.hand_phase == HandPhase.SETTLE:
             raise PokerError("Not valid betting round!")
 
         first_pot = self.get_last_pot_id()
         player_iter = self.in_pot_iter(self.current_player)
 
-        while list(self.in_pot_iter()):
+        while not self._is_hand_over():
             try:
                 self.current_player = next(player_iter)
             except StopIteration:
@@ -643,6 +657,15 @@ class TexasHoldEm:
             if not passed:
                 raise PokerError(f"Invalid move for player {self.current_player}: "
                                  f"{action}, {val}")
+
+            if self.hand_phase not in self.hand_history:
+                self.hand_history[self.hand_phase] = BettingRoundHistory(actions=[])
+            betting_history = self.hand_history.get(self.hand_phase)
+            betting_history.actions.append(PlayerAction(
+                player_id=self.current_player,
+                action_type=action,
+                value=val)
+            )
 
             # On raise, everyone eligible gets to take another action
             if action == ActionType.RAISE:
@@ -685,23 +708,23 @@ class TexasHoldEm:
         if self.is_hand_running():
             raise PokerError('In the middle of a hand!')
 
-        self.hand_state = HandPhase.PREHAND
-        next(self._handstate_handler[self.hand_state]())
+        self.hand_phase = HandPhase.PREHAND
+        next(self._handstate_handler[self.hand_phase]())
 
         if self.game_state == GameState.STOPPED:
             return
 
-        self.hand_state = self.hand_state.next_phase()
+        self.hand_phase = self.hand_phase.next_phase()
         while self.is_hand_running():
-            yield from self._handstate_handler[self.hand_state]()
+            yield from self._handstate_handler[self.hand_phase]()
 
             if self._is_hand_over():
-                self.hand_state = HandPhase.SETTLE
-                yield from self._handstate_handler[self.hand_state]()
-                self.hand_state = self.hand_state.next_phase()
+                self.hand_phase = HandPhase.SETTLE
+                yield from self._handstate_handler[self.hand_phase]()
+                self.hand_phase = self.hand_phase.next_phase()
                 break
             else:
-                self.hand_state = self.hand_state.next_phase()
+                self.hand_phase = self.hand_phase.next_phase()
 
     def is_hand_running(self) -> bool:
         """
@@ -709,7 +732,7 @@ class TexasHoldEm:
             bool: True if there is a hand running, false o/w
 
         """
-        return self.hand_state != HandPhase.PREHAND
+        return self.hand_phase != HandPhase.PREHAND
 
     def is_game_running(self) -> bool:
         """
