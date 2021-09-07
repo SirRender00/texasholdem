@@ -73,7 +73,7 @@ class TextGUI:
         if poker_game.players[id].state == PlayerState.OUT:
             return lines
 
-        bets = sum(poker_game.get_pot(i).get_player_amount(id) for i in range(poker_game.players[id].last_pot + 1))
+        bets = sum(poker_game._get_pot(i).get_player_amount(id) for i in range(poker_game.players[id].last_pot + 1))
         lines.append("Bet: {}".format(bets))
 
         return lines

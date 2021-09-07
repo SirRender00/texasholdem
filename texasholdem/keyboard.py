@@ -56,7 +56,7 @@ def call_player(game: TexasHoldEm):
 def value_player(game: TexasHoldEm):
     player = game.players[game.current_player]
 
-    chips_at_stake = sum(game.get_pot(i).get_total_amount() for i in range(player.last_pot+1))
+    chips_at_stake = sum(game._get_pot(i).get_total_amount() for i in range(player.last_pot + 1))
     pot_odds = game.chips_to_call(player.id) / chips_at_stake
     equity = calculate_equity(game.get_hand(player.id), game.board, len(list(game.active_iter())) - 1)
     value_bet = int(chips_at_stake * equity)
@@ -103,10 +103,13 @@ user_player_id = 5
 gui.set_player_ids(range(game.max_players))
 
 while game.is_game_running():
-    for state in game.run_hand():
-        gui.print_state(state)
+    game.start_hand()
+    while game.is_hand_running():
+        gui.print_state(game)
 
         if game.hand_phase != HandPhase.SETTLE:
-            action_type, val = value_player(state)
-            game.set_action(action_type, val)
+            action_type, val = value_player(game)
             gui.print_action(game.current_player, action_type, val)
+            game.take_action(action_type, val)
+        else:
+            game.take_action(ActionType.CHECK, None)

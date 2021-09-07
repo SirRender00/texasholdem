@@ -62,7 +62,7 @@ class Pot:
 
         Arguments:
             id (int): The id of the player posting
-            amount (int): The amount to post into this pot (can be negative)
+            amount (int): The amount to post into this pot
 
         """
         self.player_amounts[id] = self.player_amounts.get(id, 0) + amount
@@ -119,6 +119,34 @@ class Pot:
 
         return sum(self.player_amounts.values()) + self.get_amount()
 
+    def split_pot(self, raised_level: int) -> Optional[Pot]:
+        """
+        Splits the pot at the given raised level, and adds players with
+        excess to the new pot.
+
+        Arguments:
+            raised_level (int)      - The chip count to cut off at
+        Returns:
+            (Optional[Pot])         - The new pot or None if self.raised <= raised_level
+        """
+        split_pot = Pot()
+
+        if self.raised <= raised_level:
+            return None
+
+        # Overflow goes to split pot
+        split_pot.raised = self.raised - raised_level
+        self.raised = raised_level
+
+        for id in self.players_in_pot():
+            # player currently in last pot, post overflow to the split pot
+            if self.get_player_amount(id) > self.raised:
+                overflow = self.get_player_amount(id) - self.raised
+                split_pot.player_post(id, overflow)
+                self.player_amounts[id] -= -overflow
+
+        return split_pot
+
 
 class GameState(Enum):
     """An enum representing the state of the game (not just one hand)"""
@@ -138,11 +166,11 @@ class TexasHoldEm:
     Instantiate this object with the buyin, big blind, small blind,
     and the number of players.
 
-    To interact with this class, call :meth:`TexasHoldEm.run_hand` which returns an
-    iterator that yields this object over each stage of the game that requires input from
-    a player.
-    To input an action at each stage, call :meth:`TexasHoldEm.set_action` which will
-    use the given action for the next state in the iterator.
+    To interact with this class, call :meth:`TexasHoldEm.start_hand` which will
+    run the PREHAND face (move/post blinds, reset pots, deal cards, etc.)
+
+    To input an action at each stage, call :meth:`TexasHoldEm.take_action` which will
+    execute the given action for the current player.
 
     """
 
@@ -186,7 +214,7 @@ class TexasHoldEm:
         self.hand_phase = HandPhase.PREHAND
         self.game_state = GameState.RUNNING
 
-        self._handstate_handler: Dict[HandPhase, Callable[[], Iterator[TexasHoldEm]]] = {
+        self._handstate_handler: Dict[HandPhase, Callable] = {
             HandPhase.PREHAND: self._prehand,
             HandPhase.PREFLOP: self._preflop,
             HandPhase.FLOP: self._flop,
@@ -196,7 +224,8 @@ class TexasHoldEm:
         }
 
         self.hand_history: Dict[HandPhase, Union[PrehandHistory, BettingRoundHistory]] = {}
-        self.action = None, None
+        self._action = None, None
+        self._hand_gen = None
 
     def _prehand(self):
         """
@@ -220,7 +249,7 @@ class TexasHoldEm:
         # stop if only 1 player
         if len(active_players) <= 1:
             self.game_state = GameState.STOPPED
-            yield self
+            return
 
         # change btn loc (at least 2 players)
         self.btn_loc = active_players[0]
@@ -246,7 +275,7 @@ class TexasHoldEm:
                 }
             )
         }
-        self.action = None, None
+        self._action = None, None
 
         # post blinds
         self._player_post(self.sb_loc, self.small_blind)
@@ -263,7 +292,6 @@ class TexasHoldEm:
         # action to left of BB
         self.current_player = next(self.active_iter(loc=self.bb_loc + 1))
         self.num_hands += 1
-        yield self
 
     def player_iter(self, loc: int = None) -> Iterator[int]:
         """
@@ -324,29 +352,18 @@ class TexasHoldEm:
             raised_level (int)      - The chip count to cut off at
 
         """
-        pot = self.get_pot(pot_id)
+        pot = self._get_pot(pot_id)
+        split_pot = pot.split_pot(raised_level)
 
-        if pot.raised <= raised_level:
+        if not split_pot:
             return
 
-        split_pot = Pot()
-
-        # Overflow goes to split pot
-        split_pot.raised = pot.raised - raised_level
-        pot.raised = raised_level
-
-        for id in pot.players_in_pot():
-            # player currently in last pot, post overflow to the split pot
-            if pot.get_player_amount(id) > pot.raised:
-                overflow = pot.get_player_amount(id) - pot.raised
-                split_pot.player_post(id, overflow)
-                pot.player_post(id, -overflow)
-
-            # increment last_pot for players with enough chips
-            if self.players[id].chips >= self.chips_to_call(id):
-                self.players[id].last_pot += 1
-
         self.pots.insert(pot_id + 1, split_pot)
+
+        # increment last_pot for players with enough chips
+        for player_id in self.in_pot_iter():
+            if self.players[player_id].chips >= self.chips_to_call(player_id):
+                self.players[player_id].last_pot += 1
 
     def _player_post(self, player_id: int, amount: int):
         """
@@ -361,7 +378,7 @@ class TexasHoldEm:
         amount = min(self.players[player_id].chips, amount)
         original_amount = amount
         last_pot = self.players[player_id].last_pot
-        chips_to_call = self.get_pot(last_pot).chips_to_call(player_id)
+        chips_to_call = self._get_pot(last_pot).chips_to_call(player_id)
 
         # if a player posts, they are in the pot
         if amount == self.players[player_id].chips:
@@ -371,29 +388,29 @@ class TexasHoldEm:
 
         # call in previous pots
         for i in range(last_pot):
-            amount = amount - self.get_pot(i).chips_to_call(player_id)
+            amount = amount - self._get_pot(i).chips_to_call(player_id)
             self.pots[i].player_post(player_id, self.pots[i].chips_to_call(player_id))
 
-        self.get_pot(last_pot).player_post(player_id, amount)
+        self._get_pot(last_pot).player_post(player_id, amount)
 
         # players previously in pot need to call in event of a raise
         if amount > chips_to_call:
-            for id in self.get_pot(last_pot).players_in_pot():
-                if self.get_pot(last_pot).chips_to_call(id) > 0 and \
+            for id in self._get_pot(last_pot).players_in_pot():
+                if self._get_pot(last_pot).chips_to_call(id) > 0 and \
                    self.players[id].state == PlayerState.IN:
                     self.players[id].state = PlayerState.TO_CALL
 
         # if a player is all_in in this pot, split a new one off
         if PlayerState.ALL_IN in (self.players[i].state
-                                  for i in self.get_pot(last_pot).players_in_pot()):
-            raised_level = min(self.get_pot(last_pot).get_player_amount(i)
-                               for i in self.get_pot(last_pot).players_in_pot()
+                                  for i in self._get_pot(last_pot).players_in_pot()):
+            raised_level = min(self._get_pot(last_pot).get_player_amount(i)
+                               for i in self._get_pot(last_pot).players_in_pot()
                                if self.players[i].state == PlayerState.ALL_IN)
             self._split_pot(last_pot, raised_level)
 
         self.players[player_id].chips = self.players[player_id].chips - original_amount
 
-    def get_pot(self, pot_id: int) -> Pot:
+    def _get_pot(self, pot_id: int) -> Pot:
         """
         Arguments:
             pot_id (int): The ID of the pot to get
@@ -408,15 +425,15 @@ class TexasHoldEm:
 
         return self.pots[pot_id]
 
-    def get_last_pot(self) -> Pot:
+    def _get_last_pot(self) -> Pot:
         """
         Returns:
             Pot: The current "active" pot
 
         """
-        return self.get_pot(self.get_last_pot_id())
+        return self._get_pot(self._last_pot_id())
 
-    def get_last_pot_id(self) -> int:
+    def _last_pot_id(self) -> int:
         """
         Returns:
             int: The pot id of the last pot.
@@ -430,8 +447,12 @@ class TexasHoldEm:
             bool: True if no more actions can be taken by the remaining players.
         """
         count = 0
-        for _ in self.in_pot_iter():
-            count += 1
+        for i in self.in_pot_iter():
+            if self.players[i].state == PlayerState.TO_CALL:
+                return False
+            elif self.players[i].state == PlayerState.IN:
+                count += 1
+
             if count > 1:
                 return False
         return True
@@ -511,7 +532,6 @@ class TexasHoldEm:
             win_amount = round(win_amount)
             for id in winners:
                 self.players[id].chips += win_amount
-
         yield self
 
     def chips_to_call(self, id: int) -> int:
@@ -522,7 +542,7 @@ class TexasHoldEm:
             int - The amount of chips the player needs to call in all pots
                   to play the hand.
         """
-        return sum(self.get_pot(i).chips_to_call(id) for i in range(len(self.pots)))
+        return sum(self._get_pot(i).chips_to_call(id) for i in range(len(self.pots)))
 
     def player_bet_amount(self, id: int) -> int:
         """
@@ -532,7 +552,18 @@ class TexasHoldEm:
             int - The amount of chips the player bet this round across all
                   pots.
         """
-        return sum(self.get_pot(i).get_player_amount(id) for i in range(len(self.pots)))
+        return sum(self._get_pot(i).get_player_amount(id) for i in range(len(self.pots)))
+
+    def chips_at_stake(self, id: int) -> int:
+        """
+        Arguments:
+            id (int) - The player id
+        Returns:
+            int - The amount of chips the player is eligible to win
+        """
+        return sum(self._get_pot(i).get_total_amount()
+                   for i in range(len(self.pots))
+                   if id in self._get_pot(i).players_in_pot())
 
     def validate_move(self, id: int, action: ActionType, value: Optional[int] = None) -> bool:
         """
@@ -566,7 +597,8 @@ class TexasHoldEm:
                 return False
 
             if (new_value < self.big_blind and action != ActionType.ALL_IN) or \
-               player_amount + self.players[id].chips < new_value:
+               player_amount + self.players[id].chips < new_value or \
+               new_value < chips_to_call:
                 return False
 
             return True
@@ -640,7 +672,7 @@ class TexasHoldEm:
                 self.hand_phase == HandPhase.SETTLE:
             raise PokerError("Not valid betting round!")
 
-        first_pot = self.get_last_pot_id()
+        first_pot = self._last_pot_id()
         player_iter = self.in_pot_iter(self.current_player)
 
         while not self._is_hand_over():
@@ -651,7 +683,7 @@ class TexasHoldEm:
 
             yield self
 
-            action, val = self._translate_allin(*self.action)
+            action, val = self._translate_allin(*self._action)
             passed = self._safe_execute(self.current_player, action, val)
 
             if not passed:
@@ -678,7 +710,7 @@ class TexasHoldEm:
 
         # consolidate betting to all pots in this betting round
         for i in range(first_pot, len(self.pots)):
-            self.get_pot(i).collect_bets()
+            self._get_pot(i).collect_bets()
 
     def get_hand(self, player_id) -> list[Card]:
         """
@@ -691,40 +723,75 @@ class TexasHoldEm:
         """
         return self.hands.get(player_id, [])
 
-    def set_action(self, action_type: ActionType, val: Optional[int] = None):
-        if not self.is_hand_running():
-            raise PokerError("Cannot set action, hand is not running.")
-        self.action = (action_type, val)
-
-    def run_hand(self) -> Iterator[TexasHoldEm]:
+    def start_hand(self):
         """
-        Runs a complete hand of the game.
+        Starts a new hand.
 
-        Returns:
-            (Iterator[TexasHoldEm])	- A generator over every intermediate game state.
-                                      i.e. right before the first action, right after
-                                      every action, and right after settlement.
+        Raises:
+            (PokerError)            - If hand already in progress.
         """
         if self.is_hand_running():
             raise PokerError('In the middle of a hand!')
 
         self.hand_phase = HandPhase.PREHAND
-        next(self._handstate_handler[self.hand_phase]())
+        self._handstate_handler[self.hand_phase]()
 
         if self.game_state == GameState.STOPPED:
             return
 
         self.hand_phase = self.hand_phase.next_phase()
-        while self.is_hand_running():
-            yield from self._handstate_handler[self.hand_phase]()
+        self._hand_gen = self._hand_iter()
 
+        try:
+            next(self._hand_gen)
+        except StopIteration:
+            pass
+
+    def take_action(self, action_type: ActionType, value: Optional[int] = None):
+        """
+        The current player takes the specified action.
+
+        Arguments:
+            action_type (ActionType) - The action type
+            value (Optional[int])    - The value
+        Raises:
+            (PokerError)            - If no action can be taken due to GameState.STOPPED
+                                      or if the move is invalid.
+
+        """
+        if not self.is_hand_running():
+            raise PokerError("No hand is running")
+
+        if not self.validate_move(self.current_player, action_type, value=value):
+            raise PokerError("Move is invalid!")
+
+        self._action = (action_type, value)
+
+        try:
+            next(self._hand_gen)
+        except StopIteration:
+            pass
+
+    def _hand_iter(self) -> Iterator[TexasHoldEm]:
+        """
+        Returns:
+            (Iterator[TexasHoldEm])	- A generator over every intermediate game state.
+                                      i.e. right before every action.
+        Raises:
+            (PokerError)            - If phase != PREFLOP
+        """
+        if self.hand_phase != HandPhase.PREFLOP:
+            raise PokerError("Cannot iterate over hand: not time for PREFLOP")
+
+        while self.is_hand_running():
             if self._is_hand_over():
                 self.hand_phase = HandPhase.SETTLE
-                yield from self._handstate_handler[self.hand_phase]()
-                self.hand_phase = self.hand_phase.next_phase()
-                break
-            else:
-                self.hand_phase = self.hand_phase.next_phase()
+
+            round_iter: Optional[Iterator[TexasHoldEm]] = self._handstate_handler[self.hand_phase]()
+            if round_iter:
+                yield from round_iter
+
+            self.hand_phase = self.hand_phase.next_phase()
 
     def is_hand_running(self) -> bool:
         """

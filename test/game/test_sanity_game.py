@@ -43,7 +43,7 @@ def prehand_checks(texas: TexasHoldEm):
 
     player_chips = [texas.players[i].chips for i in range(texas.max_players)]
 
-    next(texas.run_hand())
+    texas.start_hand()
 
     # should run prehand
     assert texas.is_game_running()
@@ -61,7 +61,7 @@ def prehand_checks(texas: TexasHoldEm):
     assert all(player.chips == player_chips[player.id]
                for player in texas.players
                if player.id != texas.sb_loc and player.id != texas.bb_loc)
-    assert texas.get_last_pot().get_total_amount() == texas.big_blind + texas.small_blind
+    assert texas._get_last_pot().get_total_amount() == texas.big_blind + texas.small_blind
 
     # check player states
     assert texas.players[texas.bb_loc].state == PlayerState.IN
@@ -100,7 +100,7 @@ def test_skip_prehand():
         player.chips = 0
 
     # should run prehand
-    next(texas.run_hand())
+    texas.start_hand()
 
     # players with 0 chips are skipped
     assert all(player.state == PlayerState.SKIP
@@ -120,7 +120,7 @@ def test_heads_up_edge_case():
     texas = TexasHoldEm(buyin=500, big_blind=5, small_blind=2, max_players=2)
 
     # run PREHAND
-    next(texas.run_hand())
+    texas.start_hand()
 
     assert texas.btn_loc == texas.sb_loc
     assert texas.bb_loc == (texas.btn_loc + 1) % texas.max_players
@@ -138,7 +138,7 @@ def test_blind_all_in_prehand():
         player.chips = 1
 
     # run PREHAND
-    next(texas.run_hand())
+    texas.start_hand()
 
     assert texas.players[texas.sb_loc].state == PlayerState.ALL_IN
     assert texas.players[texas.bb_loc].state == PlayerState.ALL_IN
@@ -158,10 +158,7 @@ def test_game_stop_prehand():
     texas.players[0].chips = 10
 
     # run PREHAND
-    try:
-        next(texas.run_hand())
-    except StopIteration:
-        pass
+    texas.start_hand()
 
     assert not texas.is_game_running()
     assert not texas.is_hand_running()
@@ -184,14 +181,15 @@ def test_basic_betting_rounds(hand_phase, round_num, board_len):
     seen_players = []
 
     # run hand until given hand_phase is completed
-    for state in texas.run_hand():
-        if state.hand_phase == hand_phase:
+    texas.start_hand()
+    while texas.is_hand_running():
+        if texas.hand_phase == hand_phase:
             assert len(texas.board) == board_len
-        elif state.hand_phase == hand_phase.next_phase():
+        elif texas.hand_phase == hand_phase.next_phase():
             break
 
-        seen_players.append(state.current_player)
-        state.set_action(*call_player(state))
+        seen_players.append(texas.current_player)
+        texas.take_action(*call_player(texas))
 
     assert texas.hand_phase == hand_phase.next_phase()
     assert texas.is_game_running()
@@ -209,7 +207,7 @@ def test_basic_betting_rounds(hand_phase, round_num, board_len):
     assert texas.current_player == texas.sb_loc
 
     # should be 30 chips in pot
-    assert texas.get_last_pot().get_total_amount() == texas.max_players * texas.big_blind
+    assert texas._get_last_pot().get_total_amount() == texas.max_players * texas.big_blind
 
     if texas.hand_phase != HandPhase.SETTLE:  # check chips if not SETTLE phase
         assert all(player.chips == texas.buyin - texas.big_blind for player in texas.players)
@@ -224,8 +222,9 @@ def test_basic_settle():
 
     # run complete hand
     random.seed(6)
-    for state in texas.run_hand():
-        state.set_action(*call_player(state))
+    texas.start_hand()
+    while texas.is_hand_running():
+        texas.take_action(*call_player(texas))
 
     assert texas.is_game_running()
     assert not texas.is_hand_running()
@@ -249,19 +248,17 @@ def test_basic_continuity():
     random.seed(6)
 
     # run prehand
-    hand_iter = texas.run_hand()
-    next(hand_iter)
+    texas.start_hand()
 
     # note the button position
     old_btn_loc = texas.btn_loc
 
     # run the rest of the hand
-    texas.set_action(*call_player(texas))
-    for state in hand_iter:
-        state.set_action(*call_player(state))
+    while texas.is_hand_running():
+        texas.take_action(*call_player(texas))
 
     # run 2nd prehand
-    prehand_checks(texas)
+    texas.start_hand()
 
     # check btn position is old_btn + 1
     assert texas.btn_loc == (old_btn_loc + 1) % texas.max_players
