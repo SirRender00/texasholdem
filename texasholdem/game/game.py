@@ -500,7 +500,7 @@ class TexasHoldEm:
         self.current_player = next(self.active_iter(loc=self.btn_loc + 1))
         yield from self._betting_round()
 
-    def _settle(self) -> Iterator[TexasHoldEm]:
+    def _settle(self):
         """
         Settles the current hand. If players are all-in, makes sure
         the board has 5 card before settling.
@@ -532,7 +532,6 @@ class TexasHoldEm:
             win_amount = round(win_amount)
             for id in winners:
                 self.players[id].chips += win_amount
-        yield self
 
     def chips_to_call(self, id: int) -> int:
         """

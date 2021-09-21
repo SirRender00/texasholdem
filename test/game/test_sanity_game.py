@@ -191,9 +191,12 @@ def test_basic_betting_rounds(hand_phase, round_num, board_len):
         seen_players.append(texas.current_player)
         texas.take_action(*call_player(texas))
 
-    assert texas.hand_phase == hand_phase.next_phase()
+    if hand_phase != HandPhase.RIVER:
+        assert texas.hand_phase == hand_phase.next_phase()
     assert texas.is_game_running()
-    assert texas.is_hand_running()
+
+    if hand_phase != HandPhase.RIVER:
+        assert texas.is_hand_running()
 
     # all players took expected number of actions
     assert all(len([i for i in seen_players if i == id]) == round_num
@@ -209,7 +212,7 @@ def test_basic_betting_rounds(hand_phase, round_num, board_len):
     # should be 30 chips in pot
     assert texas._get_last_pot().get_total_amount() == texas.max_players * texas.big_blind
 
-    if texas.hand_phase != HandPhase.SETTLE:  # check chips if not SETTLE phase
+    if hand_phase != HandPhase.RIVER:  # check chips if not SETTLE phase
         assert all(player.chips == texas.buyin - texas.big_blind for player in texas.players)
 
 
