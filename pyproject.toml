@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "texasholdem"
-version = "0.1.0"
+version = "0.1.1"
 description = "A texasholdem python package"
 authors = ["Evyn Machi <evyn.machi@gmail.com>"]
 license = "MIT"

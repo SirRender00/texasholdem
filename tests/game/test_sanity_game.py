@@ -92,7 +92,7 @@ def test_skip_prehand():
 
     """
     texas = TexasHoldEm(buyin=500, big_blind=5, small_blind=2, max_players=6)
-    # 6 players to make this test invariant to where the button ends up
+    # 6 players to make this tests invariant to where the button ends up
 
     # skip every other player
     skip_players = [player for player in texas.players if player.id % 2 == 0]
