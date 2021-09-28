@@ -3,9 +3,16 @@ name = "texasholdem"
 version = "0.1.1"
 description = "A texasholdem python package"
 authors = ["Evyn Machi <evyn.machi@gmail.com>"]
+keywords = ['texasholdem', 'holdem', 'poker']
+readme = "README.md"
 license = "MIT"
+homepage = "https://github.com/SirRender00/texasholdem"
+repository = "https://github.com/SirRender00/texasholdem"
 
-include = ["texasholdem"]
+include = [
+    "texasholdem",
+    "LICENSE",
+]
 
 [tool.poetry.dependencies]
 python = "^3.9"

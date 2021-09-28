@@ -1,3 +1,6 @@
+# lock files
+*.lock
+
 .idea/*
 
 # Byte-compiled / optimized / DLL files
