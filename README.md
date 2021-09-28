@@ -1,6 +1,11 @@
 # texasholdem
 A python package for Texas Hold 'Em Poker.
 
+## Install
+```bash
+pip install texasholdem
+```
+
 ## Quickstart Guide
 Starting a game is as simple as the following:
 ```python
