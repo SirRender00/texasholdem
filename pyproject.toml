@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "texasholdem"
-version = "0.1.1"
+version = "0.2.0"
 description = "A texasholdem python package"
 authors = ["Evyn Machi <evyn.machi@gmail.com>"]
 keywords = ['texasholdem', 'holdem', 'poker']
@@ -20,6 +20,10 @@ python = "^3.9"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"
+pylint = "^2.11.1"
+
+[tool.pylint.master]
+ignore = ["keyboard.py", "text_gui.py"]
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

@@ -1,3 +1,9 @@
+"""The player state module includes an enum which represents the player
+state. For example, if a player is in the pot with the proper amount
+of chips, that player is said to be IN. If a player needs to call a bet,
+that player has status TO_CALL. If a player has no more chips to bet,
+that player is ALL_IN, etc."""
+
 from enum import Enum, auto
 
 

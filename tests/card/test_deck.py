@@ -13,14 +13,14 @@ def test_new_deck():
 def test_draw():
     deck = Deck()
 
-    deck.draw(n=1)
+    deck.draw(num=1)
     assert len(deck.cards) == 51
 
-    deck.draw(n=3)
+    deck.draw(num=3)
     assert len(deck.cards) == 48
 
     with pytest.raises(ValueError):
-        deck.draw(n=len(deck.cards) + 1)
+        deck.draw(num=len(deck.cards) + 1)
 
 
 def test_shuffle():

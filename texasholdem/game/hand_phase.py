@@ -1,3 +1,7 @@
+"""The handphase module contains an enum with the possible handphases
+of the game. It includes the well-known PREHAND, PREFLOP, FLOP, and RIVER
+phases, in addition to new PREHAND and SETTLE phases purely for book-keeping."""
+
 from __future__ import annotations
 
 from enum import Enum, auto

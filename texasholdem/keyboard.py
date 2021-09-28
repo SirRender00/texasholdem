@@ -57,8 +57,8 @@ def value_player(game: TexasHoldEm):
     player = game.players[game.current_player]
 
     chips_at_stake = sum(game._get_pot(i).get_total_amount() for i in range(player.last_pot + 1))
-    pot_odds = game.chips_to_call(player.id) / chips_at_stake
-    equity = calculate_equity(game.get_hand(player.id), game.board, len(list(game.active_iter())) - 1)
+    pot_odds = game.chips_to_call(player.player_id) / chips_at_stake
+    equity = calculate_equity(game.get_hand(player.player_id), game.board, len(list(game.active_iter())) - 1)
     value_bet = int(chips_at_stake * equity)
 
     print(f"pot_odds: {pot_odds}")
@@ -82,8 +82,8 @@ def value_player(game: TexasHoldEm):
             if player.chips <= value_bet:
                 return ActionType.ALL_IN, None
             else:
-                raise_amt = game.player_bet_amount(player.id) + game.chips_to_call(player.id) + value_bet
-                return ActionType.RAISE, min(raise_amt, player.chips + game.player_bet_amount(player.id))
+                raise_amt = game.player_bet_amount(player.player_id) + game.chips_to_call(player.player_id) + value_bet
+                return ActionType.RAISE, min(raise_amt, player.chips + game.player_bet_amount(player.player_id))
         else:
             return ActionType.CALL, None
     else:
@@ -93,8 +93,8 @@ def value_player(game: TexasHoldEm):
             elif value_bet < game.big_blind:
                 return ActionType.CHECK, None
             else:
-                raise_amt = game.player_bet_amount(player.id) + game.chips_to_call(player.id) + value_bet
-                return ActionType.RAISE, min(raise_amt, player.chips + game.player_bet_amount(player.id))
+                raise_amt = game.player_bet_amount(player.player_id) + game.chips_to_call(player.player_id) + value_bet
+                return ActionType.RAISE, min(raise_amt, player.chips + game.player_bet_amount(player.player_id))
         else:
             return ActionType.CHECK, None
 
