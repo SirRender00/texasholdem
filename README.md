@@ -75,6 +75,9 @@ assert evaluate(cards=[Card("Kd"), Card("5d")],
 assert rank_to_string(927) == "Flush, King High"
 ```
 
+# Contributing
+Please see the wiki to learn how to contribute.
+
 ## Development
 We use python poetry for development make sure you have poetry installed.
 To install all dependencies run the following from the root project directory:
