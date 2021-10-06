@@ -27,6 +27,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
+        $HOME/.poetry/bin/poetry install
     - name: Build package
       run: poetry build
     - name: Publish package
