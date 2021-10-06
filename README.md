@@ -1,6 +1,14 @@
 # texasholdem
 A python package for Texas Hold 'Em Poker.
 
+[Current Relase Version v0.1.1](https://github.com/SirRender00/texasholdem/releases/tag/v0.1.1)
+
+[v1.0.0 Roadmap](https://github.com/SirRender00/texasholdem/wiki/Version-1.0.0-Roadmap)
+
+## Contributing
+To be added as a contributor, please email me at evyn.machi@gmail.com with your GitHub username and mention one of the open issues / a new issue you would like to tackle first.
+For more information about contributing, please see the wiki.
+
 ## Install
 ```bash
 pip install texasholdem
@@ -73,15 +81,4 @@ assert evaluate(cards=[Card("Kd"), Card("5d")],
                        Card("2d"),
                        Card("5h")]) == 927
 assert rank_to_string(927) == "Flush, King High"
-```
-
-# Contributing
-Please see the wiki to learn how to contribute.
-
-## Development
-We use python poetry for development make sure you have poetry installed.
-To install all dependencies run the following from the root project directory:
-```bash
-poetry install
-poetry update
 ```
