@@ -34,9 +34,8 @@ def _five(cards: list[Card]) -> int:
         return LOOKUP_TABLE.flush_lookup[prime]
 
     # otherwise
-    else:
-        prime = card.prime_product_from_hand(cards)
-        return LOOKUP_TABLE.unsuited_lookup[prime]
+    prime = card.prime_product_from_hand(cards)
+    return LOOKUP_TABLE.unsuited_lookup[prime]
 
 
 def _six(cards: list[Card]) -> int:
@@ -98,10 +97,10 @@ def evaluate(cards: list[Card], board: list[Card]) -> int:
     http://www.suffecool.net/poker/evaluator.html
 
     Args:
-        cards (list[int]): A list of length two of card ints that a player holds. 
+        cards (list[int]): A list of length two of card ints that a player holds.
         board (list[int]): A list of length 3, 4, or 5 of card ints.
     Returns:
-        int: A number between 1 (highest) and 7462 (lowest) representing the relative 
+        int: A number between 1 (highest) and 7462 (lowest) representing the relative
             hand rank of the given card.
 
     """
@@ -113,27 +112,12 @@ def _get_rank_class(hand_rank: int) -> int:
     """
     Returns the class of hand given the hand hand_rank
     returned from evaluate.
+
     """
-    if 0 <= hand_rank <= LOOKUP_TABLE.MAX_STRAIGHT_FLUSH:
-        return LOOKUP_TABLE.MAX_TO_RANK_CLASS[LOOKUP_TABLE.MAX_STRAIGHT_FLUSH]
-    elif hand_rank <= LOOKUP_TABLE.MAX_FOUR_OF_A_KIND:
-        return LOOKUP_TABLE.MAX_TO_RANK_CLASS[LOOKUP_TABLE.MAX_FOUR_OF_A_KIND]
-    elif hand_rank <= LOOKUP_TABLE.MAX_FULL_HOUSE:
-        return LOOKUP_TABLE.MAX_TO_RANK_CLASS[LOOKUP_TABLE.MAX_FULL_HOUSE]
-    elif hand_rank <= LOOKUP_TABLE.MAX_FLUSH:
-        return LOOKUP_TABLE.MAX_TO_RANK_CLASS[LOOKUP_TABLE.MAX_FLUSH]
-    elif hand_rank <= LOOKUP_TABLE.MAX_STRAIGHT:
-        return LOOKUP_TABLE.MAX_TO_RANK_CLASS[LOOKUP_TABLE.MAX_STRAIGHT]
-    elif hand_rank <= LOOKUP_TABLE.MAX_THREE_OF_A_KIND:
-        return LOOKUP_TABLE.MAX_TO_RANK_CLASS[LOOKUP_TABLE.MAX_THREE_OF_A_KIND]
-    elif hand_rank <= LOOKUP_TABLE.MAX_TWO_PAIR:
-        return LOOKUP_TABLE.MAX_TO_RANK_CLASS[LOOKUP_TABLE.MAX_TWO_PAIR]
-    elif hand_rank <= LOOKUP_TABLE.MAX_PAIR:
-        return LOOKUP_TABLE.MAX_TO_RANK_CLASS[LOOKUP_TABLE.MAX_PAIR]
-    elif hand_rank <= LOOKUP_TABLE.MAX_HIGH_CARD:
-        return LOOKUP_TABLE.MAX_TO_RANK_CLASS[LOOKUP_TABLE.MAX_HIGH_CARD]
-    else:
-        raise Exception("Invalid hand rank, cannot return rank class")
+    max_rank = min(rank
+                   for rank in LOOKUP_TABLE.MAX_TO_RANK_CLASS
+                   if hand_rank <= rank)
+    return LOOKUP_TABLE.MAX_TO_RANK_CLASS[max_rank]
 
 
 def rank_to_string(hand_rank: int) -> str:

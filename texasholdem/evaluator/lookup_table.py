@@ -1,3 +1,29 @@
+"""
+The lookup table module keeps the books on all possible hand strengths.
+We construct the table once on import and reference it repeatedly.
+
+Number of Distinct Hand Values:
+
+Straight Flush   10
+Four of a Kind   156      [(13 choose 2) * (2 choose 1)]
+Full Houses      156      [(13 choose 2) * (2 choose 1)]
+Flush            1277     [(13 choose 5) - 10 straight flushes]
+Straight         10
+Three of a Kind  858      [(13 choose 3) * (3 choose 1)]
+Two Pair         858      [(13 choose 3) * (3 choose 2)]
+One Pair         2860     [(13 choose 4) * (4 choose 1)]
+High card      + 1277     [(13 choose 5) - 10 straights]
+-------------------------
+TOTAL            7462
+
+Here we create a lookup table which maps:
+    5 card hand's unique prime product => rank in range [1, 7462]
+
+Examples:
+* Royal flush (best hand possible)          => 1
+* 7-5-4-3-2 unsuited (worst hand possible)  => 7462
+"""
+
 from typing import Dict
 import itertools
 
@@ -6,28 +32,11 @@ from texasholdem.card.card import Card
 
 
 class LookupTable:
+    # pylint: disable=too-few-public-methods
     """
-    Number of Distinct Hand Values:
-
-    Straight Flush   10
-    Four of a Kind   156      [(13 choose 2) * (2 choose 1)]
-    Full Houses      156      [(13 choose 2) * (2 choose 1)]
-    Flush            1277     [(13 choose 5) - 10 straight flushes]
-    Straight         10
-    Three of a Kind  858      [(13 choose 3) * (3 choose 1)]
-    Two Pair         858      [(13 choose 3) * (3 choose 2)]
-    One Pair         2860     [(13 choose 4) * (4 choose 1)]
-    High card      + 1277     [(13 choose 5) - 10 straights]
-    -------------------------
-    TOTAL            7462
-
-    Here we create a lookup table which maps:
-        5 card hand's unique prime product => rank in range [1, 7462]
-
-    Examples:
-    * Royal flush (best hand possible)          => 1
-    * 7-5-4-3-2 unsuited (worst hand possible)  => 7462
+    The lookup table class
     """
+
     MAX_STRAIGHT_FLUSH = 10
     MAX_FOUR_OF_A_KIND = 166
     MAX_FULL_HOUSE = 322
@@ -104,21 +113,21 @@ class LookupTable:
 
         # 1277 = number of high card
         # 1277 + len(str_flushes) is number of hands with all card unique rank
-        for i in range(1277 + len(straight_flushes) - 1):  # we also iterate over SFs
+        for _ in range(1277 + len(straight_flushes) - 1):  # we also iterate over SFs
             # pull the next flush pattern from our generator
-            f = next(gen)
+            flush = next(gen)
 
             # if this flush matches perfectly any
             # straight flush, do not add it
             not_sf = True
-            for sf in straight_flushes:
+            for straight_flush in straight_flushes:
                 # if f XOR sf == 0, then bit pattern
                 # is same, and we should not add
-                if not f ^ sf:
+                if not flush ^ straight_flush:
                     not_sf = False
 
             if not_sf:
-                flushes.append(f)
+                flushes.append(flush)
 
         # we started from the lowest straight pattern, now we want to start ranking from
         # the most powerful hands, so we reverse
@@ -129,16 +138,16 @@ class LookupTable:
         # since theyit is the best hand in poker
         # rank 1 = Royal Flush!
         rank = 1
-        for sf in straight_flushes:
-            prime_product = card.prime_product_from_rankbits(sf)
+        for straight_flush in straight_flushes:
+            prime_product = card.prime_product_from_rankbits(straight_flush)
             self.flush_lookup[prime_product] = rank
             rank += 1
 
         # we start the counting for flushes on max full house, which
         # is the worst rank that a full house can have (2,2,2,3,3)
         rank = LookupTable.MAX_FULL_HOUSE + 1
-        for f in flushes:
-            prime_product = card.prime_product_from_rankbits(f)
+        for flush in flushes:
+            prime_product = card.prime_product_from_rankbits(flush)
             self.flush_lookup[prime_product] = rank
             rank += 1
 
@@ -155,18 +164,19 @@ class LookupTable:
         """
         rank = LookupTable.MAX_FLUSH + 1
 
-        for s in straights:
-            prime_product = card.prime_product_from_rankbits(s)
+        for straight in straights:
+            prime_product = card.prime_product_from_rankbits(straight)
             self.unsuited_lookup[prime_product] = rank
             rank += 1
 
         rank = LookupTable.MAX_PAIR + 1
-        for h in highcards:
-            prime_product = card.prime_product_from_rankbits(h)
+        for high_card in highcards:
+            prime_product = card.prime_product_from_rankbits(high_card)
             self.unsuited_lookup[prime_product] = rank
             rank += 1
 
     def _multiples(self):
+        # pylint: disable=too-many-locals
         """
         Pair, Two Pair, Three of a Kind, Full House, and 4 of a Kind.
         """
@@ -193,10 +203,10 @@ class LookupTable:
         for i in backwards_ranks:
 
             # and for each choice of pair rank
-            pairranks = list(backwards_ranks[:])
-            pairranks.remove(i)
-            for pr in pairranks:
-                product = Card.PRIMES[i] ** 3 * Card.PRIMES[pr] ** 2
+            pair_ranks = list(backwards_ranks[:])
+            pair_ranks.remove(i)
+            for pair_rank in pair_ranks:
+                product = Card.PRIMES[i] ** 3 * Card.PRIMES[pair_rank] ** 2
                 self.unsuited_lookup[product] = rank
                 rank += 1
 
@@ -204,25 +214,23 @@ class LookupTable:
         rank = LookupTable.MAX_STRAIGHT + 1
 
         # pick three of one rank
-        for r in backwards_ranks:
+        for b_rank in backwards_ranks:
 
             kickers = list(backwards_ranks[:])
-            kickers.remove(r)
-            gen = itertools.combinations(kickers, 2)
+            kickers.remove(b_rank)
 
-            for kickers in gen:
-                c1, c2 = kickers
-                product = Card.PRIMES[r] ** 3 * Card.PRIMES[c1] * Card.PRIMES[c2]
+            for kickers in itertools.combinations(kickers, 2):
+                card1, card2 = kickers
+                product = Card.PRIMES[b_rank] ** 3 * Card.PRIMES[card1] * Card.PRIMES[card2]
                 self.unsuited_lookup[product] = rank
                 rank += 1
 
         # 4) Two Pair
         rank = LookupTable.MAX_THREE_OF_A_KIND + 1
 
-        tpgen = itertools.combinations(backwards_ranks, 2)
-        for tp in tpgen:
+        for two_pair in itertools.combinations(backwards_ranks, 2):
 
-            pair1, pair2 = tp
+            pair1, pair2 = two_pair
             kickers = list(backwards_ranks[:])
             kickers.remove(pair1)
             kickers.remove(pair2)
@@ -239,12 +247,11 @@ class LookupTable:
 
             kickers = list(backwards_ranks[:])
             kickers.remove(pairrank)
-            kgen = itertools.combinations(kickers, 3)
 
-            for kickers in kgen:
-                k1, k2, k3 = kickers
-                product = Card.PRIMES[pairrank] ** 2 * Card.PRIMES[k1] \
-                    * Card.PRIMES[k2] * Card.PRIMES[k3]
+            for kickers in itertools.combinations(kickers, 3):
+                kicker1, kicker2, kicker3 = kickers
+                product = Card.PRIMES[pairrank] ** 2 * Card.PRIMES[kicker1] \
+                    * Card.PRIMES[kicker2] * Card.PRIMES[kicker3]
                 self.unsuited_lookup[product] = rank
                 rank += 1
 
@@ -255,14 +262,14 @@ class LookupTable:
         http://www-graphics.stanford.edu/~seander/bithacks.html#NextBitPermutation
 
         Generator even does this in poker order rank
-        so no need to sort when done! Perfect.
+        so no need to sort when done!
         """
-        t = (bits | (bits - 1)) + 1
-        lexo_next = t | ((((t & -t) // (bits & -bits)) >> 1) - 1)
+        xbits = (bits | (bits - 1)) + 1
+        lexo_next = xbits | ((((xbits & -xbits) // (bits & -bits)) >> 1) - 1)
         yield lexo_next
         while True:
-            t = (lexo_next | (lexo_next - 1)) + 1
-            lexo_next = t | ((((t & -t) // (lexo_next & -lexo_next)) >> 1) - 1)
+            xbits = (lexo_next | (lexo_next - 1)) + 1
+            lexo_next = xbits | ((((xbits & -xbits) // (lexo_next & -lexo_next)) >> 1) - 1)
             yield lexo_next
 
 

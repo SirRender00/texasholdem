@@ -58,19 +58,19 @@ def prehand_checks(texas: TexasHoldEm):
     # check blind posting
     assert texas.players[texas.sb_loc].chips == player_chips[texas.sb_loc] - texas.small_blind
     assert texas.players[texas.bb_loc].chips == player_chips[texas.bb_loc] - texas.big_blind
-    assert all(player.chips == player_chips[player.id]
+    assert all(player.chips == player_chips[player.player_id]
                for player in texas.players
-               if player.id != texas.sb_loc and player.id != texas.bb_loc)
+               if player.player_id != texas.sb_loc and player.player_id != texas.bb_loc)
     assert texas._get_last_pot().get_total_amount() == texas.big_blind + texas.small_blind
 
     # check player states
     assert texas.players[texas.bb_loc].state == PlayerState.IN
     assert all(player.state == PlayerState.TO_CALL
                for player in texas.players
-               if player.id != texas.bb_loc)
+               if player.player_id != texas.bb_loc)
 
     # players have cards
-    assert all(len(texas.get_hand(player.id)) == 2 for player in texas.players)
+    assert all(len(texas.get_hand(player.player_id)) == 2 for player in texas.players)
 
     # board does not have cards
     assert not texas.board
@@ -95,7 +95,7 @@ def test_skip_prehand():
     # 6 players to make this tests invariant to where the button ends up
 
     # skip every other player
-    skip_players = [player for player in texas.players if player.id % 2 == 0]
+    skip_players = [player for player in texas.players if player.player_id % 2 == 0]
     for player in skip_players:
         player.chips = 0
 
@@ -234,7 +234,7 @@ def test_basic_settle():
 
     # find winner
     winner = min(texas.players,
-                 key=lambda player: evaluate(texas.get_hand(player.id), texas.board))
+                 key=lambda player: evaluate(texas.get_hand(player.player_id), texas.board))
 
     assert winner.chips == texas.buyin + (texas.max_players - 1) * texas.big_blind
     assert all(player.chips == texas.buyin - texas.big_blind
