@@ -31,6 +31,6 @@ jobs:
     - name: Build package
       run: $HOME/.poetry/bin/poetry build
     - name: Publish distribution to PyPI
-      uses: pypa/gh-action-pypi-publish@release/v1.4.2
+      uses: pypa/gh-action-pypi-publish@27b3170
       with:
         password: ${{ secrets.PYPI_API_TOKEN }}
