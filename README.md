@@ -1,7 +1,7 @@
 # texasholdem
 A python package for Texas Hold 'Em Poker.
 
-[Current Release Version v0.2.0](https://github.com/SirRender00/texasholdem/releases/tag/v0.2.0)
+[Current Release Version v0.3.0](https://github.com/SirRender00/texasholdem/releases/tag/v0.3.0)
 
 [v1.0.0 Roadmap](https://github.com/SirRender00/texasholdem/wiki/Version-1.0.0-Roadmap)
 
@@ -93,4 +93,25 @@ assert evaluate(cards=[Card("Kd"), Card("5d")],
                        Card("2d"),
                        Card("5h")]) == 927
 assert rank_to_string(927) == "Flush, King High"
+```
+
+## History Module
+Export and import the history of hands:
+```python
+from texasholdem.game.game import TexasHoldEm
+from texasholdem.gui.text_gui import TextGUI
+
+game = TexasHoldEm(buyin=500, big_blind=5, small_blind=2)
+game.start_hand()
+
+while game.is_hand_running():
+    game.take_action(*some_strategy(game))
+
+# export to file
+game.export_history("./pgns/my_game.pgn")
+
+# import and replay
+gui = TextGUI()
+for state in TexasHoldEm.import_history("./pgns/my_game.pgn"):
+    gui.print_state(state)
 ```

@@ -5,16 +5,7 @@ import pytest
 from texasholdem.game.game import TexasHoldEm
 from texasholdem.game.hand_phase import HandPhase
 from texasholdem.game.player_state import PlayerState
-from texasholdem.game.action_type import ActionType
 from texasholdem.evaluator.evaluator import evaluate
-
-
-def call_player(game: TexasHoldEm):
-    player = game.players[game.current_player]
-    if player.state == PlayerState.TO_CALL:
-        return ActionType.CALL, None
-    else:
-        return ActionType.CHECK, None
 
 
 def test_new_game():
@@ -171,7 +162,7 @@ def test_game_stop_prehand():
     (HandPhase.TURN, 3, 4),
     (HandPhase.RIVER, 4, 5)
 ])
-def test_basic_betting_rounds(hand_phase, round_num, board_len):
+def test_basic_betting_rounds(hand_phase, round_num, board_len, call_player):
     """
     Tests basic state after running the 4 betting rounds.
 
@@ -216,7 +207,7 @@ def test_basic_betting_rounds(hand_phase, round_num, board_len):
         assert all(player.chips == texas.buyin - texas.big_blind for player in texas.players)
 
 
-def test_basic_settle():
+def test_basic_settle(call_player):
     """
     Test basic state after running a complete hand: only one winner
 
@@ -224,7 +215,7 @@ def test_basic_settle():
     texas = TexasHoldEm(buyin=500, big_blind=5, small_blind=2)
 
     # run complete hand
-    random.seed(6)
+    random.seed(2)
     texas.start_hand()
     while texas.is_hand_running():
         texas.take_action(*call_player(texas))
@@ -242,7 +233,7 @@ def test_basic_settle():
                if player != winner)
 
 
-def test_basic_continuity():
+def test_basic_continuity(call_player):
     """
     Checks basic state continuity between hands
 

@@ -8,7 +8,6 @@ from texasholdem.game.action_type import ActionType
 from texasholdem.game.hand_phase import HandPhase
 from texasholdem.evaluator.evaluator import evaluate
 from texasholdem.gui import TextGUI
-import time
 
 game = TexasHoldEm(500, 5, 2, max_players=6)
 gui = TextGUI()
@@ -113,3 +112,5 @@ while game.is_game_running():
             game.take_action(action_type, val)
         else:
             game.take_action(ActionType.CHECK, None)
+    game.export_history('./pgns/')
+    exit(0)
