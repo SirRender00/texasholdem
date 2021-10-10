@@ -15,17 +15,29 @@ pip install texasholdem
 ```
 
 ## Quickstart Guide
-Starting a game is as simple as the following:
+Playing a game from the command line is as simple as the following:
 ```python
 from texasholdem import TexasHoldEm
+from texasholdem.gui.text_gui import TextGUI
 
-game = TexasHoldEm(buyin=500, 
-                   big_blind=5, 
+game = TexasHoldEm(buyin=500,
+                   big_blind=5,
                    small_blind=2,
-                   max_players=9)
-game.start_hand()
-while game.is_hand_running():
-    game.take_action(...)
+                   max_players=6)
+gui = TextGUI()
+gui.set_player_ids(list(range(6)))      # see all cards
+while game.is_game_running():
+    game.start_hand()
+    while game.is_hand_running():
+        gui.print_state(game)
+
+        action, val = gui.accept_input()
+        while not game.validate_move(game.current_player, action, val):
+            print(f"{action} {val} is not valid for player {game.current_player}")
+            action, val = gui.accept_input()
+
+        gui.print_action(game.current_player, action, val)
+        game.take_action(action, val)
 ```
 
 ## Game Information
