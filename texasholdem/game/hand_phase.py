@@ -4,23 +4,33 @@ phases, in addition to new PREHAND and SETTLE phases purely for book-keeping."""
 
 from __future__ import annotations
 
-from enum import Enum, auto
+from enum import Enum
+from dataclasses import dataclass
+
+
+@dataclass(frozen=True)
+class _HandPhase:
+    """
+    Hand phase
+    """
+    new_cards: int
+    next_phase: str
 
 
 class HandPhase(Enum):
     """An enum representing the phase of the hand."""
 
-    PREHAND = auto()
+    PREHAND = _HandPhase(0, "PREFLOP")
     """In this phase, players sit out if requested, players
     rejoin if requested, blinds are moved and posted, and card
     are dealt."""
 
-    PREFLOP = auto()
-    FLOP = auto()
-    TURN = auto()
-    RIVER = auto()
+    PREFLOP = _HandPhase(0, "FLOP")
+    FLOP = _HandPhase(3, "TURN")
+    TURN = _HandPhase(1, "RIVER")
+    RIVER = _HandPhase(1, "SETTLE")
 
-    SETTLE = auto()
+    SETTLE = _HandPhase(0, "PREHAND")
     """In this phase, the pots are settled and the last aggressor
     shows their card, while every player in turn either shows
     or folds their card."""
@@ -30,14 +40,11 @@ class HandPhase(Enum):
         Returns:
             HandPhase: The next HandPhase after this one
         """
-        return _next_phase_dict[self]
+        return HandPhase[self.value.next_phase]
 
-
-_next_phase_dict = {
-    HandPhase.PREHAND: HandPhase.PREFLOP,
-    HandPhase.PREFLOP: HandPhase.FLOP,
-    HandPhase.FLOP: HandPhase.TURN,
-    HandPhase.TURN: HandPhase.RIVER,
-    HandPhase.RIVER: HandPhase.SETTLE,
-    HandPhase.SETTLE: HandPhase.PREHAND
-}
+    def new_cards(self) -> int:
+        """
+        Returns:
+            int: The number of new cards to add to the board
+        """
+        return self.value.new_cards
