@@ -34,9 +34,9 @@ class Player:
     # pylint: disable=too-few-public-methods
     """
     The TexasHoldEm object uses this Player as a bookkeeping mechanism for:
-    - Chip count
-    - PlayerState
-    - Which pots the player is in
+        - Chip count
+        - PlayerState
+        - Which pots the player is in
     """
 
     def __init__(self, player_id, chips):
@@ -186,10 +186,6 @@ class GameState(Enum):
     STOPPED = auto()
     """The table is inactive due to lack of players or lack
     of chips and unable to play hands."""
-
-
-# ceil(log2(52!)) permutations of 52 cards log base 2
-_ENTROPY = 226
 
 
 class TexasHoldEm:
