@@ -1,0 +1,17 @@
+# Nine players, 2/5 blinds
+# Everyone folds, big blind wins
+# Tags: 9 players,2/5,preflop,folds,no contest
+PREHAND
+Big Blind: 5
+Small Blind: 2
+Starting Pot: 0
+Player Chips: 500,500,500,500,500,500,500,500,500
+Player Cards: [Qh Ac],[Jd 3c],[2h Kc],[9c 4h],[Td Kd],[6h As],[3h 3d],[Ks 4d],[9d 5d]
+
+PREFLOP
+New Cards: []
+1. (3,RAISE,15);(4,FOLD);(5,FOLD);(6,FOLD);(7,FOLD);(8,FOLD);(0,FOLD);(1,FOLD);(2,FOLD)
+
+SETTLE
+New Cards: []
+Winners: (Pot 0,22,-1,[3])

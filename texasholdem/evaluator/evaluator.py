@@ -38,59 +38,6 @@ def _five(cards: list[Card]) -> int:
     return LOOKUP_TABLE.unsuited_lookup[prime]
 
 
-def _six(cards: list[Card]) -> int:
-    """
-    Calls `_five()` on all (6 choose 5) combinations of the input.
-    Returns the max.
-
-    Args:
-        cards (list[Card]): A list of 6 card ints.
-    Returns:
-        int: The rank of the hand.
-
-    """
-    minimum = LOOKUP_TABLE.MAX_HIGH_CARD
-
-    all5cardcombobs = itertools.combinations(cards, 5)
-    for combo in all5cardcombobs:
-
-        score = _five(combo)
-        if score < minimum:
-            minimum = score
-
-    return minimum
-
-
-def _seven(cards: list[Card]) -> int:
-    """
-    Calls `_five()` on all (7 choose 5) combinations of the input.
-    Returns the max.
-
-    Args:
-        cards (list[Card]): A list of 7 card ints.
-    Returns:
-        int: The rank of the hand.
-
-    """
-    minimum = LOOKUP_TABLE.MAX_HIGH_CARD
-
-    all5cardcombobs = itertools.combinations(cards, 5)
-    for combo in all5cardcombobs:
-
-        score = _five(combo)
-        if score < minimum:
-            minimum = score
-
-    return minimum
-
-
-_hand_size_map = {
-    5: _five,
-    6: _six,
-    7: _seven
-}
-
-
 def evaluate(cards: list[Card], board: list[Card]) -> int:
     """
     Evaluates hand strengths using a variant of Cactus Kev's algorithm:
@@ -105,10 +52,10 @@ def evaluate(cards: list[Card], board: list[Card]) -> int:
 
     """
     all_cards = cards + board
-    return _hand_size_map[len(all_cards)](all_cards)
+    return min([_five(hand) for hand in itertools.combinations(all_cards, 5)])
 
 
-def _get_rank_class(hand_rank: int) -> int:
+def get_rank_class(hand_rank: int) -> int:
     """
     Returns the class of hand given the hand hand_rank
     returned from evaluate.
@@ -128,7 +75,7 @@ def rank_to_string(hand_rank: int) -> str:
         string: A human-readable string of the hand rank (i.e. Flush, Ace High).
 
     """
-    return LOOKUP_TABLE.RANK_CLASS_TO_STRING[_get_rank_class(hand_rank)]
+    return LOOKUP_TABLE.RANK_CLASS_TO_STRING[get_rank_class(hand_rank)]
 
 
 def get_five_card_rank_percentage(hand_rank: int) -> float:

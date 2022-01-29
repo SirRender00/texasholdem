@@ -1,0 +1,31 @@
+# Three players, 1/2 blinds
+# Everyone calls / checks all the way down to the river
+# On the river, everyone goes all-in
+# 1 winner for the main pot, 2 for side pot 1, 1 for side pot 2
+# Tags: 3 players,1/2,all phases,split pot,side pots,one pair
+PREHAND
+Big Blind: 2
+Small Blind: 1
+Starting Pot: 0
+Player Chips: 100,200,300
+Player Cards: [Qd Ks],[Kd 3c],[2h Kc]
+
+PREFLOP
+New Cards: []
+1. (0,CALL);(1,CALL);(2,CHECK)
+
+FLOP
+New Cards: [9d,7h,8h]
+1. (1,CHECK);(2,CHECK);(0,CHECK)
+
+TURN
+New Cards: [Js]
+1. (1,CHECK);(2,CHECK);(0,CHECK)
+
+RIVER
+New Cards: [Kh]
+1. (1,RAISE,198);(2,RAISE,298);(0,CALL)
+
+SETTLE
+New Cards: []
+Winners: (Pot 0,300,3602,[0]);(Pot 1,200,3654,[1, 2]);(Pot 2,100,-1,[2])

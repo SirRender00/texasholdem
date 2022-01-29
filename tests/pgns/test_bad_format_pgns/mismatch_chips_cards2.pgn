@@ -1,0 +1,21 @@
+# Fold on the flop
+# No contest
+# Tags: No contest,5 players,10/20,flop,folds
+PREHAND
+Big Blind: 20
+Small Blind: 10
+Starting Pot: 0
+Player Chips: 100,100,100,100,100
+Player Cards: [5s Jd],[Td Kc],[9s 5c],[7d Kh]
+
+PREFLOP
+New Cards: []
+1. (3,FOLD);(4,FOLD);(0,FOLD);(1,CALL);(2,CHECK)
+
+FLOP
+New Cards: [Qc,Qs,2c]
+1. (1,RAISE,20);(2,FOLD)
+
+SETTLE
+New Cards: []
+Winners: (Pot 0,60,-1,[1])

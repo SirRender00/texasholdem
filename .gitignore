@@ -1,5 +1,7 @@
 # texas history
 *.pgn
+!tests/pgns/*.pgn
+!tests/pgns/*/*.pgn
 
 # lock files
 *.lock

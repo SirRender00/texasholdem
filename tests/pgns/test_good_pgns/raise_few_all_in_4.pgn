@@ -1,0 +1,28 @@
+# 4 players, 2/5 blinds
+# Goes all-in on the turn, including
+# some raises less than the blind for an all-in
+# All ties
+# Tags: 4 players,2/5,side pots,split pots,one pair,all-in,no contest
+PREHAND
+Big Blind: 5
+Small Blind: 2
+Starting Pot: 0
+Player Chips: 104,50,100,80
+Player Cards: [5d Kc],[Kd 6h],[Ks 2d],[Kh Tc]
+
+PREFLOP
+New Cards: []
+1. (3,CALL);(0,CALL);(1,CALL);(2,CHECK)
+
+FLOP
+New Cards: [Qd,Ac,Ts]
+1. (1,CHECK);(2,CHECK);(3,CHECK);(0,CHECK)
+
+TURN
+New Cards: [Js]
+1. (1,CHECK);(2,CHECK);(3,CHECK);(0,RAISE,43)
+2. (1,RAISE,45);(2,RAISE,95);(3,CALL);(0,RAISE,99)
+
+SETTLE
+New Cards: [Td]
+Winners: (Pot 0,200,1600,[1, 2, 3, 0]);(Pot 1,90,1600,[2, 3, 0]);(Pot 2,40,1600,[2, 0]);(Pot 3,4,-1,[0])

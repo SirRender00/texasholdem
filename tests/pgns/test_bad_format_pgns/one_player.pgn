@@ -1,0 +1,27 @@
+# Only one player
+PREHAND
+Big Blind: 5
+Small Blind: 2
+Starting Pot: 0
+Player Chips: 100
+Player Cards: [Jd 3c]
+
+PREFLOP
+New Cards: []
+1. (0,CHECK)
+
+FLOP
+New Cards: [3s,7d,8h]
+1. (0,CHECK)
+
+TURN
+New Cards: [Qs]
+1. (0,CHECK)
+
+RIVER
+New Cards: [Js]
+1. (0,CHECK)
+
+SETTLE
+New Cards: []
+Winners: (Pot 0,7,2910,[0])

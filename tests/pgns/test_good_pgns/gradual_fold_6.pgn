@@ -1,0 +1,30 @@
+# Six players
+# Buttons + Blinds call preflop
+# Small Blind then raise fold, raise fold
+# Tags: no contest,folds,2/5,all phases,6 players
+PREHAND
+Big Blind: 5
+Small Blind: 2
+Starting Pot: 0
+Player Chips: 500,500,500,500,500,500
+Player Cards: [Ac 9s],[9d 5d],[9c 2d],[Qh Kh],[Ks 4d],[3c 3d]
+
+PREFLOP
+New Cards: []
+1. (3,FOLD);(4,FOLD);(5,FOLD);(0,CALL);(1,CALL);(2,CHECK)
+
+FLOP
+New Cards: [Jd,6d,Th]
+1. (1,RAISE,6);(2,FOLD);(0,CALL)
+
+TURN
+New Cards: [3s]
+1. (1,RAISE,9);(0,CALL)
+
+RIVER
+New Cards: [7d]
+1. (1,RAISE,43);(0,FOLD)
+
+SETTLE
+New Cards: []
+Winners: (Pot 0,88,-1,[1])
