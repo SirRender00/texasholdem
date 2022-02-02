@@ -104,5 +104,8 @@ def test_file_naming(tmpdir, call_player):
     with open(new_history, 'r') as f:
         history_string = f.read()
 
+    last_history = ""
     for state in TexasHoldEm.import_history(new_history):
-        assert history_string.strip().startswith(state.hand_history.to_string().strip())
+        last_history = state.hand_history.to_string()
+        assert history_string.strip().startswith(last_history.strip())
+    assert last_history.strip() == history_string.strip()
