@@ -920,3 +920,4 @@ class TexasHoldEm:
         while game.is_hand_running():
             yield game
             game.take_action(*player_actions[game.current_player].pop(0))
+        yield game
