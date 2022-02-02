@@ -166,9 +166,11 @@ class BettingRoundHistory:
             new_cards = []
 
         action_str = ""
-        for action_line in data:
+        for i, action_line in enumerate(data, 1):
             _, action_line = action_line.split(". ")
             action_str += action_line
+            if i != len(data):
+                action_str += ';'
 
         actions = [PlayerAction.from_string(string) for string in action_str.split(";")]
 
