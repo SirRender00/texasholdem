@@ -900,11 +900,12 @@ class TexasHoldEm:
                           history.turn,
                           history.flop,
                           history.preflop):
-            deck.cards = bet_round.new_cards + deck.cards
-            for action in reversed(bet_round.actions):
-                if action.player_id not in player_actions:
-                    player_actions[action.player_id] = []
-                player_actions[action.player_id].insert(0, (action.action_type, action.value))
+            if bet_round:
+                deck.cards = bet_round.new_cards + deck.cards
+                for action in reversed(bet_round.actions):
+                    if action.player_id not in player_actions:
+                        player_actions[action.player_id] = []
+                    player_actions[action.player_id].insert(0, (action.action_type, action.value))
 
         # start hand (deck will deal)
         game.start_hand()
