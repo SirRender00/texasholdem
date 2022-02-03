@@ -65,7 +65,7 @@ class PrehandHistory:
 
         _, cards_str = cards_str.split(': ')
         cards_data = cards_str.split(',')
-        cards_data = [card_data.strip('[').strip(']').split(' ') for card_data in cards_data]
+        cards_data = [card_data.strip('[]').split(' ') for card_data in cards_data]
         player_cards = [[Card(c1), Card(c2)] for c1, c2 in cards_data]
 
         return PrehandHistory(0,
@@ -107,7 +107,7 @@ class PlayerAction:
         Returns:
             PlayerAction: The player action as represented by the string
         """
-        string = string.strip().strip("(").strip(")")
+        string = string.strip().strip('()')
         data = string.split(",")
         player_id, action_type = int(data[0]), ActionType[data[1]]
         value = None if len(data) <= 2 else int(data[2])
@@ -195,7 +195,8 @@ class SettleHistory:
         """
         pot_lists = []
         for pot_id, (amount, best_rank, winners_list) in self.pot_winners.items():
-            pot_lists.append((pot_id, amount, best_rank, [canon_ids[winner] for winner in winners_list]))
+            pot_lists.append((pot_id, amount, best_rank, [canon_ids[winner]
+                                                          for winner in winners_list]))
         pot_strs = [f'(Pot {pot_id},{amount},{best_rank},{str(winners_list)})'
                     for pot_id, amount, best_rank, winners_list in pot_lists]
         return f"New Cards: [{','.join(str(card) for card in self.new_cards)}]\n" \
@@ -221,10 +222,16 @@ class SettleHistory:
             new_cards = []
 
         _, winners_str = winners_str.split(': ')
-        pot_winners_data = [winner_str.strip('(').strip(')').split(',')
+        pot_winners_data = [winner_str.strip('()')
+                            .replace(' ', '')
+                            .replace('[', '')
+                            .replace(']', '')
+                            .split(',')
                             for winner_str in winners_str.split(';')]
-        pot_winners_data = [(data[0], data[1], data[2], ','.join(data[3:])) for data in pot_winners_data]
-        pot_winners = {int(pot_name[(pot_name.find('Pot ') + 4):]): (int(amount), int(best_rank), eval(winners_list))
+        pot_winners_data = [(data[0], data[1], data[2], data[3:])
+                            for data in pot_winners_data]
+        pot_winners = {int(pot_name[(pot_name.find('Pot') + 3):]):
+                       (int(amount), int(best_rank), [int(winner) for winner in winners_list])
                        for pot_name, amount, best_rank, winners_list in pot_winners_data}
         return SettleHistory(new_cards, pot_winners)
 
