@@ -10,11 +10,9 @@ The game module includes lightweight data classes:
 
 It also includes the main TexasHoldEm class of the texasholdem package.
 """
-
 from __future__ import annotations
 
 import os
-from pathlib import Path
 from typing import Iterator, Callable, Dict, Tuple, Optional, Union, List
 from enum import Enum, auto
 import random
@@ -23,7 +21,7 @@ from texasholdem.card.card import Card
 from texasholdem.card.deck import Deck
 from texasholdem.game.history import (History, PrehandHistory,
                                       BettingRoundHistory, PlayerAction,
-                                      SettleHistory, FILE_EXTENSION)
+                                      SettleHistory)
 from texasholdem.game.action_type import ActionType
 from texasholdem.game.hand_phase import HandPhase
 from texasholdem.game.player_state import PlayerState
@@ -497,18 +495,18 @@ class TexasHoldEm:
 
         settle_history = SettleHistory(
             new_cards=[],
-            winners={}
+            pot_winners={}
         )
         self.hand_history[HandPhase.SETTLE] = settle_history
 
         self.current_player = next(self.active_iter(loc=self.btn_loc + 1))
 
-        for pot in self.pots:
+        for i, pot in enumerate(self.pots, 0):
             players_in_pot = list(pot.players_in_pot())
             # only player left in pot wins
             if len(players_in_pot) == 1:
                 self.players[players_in_pot[0]].chips += pot.get_total_amount()
-                settle_history.winners[players_in_pot[0]] = (-1, pot.get_total_amount())
+                settle_history.pot_winners[i] = (pot.get_total_amount(), -1, players_in_pot)
                 continue
 
             # make sure there is 5 cards on the board
@@ -526,10 +524,11 @@ class TexasHoldEm:
                        for player_id, player_rank in player_ranks.items()
                        if player_rank == best_rank]
 
+            settle_history.pot_winners[i] = (pot.get_total_amount(), best_rank, winners)
+
             win_amount = (pot.get_total_amount()) / len(winners)
             win_amount = round(win_amount)
             for player_id in winners:
-                settle_history.winners[player_id] = (best_rank, win_amount)
                 self.players[player_id].chips += win_amount
 
     def chips_to_call(self, player_id: int) -> int:
@@ -836,26 +835,7 @@ class TexasHoldEm:
         Returns:
             os.PathLike: The path to the history file
         """
-        path_or_dir = Path(path)
-        hist_path = path_or_dir
-
-        if not hist_path.suffixes:
-            hist_path.mkdir(parents=True, exist_ok=True)
-            hist_path = hist_path / f"texas.{FILE_EXTENSION}"
-
-        if f".{FILE_EXTENSION}" not in hist_path.suffixes:
-            hist_path = hist_path.parent / f"{hist_path.name}.{FILE_EXTENSION}"
-
-        # resolve lowest file_num
-        num = 1
-        while hist_path.exists():
-            hist_path = hist_path.parent / f"{hist_path.stem}({num}).{FILE_EXTENSION}"
-            num += 1
-
-        with open(hist_path, mode="w+", encoding="ascii") as file:
-            file.write(self.hand_history.to_string())
-
-        return hist_path.absolute()
+        return self.hand_history.export_history(path)
 
     @staticmethod
     def import_history(path: Union[str, os.PathLike]) -> Iterator[TexasHoldEm]:
@@ -869,14 +849,7 @@ class TexasHoldEm:
             ValueError: If the file given does not exist
         """
         # pylint: disable=protected-access
-        path = Path(path)
-        if not path.exists():
-            raise ValueError(f'File not found: {path.absolute()}')
-
-        # reconstitute history
-        with open(path, mode='r', encoding='ascii') as file:
-            history = History.from_string(file.read())
-
+        history = History.import_history(path)
         num_players = len(history.prehand.player_chips)
         game = TexasHoldEm(buyin=1,
                            big_blind=history.prehand.big_blind,

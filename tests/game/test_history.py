@@ -91,6 +91,10 @@ def test_file_naming(tmpdir, call_player):
     h2 = texas.export_history(history)
     assert history / "texas(1).pgn" == h2
 
+    # write again to file no collisions
+    h3 = texas.export_history(history)
+    assert history / "texas(2).pgn" == h3
+
     # different game
     texas.start_hand()
     while texas.is_hand_running():
