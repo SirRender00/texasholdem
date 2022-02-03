@@ -6,10 +6,11 @@ Texas Hold Em Notation Conventions:
     - The button is assigned ID 0
 
 """
-
 from __future__ import annotations
-from typing import Optional, Tuple, Union
+from typing import Optional, Union, Tuple
 from dataclasses import dataclass
+from pathlib import Path
+import os
 
 from texasholdem.game.action_type import ActionType
 from texasholdem.card.card import Card
@@ -180,9 +181,9 @@ class BettingRoundHistory:
 @dataclass()
 class SettleHistory:
     """Settle history class, includes new cards and
-    a dictionary of winners: player_id -> (rank, amount won)"""
+    a dictionary of pot_winners: pot_id -> (amount, best_rank, list of winning players)"""
     new_cards: list[Card]
-    winners: dict[int, Tuple[int, int]]
+    pot_winners: dict[int, Tuple[int, int, list[int]]]
 
     def to_string(self, canon_ids: dict[int, int]) -> str:
         """
@@ -190,12 +191,15 @@ class SettleHistory:
             canon_ids (dict[int, int]): Map of old_id -> new_id where the new btn_loc is 0
         Returns:
             str: The string representation of the settle history: new cards revealed,
-                winners (id, hand rank, amount)
+                and the winners per pot: (pot_id, total_amount, best_rank, winners list)
         """
-        winner_strs = [f'{canon_ids[winner], rank, amount}'
-                       for winner, (rank, amount) in self.winners.items()]
+        pot_lists = []
+        for pot_id, (amount, best_rank, winners_list) in self.pot_winners.items():
+            pot_lists.append((pot_id, amount, best_rank, [canon_ids[winner] for winner in winners_list]))
+        pot_strs = [f'(Pot {pot_id},{amount},{best_rank},{str(winners_list)})'
+                    for pot_id, amount, best_rank, winners_list in pot_lists]
         return f"New Cards: [{','.join(str(card) for card in self.new_cards)}]\n" \
-               f"Winners: {';'.join(winner_strs)}"
+               f"Winners: {';'.join(pot_strs)}"
 
     @staticmethod
     def from_string(string: str) -> SettleHistory:
@@ -217,10 +221,12 @@ class SettleHistory:
             new_cards = []
 
         _, winners_str = winners_str.split(': ')
-        winners_data = [winner_str.strip('(').strip(')').split(',')
-                        for winner_str in winners_str.split(';')]
-        winners = {int(i): (int(rank), int(amount)) for i, rank, amount in winners_data}
-        return SettleHistory(new_cards, winners)
+        pot_winners_data = [winner_str.strip('(').strip(')').split(',')
+                            for winner_str in winners_str.split(';')]
+        pot_winners_data = [(data[0], data[1], data[2], ','.join(data[3:])) for data in pot_winners_data]
+        pot_winners = {int(pot_name[(pot_name.find('Pot ') + 4):]): (int(amount), int(best_rank), eval(winners_list))
+                       for pot_name, amount, best_rank, winners_list in pot_winners_data}
+        return SettleHistory(new_cards, pot_winners)
 
 
 @dataclass()
@@ -300,6 +306,58 @@ class History:
             history[HandPhase[header]] = history_item
 
         return history
+
+    def export_history(self, path: Union[str, os.PathLike] = "./texas.pgn") -> os.PathLike:
+        """
+        Exports the hand history to a human-readable file. If a directory is given,
+        finds a name of the form texas(n).pgn to export to.
+
+        Arguments:
+            path (Union[str, os.PathLike]): The directory or file to export the history to,
+                defaults to the current working directory (./texas.pgn)
+        Returns:
+            os.PathLike: The path to the history file
+        """
+        path_or_dir = Path(path)
+        hist_path = path_or_dir
+
+        if not hist_path.suffixes:
+            hist_path.mkdir(parents=True, exist_ok=True)
+            hist_path = hist_path / f"texas.{FILE_EXTENSION}"
+
+        if f".{FILE_EXTENSION}" not in hist_path.suffixes:
+            hist_path = hist_path.parent / f"{hist_path.name}.{FILE_EXTENSION}"
+
+        # resolve lowest file_num
+        original_path = hist_path
+        num = 1
+        while hist_path.exists():
+            hist_path = original_path.parent / f"{original_path.stem}({num}).{FILE_EXTENSION}"
+            num += 1
+
+        with open(hist_path, mode="w+", encoding="ascii") as file:
+            file.write(self.to_string())
+
+        return hist_path.absolute()
+
+    @staticmethod
+    def import_history(path: Union[str, os.PathLike]) -> History:
+        """
+        Arguments:
+            path (Union[str, os.PathLike]): The PGN file to import from
+        Returns:
+            History: The history class from the file
+        Raises:
+            ValueError: If the file given does not exist
+        """
+        # pylint: disable=protected-access
+        path = Path(path)
+        if not path.exists():
+            raise ValueError(f'File not found: {path.absolute()}')
+
+        # reconstitute history
+        with open(path, mode='r', encoding='ascii') as file:
+            return History.from_string(file.read())
 
     def __setitem__(self, hand_phase: HandPhase,
                     history: Union[PrehandHistory, BettingRoundHistory, SettleHistory]) -> None:
