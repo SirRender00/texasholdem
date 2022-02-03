@@ -170,7 +170,7 @@ class Pot:
             if self.get_player_amount(player_id) > self.raised:
                 overflow = self.get_player_amount(player_id) - self.raised
                 split_pot.player_post(player_id, overflow)
-                self.player_amounts[player_id] -= -overflow
+                self.player_amounts[player_id] -= overflow
 
         return split_pot
 
