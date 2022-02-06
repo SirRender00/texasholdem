@@ -152,17 +152,14 @@ class Pot:
         excess to the new pot.
 
         Arguments:
-            raised_level (int)      - The chip count to cut off at
+            raised_level (int): The chip count to cut off at
         Returns:
-            (Optional[Pot])         - The new pot or None if self.raised <= raised_level
+            Optional[Pot]: The new pot or None if self.raised <= raised_level
         """
-        split_pot = Pot()
-
         if self.raised <= raised_level:
             return None
 
-        # Overflow goes to split pot
-        split_pot.raised = self.raised - raised_level
+        split_pot = Pot()
         self.raised = raised_level
 
         for player_id in self.players_in_pot():
@@ -387,7 +384,6 @@ class TexasHoldEm:
 
         self.pots.insert(pot_id + 1, split_pot)
 
-        # increment last_pot for players with enough chips
         for player_id in self.in_pot_iter():
             if self.players[player_id].chips >= self.chips_to_call(player_id):
                 self.players[player_id].last_pot += 1
@@ -539,7 +535,8 @@ class TexasHoldEm:
             int: The amount of chips the player needs to call in all pots
                 to play the hand.
         """
-        return sum(self._get_pot(i).chips_to_call(player_id) for i in range(len(self.pots)))
+        return sum(self._get_pot(i).chips_to_call(player_id)
+                   for i in range(self.players[player_id].last_pot + 1))
 
     def player_bet_amount(self, player_id: int) -> int:
         """
