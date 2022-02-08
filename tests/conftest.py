@@ -43,6 +43,6 @@ def strip_comments(history_path: Union[str, os.PathLike]) -> str:
             if comment_index == -1:
                 new_lines.append(line)
             elif comment_index != 0:
-                new_lines.append(line[:comment_index])
+                new_lines.append(line[:comment_index].strip())
 
         return '\n'.join(new_lines)

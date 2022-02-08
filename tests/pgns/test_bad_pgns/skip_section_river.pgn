@@ -1,7 +1,4 @@
-# Six players, 2/5 blinds
-# Everyone calls / checks all the way down
-# One winner with a two pair
-# Tags: 6 players,2/5,all phases,two pair
+# No River section when there should be, i.e. no one takes a turn
 PREHAND
 Big Blind: 5
 Small Blind: 2

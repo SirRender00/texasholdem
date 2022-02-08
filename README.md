@@ -115,3 +115,4 @@ gui = TextGUI()
 for state in TexasHoldEm.import_history("./pgns/my_game.pgn"):
     gui.print_state(state)
 ```
+PGN files also support single line and end of line comments starting with "#".

@@ -27,5 +27,5 @@ New Cards: [Js]
 
 # 2910 = Two pair (J, 3, Q)
 SETTLE
-New Cards: []
-Winners: (Pot 0,30,2910,[1])
+New Cards: []                               # No new cards, already 5
+Winners: (Pot 0,30,2910,[1])                # Only one winner

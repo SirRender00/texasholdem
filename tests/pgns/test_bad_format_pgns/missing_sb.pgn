@@ -1,8 +1,4 @@
-# 4 players, 2/5 blinds
-# Goes all-in on the turn, including
-# some raises less than the blind for an all-in
-# All ties
-# Tags: 4 players,2/5,side pots,split pots,one pair,all-in,no contest
+# Missing small blind info
 PREHAND
 Small Blind: 2
 Starting Pot: 0

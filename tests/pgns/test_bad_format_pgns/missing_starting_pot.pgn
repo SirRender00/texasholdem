@@ -1,8 +1,4 @@
-# Three players, 1/2 blinds
-# Everyone calls / checks all the way down to the river
-# On the river, everyone goes all-in
-# 1 winner for the main pot, 2 for side pot 1, 1 for side pot 2
-# Tags: 3 players,1/2,all phases,split pot,side pots,one pair
+# Missing starting pot info
 PREHAND
 Big Blind: 2
 Small Blind: 1
