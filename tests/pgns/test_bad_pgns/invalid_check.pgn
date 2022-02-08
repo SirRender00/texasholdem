@@ -1,0 +1,27 @@
+# Check when a player has to call
+PREHAND
+Big Blind: 5
+Small Blind: 2
+Starting Pot: 0
+Player Chips: 500,500,500,500,500,500
+Player Cards: [Qh Ac],[Jd 3c],[2h Kc],[9c 4h],[Td Kd],[6h As]
+
+PREFLOP
+New Cards: []
+1. (3,CALL);(4,CALL);(5,CALL);(0,CALL);(1,CHECK);(2,CHECK)
+
+FLOP
+New Cards: [3s,7h,8h]
+1. (1,CHECK);(2,CHECK);(3,CHECK);(4,CHECK);(5,CHECK);(0,CHECK)
+
+TURN
+New Cards: [Qs]
+1. (1,CHECK);(2,CHECK);(3,CHECK);(4,CHECK);(5,CHECK);(0,CHECK)
+
+RIVER
+New Cards: [Js]
+1. (1,CHECK);(2,CHECK);(3,CHECK);(4,CHECK);(5,CHECK);(0,CHECK)
+
+SETTLE
+New Cards: []
+Winners: (Pot 0,30,2910,[1])

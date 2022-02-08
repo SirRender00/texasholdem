@@ -1,0 +1,18 @@
+# Two players, 2/5 blinds
+# Short-stack goes all-in, big-stack goes all-in preflop
+# Big-stack wins
+# Tags: 2 players,2/5,side pots,full house
+PREHAND
+Big Blind: 5
+Small Blind: 2
+Starting Pot: 0
+Player Chips: 100,900
+Player Cards: [Jc 7h],[3h 8d]
+
+PREFLOP
+New Cards: []
+1. (0,RAISE,100);(1,RAISE,900)
+
+SETTLE
+New Cards: [3s,7d,8h,8s,Js]
+Winners: (Pot 0,200,249,[1]);(Pot 1,800,-1,[1])

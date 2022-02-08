@@ -27,6 +27,7 @@ class PrehandHistory:
     btn_loc: int
     big_blind: int
     small_blind: int
+    starting_pot: int
     player_chips: dict[int, int]
     player_cards: dict[int, list[Card]]
 
@@ -41,6 +42,7 @@ class PrehandHistory:
 
         return f"Big Blind: {self.big_blind}\n" \
                f"Small Blind: {self.small_blind}\n" \
+               f"Starting Pot: {self.starting_pot}\n" \
                f"Player Chips: {','.join(str(self.player_chips[i]) for i in canon_ids)}\n" \
                f"Player Cards: " \
                f"{','.join(['[' + ' '.join(str_player_cards[i]) + ']' for i in canon_ids])}"
@@ -54,10 +56,13 @@ class PrehandHistory:
             string (str): The string as returned from to_string()
         Returns:
             PrehandHistory: The prehand history as represented by the string
+        Raises:
+            ValueError: If missing information or a mismatch between cards and chips
         """
-        big_blind, small_blind, chips_str, cards_str = string.split('\n')
+        big_blind, small_blind, starting_pot, chips_str, cards_str = string.split('\n')
         _, big_blind = big_blind.split(': ')
         _, small_blind = small_blind.split(': ')
+        _, starting_pot = starting_pot.split(': ')
 
         _, chips_str = chips_str.split(': ')
         player_chips = [int(chip_str) for chip_str in chips_str.split(',')]
@@ -68,9 +73,14 @@ class PrehandHistory:
         cards_data = [card_data.strip('[]').split(' ') for card_data in cards_data]
         player_cards = [[Card(c1), Card(c2)] for c1, c2 in cards_data]
 
+        if len(player_chips) != len(player_cards):
+            raise ValueError(f"Mismatch number of player chips ({len(player_chips)}) "
+                             f"and player cards ({len(player_cards)})")
+
         return PrehandHistory(0,
                               int(big_blind),
                               int(small_blind),
+                              int(starting_pot),
                               dict(zip(range(num_players), player_chips)),
                               dict(zip(range(num_players), player_cards)))
 
@@ -282,6 +292,25 @@ class History:
         return string
 
     @staticmethod
+    def _strip_comments(string: str) -> str:
+        """
+        Arguments:
+            string (str): A history string
+        Returns:
+            str: The history string without comments.
+        """
+        new_lines = []
+        for line in string.split('\n'):
+            comment_index = line.find('#')
+
+            if comment_index == -1:
+                new_lines.append(line)
+            elif comment_index != 0:
+                new_lines.append(line[:comment_index].strip())
+
+        return '\n'.join(new_lines)
+
+    @staticmethod
     def from_string(string: str) -> History:
         """
         Reverse of to_string()
@@ -292,7 +321,8 @@ class History:
             History: The hand history as represented by the string
         """
         history = History()
-        sections = string.split('\n\n')
+        sections = History._strip_comments(string).split('\n\n')
+
         for section in sections:
             newline = section.find('\n')
             header, rest = section[:newline], section[(newline+1):]
@@ -355,7 +385,7 @@ class History:
         Returns:
             History: The history class from the file
         Raises:
-            ValueError: If the file given does not exist
+            ValueError: If the file given does not exist or is improperly formatted.
         """
         # pylint: disable=protected-access
         path = Path(path)
@@ -364,7 +394,76 @@ class History:
 
         # reconstitute history
         with open(path, mode='r', encoding='ascii') as file:
-            return History.from_string(file.read())
+            history = History.from_string(file.read())
+
+        # run checks
+        history._check_missing_sections()
+        history._check_unique_cards()
+        history._check_correct_board_len()
+
+        if len(history.prehand.player_chips) <= 1:
+            raise ValueError(f"Expected at least 2 players in this game, "
+                             f"got {len(history.prehand.player_chips)}")
+
+        return history
+
+    def _check_missing_sections(self):
+        """
+        Raises:
+            ValueError: If there is a section missing
+        """
+        if not self.preflop:
+            raise ValueError("Preflop section is missing")
+        if not self.settle:
+            raise ValueError("Settle section is missing")
+
+        for hand_phase in (HandPhase.PREFLOP,
+                           HandPhase.FLOP,
+                           HandPhase.TURN):
+            if self[hand_phase.next_phase()] and not self[hand_phase]:
+                raise ValueError(f"Found a section for {hand_phase.next_phase().name} "
+                                 f"but not a section for {hand_phase.name}")
+
+    def _check_unique_cards(self):
+        """
+        Raises:
+            ValueError: If the cards in the history are not unique
+        """
+        cards = sum(self.prehand.player_cards.values(), [])
+        for hand_phase in (HandPhase.PREFLOP,
+                           HandPhase.FLOP,
+                           HandPhase.TURN,
+                           HandPhase.RIVER):
+            history_item = self[hand_phase]
+            if history_item:
+                cards += history_item.new_cards
+
+        if len(cards) != len(set(cards)):
+            raise ValueError("Expected cards given in history to be unique.")
+
+    def _check_correct_board_len(self):
+        """
+        Raises:
+            ValueError: If the cards do not come out in the proper amount
+        """
+        total_board_len = 0
+        for hand_phase in (HandPhase.PREFLOP,
+                           HandPhase.FLOP,
+                           HandPhase.TURN,
+                           HandPhase.RIVER):
+            history_item = self[hand_phase]
+            if history_item:
+                if len(history_item.new_cards) != hand_phase.new_cards():
+                    raise ValueError(f"Expected {hand_phase.new_cards()} "
+                                     f"new cards in phase {hand_phase.name}")
+                total_board_len += len(history_item.new_cards)
+
+        # settle
+        for _, (_, rank, _) in self.settle.pot_winners.items():
+            if rank != -1:
+                if len(self.settle.new_cards) != 5 - total_board_len:
+                    raise ValueError(f"Expected {5 - total_board_len} "
+                                     f"to come out during settle phase")
 
     def __setitem__(self, hand_phase: HandPhase,
                     history: Union[PrehandHistory, BettingRoundHistory, SettleHistory]) -> None:
