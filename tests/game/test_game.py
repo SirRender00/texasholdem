@@ -21,6 +21,7 @@ import random
 
 import pytest
 
+from texasholdem.game.history import HistoryImportError
 from texasholdem.game.game import TexasHoldEm
 from texasholdem.game.hand_phase import HandPhase
 from texasholdem.game.player_state import PlayerState
@@ -283,6 +284,6 @@ def test_bad_game_history(pgn):
     """
     Runs the given history and ensures it errors.
     """
-    with pytest.raises(Exception):
+    with pytest.raises((ValueError, HistoryImportError)):
         for _ in TexasHoldEm.import_history(pgn):
             pass

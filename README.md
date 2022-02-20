@@ -1,7 +1,7 @@
 # texasholdem
 A python package for Texas Hold 'Em Poker.
 
-[Current Release Version v0.4.2](https://github.com/SirRender00/texasholdem/releases/tag/v0.4.2)
+[Current Release Version v0.4.3](https://github.com/SirRender00/texasholdem/releases/tag/v0.4.3)
 
 [v1.0.0 Roadmap](https://github.com/SirRender00/texasholdem/wiki/Version-1.0.0-Roadmap)
 
@@ -17,8 +17,7 @@ pip install texasholdem
 ## Quickstart Guide
 Playing a game from the command line is as simple as the following:
 ```python
-from texasholdem import TexasHoldEm
-from texasholdem.gui.text_gui import TextGUI
+from texasholdem import TexasHoldEm, TextGUI
 
 game = TexasHoldEm(buyin=500,
                    big_blind=5,
@@ -67,7 +66,7 @@ evaluations. For more information about the representation, see the `Card`
 module.
 
 ```python
-from texasholdem.card import Card
+from texasholdem import Card
 
 card = Card("Kd")                       # King of Diamonds
 assert isinstance(card, int)            # True
@@ -83,8 +82,7 @@ The evaluator module returns the rank of the best 5-card hand from a list of 5 t
 The rank is a number from 1 (strongest) to 7462 (weakest). This determines the winner in the `TexasHoldEm` module:
 
 ```python
-from texasholdem.card import Card
-from texasholdem.evaluator import evaluate, rank_to_string
+from texasholdem import Card, evaluate, rank_to_string
 
 assert evaluate(cards=[Card("Kd"), Card("5d")],
                 board=[Card("Qd"), 
@@ -98,8 +96,7 @@ assert rank_to_string(927) == "Flush, King High"
 ## History Module
 Export and import the history of hands:
 ```python
-from texasholdem.game.game import TexasHoldEm
-from texasholdem.gui.text_gui import TextGUI
+from texasholdem import TexasHoldEm, TextGUI
 
 game = TexasHoldEm(buyin=500, big_blind=5, small_blind=2)
 game.start_hand()
