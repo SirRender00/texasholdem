@@ -12,6 +12,7 @@ import glob
 
 import pytest
 
+from texasholdem.game.history import HistoryImportError
 from texasholdem.game.action_type import ActionType
 from texasholdem.game.hand_phase import HandPhase
 from texasholdem.game.game import TexasHoldEm
@@ -141,5 +142,5 @@ def test_bad_format_history(pgn):
     """
     Tries to import the given bad format files and ensures it errors.
     """
-    with pytest.raises(Exception):
+    with pytest.raises(HistoryImportError):
         TexasHoldEm.import_history(pgn)

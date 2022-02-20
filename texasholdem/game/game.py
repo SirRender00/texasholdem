@@ -21,7 +21,7 @@ from texasholdem.card.card import Card
 from texasholdem.card.deck import Deck
 from texasholdem.game.history import (History, PrehandHistory,
                                       BettingRoundHistory, PlayerAction,
-                                      SettleHistory)
+                                      HistoryImportError, SettleHistory)
 from texasholdem.game.action_type import ActionType
 from texasholdem.game.hand_phase import HandPhase
 from texasholdem.game.player_state import PlayerState
@@ -679,7 +679,7 @@ class TexasHoldEm:
             raise ValueError("Not valid betting round!")
 
         if hand_phase != self.hand_phase:
-            raise ValueError(f"Hand phase mismatch: expected {self.hand_phase}")
+            raise ValueError(f"Hand phase mismatch: expected {self.hand_phase}, got {hand_phase}")
 
         # add new cards to the board
         new_cards = self._deck.draw(num=hand_phase.new_cards())
@@ -850,7 +850,7 @@ class TexasHoldEm:
             Iterator[TexasHoldEm]: An iterator over game states such that
                 the next hand will play exactly like from the history.
         Raises:
-            ValueError: If the file given does not exist or if the file is invalid
+            HistoryImportError: If the file given does not exist or if the file is invalid
         """
         return TexasHoldEm._import_history(History.import_history(path))
 
@@ -862,6 +862,8 @@ class TexasHoldEm:
         Returns:
             Iterator[TexasHoldEm]: An iterator over game states such that
                 the next hand will play exactly like from the history.
+        Raises:
+            HistoryImportError: If there was an error running the history.
         """
         # pylint: disable=protected-access
         num_players = len(history.prehand.player_chips)
@@ -905,9 +907,16 @@ class TexasHoldEm:
 
         while game.is_hand_running():
             yield game
-            player_id, action, value = player_actions.pop(0)
+
+            try:
+                player_id, action, value = player_actions.pop(0)
+            except IndexError as err:
+                raise HistoryImportError("Expected more actions than "
+                                         "given in the history file.") from err
+
             if player_id != game.current_player:
-                raise ValueError(f"Error replaying history: action player {player_id} "
-                                 f"is not current player {game.current_player}")
+                raise HistoryImportError(f"Error replaying history: action player {player_id} "
+                                         f"is not current player {game.current_player}")
+
             game.take_action(action, value)
         yield game
