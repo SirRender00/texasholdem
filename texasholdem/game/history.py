@@ -20,6 +20,13 @@ from texasholdem.game.hand_phase import HandPhase
 FILE_EXTENSION = 'pgn'
 
 
+class HistoryImportError(Exception):
+    """
+    History module will throw this error if it cannot import the given
+    PGN file.
+    """
+
+
 @dataclass()
 class PrehandHistory:
     """Prehand history class, button location, and
@@ -57,7 +64,7 @@ class PrehandHistory:
         Returns:
             PrehandHistory: The prehand history as represented by the string
         Raises:
-            ValueError: If missing information or a mismatch between cards and chips
+            HistoryImportError: If missing information or a mismatch between cards and chips
         """
         big_blind, small_blind, starting_pot, chips_str, cards_str = string.split('\n')
         _, big_blind = big_blind.split(': ')
@@ -74,8 +81,8 @@ class PrehandHistory:
         player_cards = [[Card(c1), Card(c2)] for c1, c2 in cards_data]
 
         if len(player_chips) != len(player_cards):
-            raise ValueError(f"Mismatch number of player chips ({len(player_chips)}) "
-                             f"and player cards ({len(player_cards)})")
+            raise HistoryImportError(f"Mismatch number of player chips ({len(player_chips)}) "
+                                     f"and player cards ({len(player_cards)})")
 
         return PrehandHistory(0,
                               int(big_blind),
@@ -319,6 +326,8 @@ class History:
             string (str): The string as returned from to_string()
         Returns:
             History: The hand history as represented by the string
+        Raises:
+            HistoryImportError: If the PGN file is invalid
         """
         history = History()
         sections = History._strip_comments(string).split('\n\n')
@@ -337,7 +346,7 @@ class History:
                 # remove trailing newline for end of line
                 history_item, rest = SettleHistory, rest[:-1]
             else:
-                raise ValueError(f"Unexpected header in history: '{header}'")
+                raise HistoryImportError(f"Unexpected header in history: '{header}'")
 
             history_item = history_item.from_string(rest)
             history[HandPhase[header]] = history_item
@@ -375,7 +384,7 @@ class History:
         with open(hist_path, mode="w+", encoding="ascii") as file:
             file.write(self.to_string())
 
-        return hist_path.absolute()
+        return hist_path.absolute().resolve()
 
     @staticmethod
     def import_history(path: Union[str, os.PathLike]) -> History:
@@ -385,16 +394,19 @@ class History:
         Returns:
             History: The history class from the file
         Raises:
-            ValueError: If the file given does not exist or is improperly formatted.
+            HistoryImportError: If the file given does not exist or is improperly formatted.
         """
         # pylint: disable=protected-access
         path = Path(path)
         if not path.exists():
-            raise ValueError(f'File not found: {path.absolute()}')
+            raise HistoryImportError(f'File not found: {path.absolute()}')
 
         # reconstitute history
         with open(path, mode='r', encoding='ascii') as file:
-            history = History.from_string(file.read())
+            try:
+                history = History.from_string(file.read())
+            except ValueError as err:
+                raise HistoryImportError() from err
 
         # run checks
         history._check_missing_sections()
@@ -402,32 +414,32 @@ class History:
         history._check_correct_board_len()
 
         if len(history.prehand.player_chips) <= 1:
-            raise ValueError(f"Expected at least 2 players in this game, "
-                             f"got {len(history.prehand.player_chips)}")
+            raise HistoryImportError(f"Expected at least 2 players in this game, "
+                                     f"got {len(history.prehand.player_chips)}")
 
         return history
 
     def _check_missing_sections(self):
         """
         Raises:
-            ValueError: If there is a section missing
+            HistoryImportError: If there is a section missing
         """
         if not self.preflop:
-            raise ValueError("Preflop section is missing")
+            raise HistoryImportError("Preflop section is missing")
         if not self.settle:
-            raise ValueError("Settle section is missing")
+            raise HistoryImportError("Settle section is missing")
 
         for hand_phase in (HandPhase.PREFLOP,
                            HandPhase.FLOP,
                            HandPhase.TURN):
             if self[hand_phase.next_phase()] and not self[hand_phase]:
-                raise ValueError(f"Found a section for {hand_phase.next_phase().name} "
-                                 f"but not a section for {hand_phase.name}")
+                raise HistoryImportError(f"Found a section for {hand_phase.next_phase().name} "
+                                         f"but not a section for {hand_phase.name}")
 
     def _check_unique_cards(self):
         """
         Raises:
-            ValueError: If the cards in the history are not unique
+            HistoryImportError: If the cards in the history are not unique
         """
         cards = sum(self.prehand.player_cards.values(), [])
         for hand_phase in (HandPhase.PREFLOP,
@@ -439,12 +451,12 @@ class History:
                 cards += history_item.new_cards
 
         if len(cards) != len(set(cards)):
-            raise ValueError("Expected cards given in history to be unique.")
+            raise HistoryImportError("Expected cards given in history to be unique.")
 
     def _check_correct_board_len(self):
         """
         Raises:
-            ValueError: If the cards do not come out in the proper amount
+            HistoryImportError: If the cards do not come out in the proper amount
         """
         total_board_len = 0
         for hand_phase in (HandPhase.PREFLOP,
@@ -454,16 +466,16 @@ class History:
             history_item = self[hand_phase]
             if history_item:
                 if len(history_item.new_cards) != hand_phase.new_cards():
-                    raise ValueError(f"Expected {hand_phase.new_cards()} "
-                                     f"new cards in phase {hand_phase.name}")
+                    raise HistoryImportError(f"Expected {hand_phase.new_cards()} "
+                                             f"new cards in phase {hand_phase.name}")
                 total_board_len += len(history_item.new_cards)
 
         # settle
         for _, (_, rank, _) in self.settle.pot_winners.items():
             if rank != -1:
                 if len(self.settle.new_cards) != 5 - total_board_len:
-                    raise ValueError(f"Expected {5 - total_board_len} "
-                                     f"to come out during settle phase")
+                    raise HistoryImportError(f"Expected {5 - total_board_len} "
+                                             f"to come out during settle phase")
 
     def __setitem__(self, hand_phase: HandPhase,
                     history: Union[PrehandHistory, BettingRoundHistory, SettleHistory]) -> None:
