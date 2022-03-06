@@ -7,6 +7,8 @@ import os
 from typing import Union
 from pathlib import Path
 
+import pytest
+
 import tests
 
 
@@ -24,6 +26,45 @@ BAD_FORMAT_HISTORY_DIRECTORY = Path(tests.__file__).parent / "pgns/test_bad_form
 """
 The path of the directory of the history files with INVALID pgns (as opposed to invalid moves)
 """
+
+
+def pytest_configure(config):
+    config.addinivalue_line(
+        'markers',
+        'repeat(n): run the given test function `n` times.')
+
+
+@pytest.fixture()
+def __pytest_repeat_step_number(request):
+    marker = request.node.get_closest_marker("repeat")
+    count = marker and marker.args[0]
+    if count > 1:
+        return request.param
+
+
+@pytest.hookimpl(trylast=True)
+def pytest_generate_tests(metafunc):
+    marker = metafunc.definition.get_closest_marker('repeat')
+    count = int(marker.args[0]) if marker else 1
+    if count > 1:
+        metafunc.fixturenames.append("__pytest_repeat_step_number")
+
+        def make_progress_id(i, n=count):
+            return '{0}-{1}'.format(i + 1, n)
+
+        metafunc.parametrize(
+            '__pytest_repeat_step_number',
+            range(count),
+            indirect=True,
+            ids=make_progress_id
+        )
+
+
+@pytest.hookimpl(tryfirst=True, hookwrapper=True)
+def pytest_runtest_makereport(item, call):
+    outcome = yield
+    rep = outcome.get_result()
+    setattr(item, 'rep_' + rep.when, rep)
 
 
 def strip_comments(history_path: Union[str, os.PathLike]) -> str:
