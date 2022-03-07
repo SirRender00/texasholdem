@@ -34,8 +34,8 @@ def history_file_with_comments():
 def texas_game(request):
     """
     Returns:
-        Callable[[...], TexasHoldEm]: Create a TexasHoldEm gain. Fills in default values if not given
-            buyin=500, big_blind=5, small_blind=2.
+        Callable[[...], TexasHoldEm]: Create a TexasHoldEm gain. Fills in default
+            values if not given buyin=500, big_blind=5, small_blind=2.
     """
     game = None
 
@@ -103,6 +103,7 @@ def random_player():
 
 
 def prehand_checks(texas: TexasHoldEm):
+    # pylint: disable=too-many-branches,too-many-statements
     """
     Tests basic state after running prehand:
         - hand_phase state should be PREFLOP
@@ -133,7 +134,8 @@ def prehand_checks(texas: TexasHoldEm):
     game_running = len(active_players) >= 2
     hand_running = game_running and not texas._is_hand_over()
 
-    assert texas.is_game_running() == game_running, "Expected game to be running iff >= 2 active players"
+    assert texas.is_game_running() == game_running, \
+        "Expected game to be running iff >= 2 active players"
     assert texas.is_hand_running() == hand_running, \
         "Expected hand to be running iff 2 or more players can take actions"
 
@@ -143,25 +145,28 @@ def prehand_checks(texas: TexasHoldEm):
         return
 
     # check hand_phase
-    assert texas.hand_phase == HandPhase.PREFLOP, "Ran PREHAND, expected next HandPhase to be PREFLOP"
+    assert texas.hand_phase == HandPhase.PREFLOP, \
+        "Ran PREHAND, expected next HandPhase to be PREFLOP"
 
     # check blind locations
-    assert 0 <= texas.btn_loc < texas.max_players, f"Expected the blind to be in [0, {texas.max_players})"
+    assert 0 <= texas.btn_loc < texas.max_players, \
+        f"Expected the blind to be in [0, {texas.max_players})"
 
     if len(active_players) > 2:
         assert texas.sb_loc \
-               == active_players[(active_players.index(texas.btn_loc) + 1) % len(active_players)], \
-               f"Expected the small blind to be to left of big blind in a {len(active_players)}-player game"
+            == active_players[(active_players.index(texas.btn_loc) + 1) % len(active_players)], \
+            "Expected the small blind to be to left of " \
+            f"big blind in a {len(active_players)}-player game"
     else:
         assert texas.btn_loc == texas.sb_loc, \
-               f"Expected the button and small blind to be the same place in a 2-player game"
+               "Expected the button and small blind to be the same place in a 2-player game"
 
     assert texas.bb_loc \
            == active_players[(active_players.index(texas.sb_loc) + 1) % len(active_players)], \
-           f"Expected the big blind to be to the left of the small blind"
+           "Expected the big blind to be to the left of the small blind"
     assert texas.current_player \
            == active_players[(active_players.index(texas.bb_loc) + 1) % len(active_players)], \
-           f"Expected the current player to be to the left of the big blind"
+           "Expected the current player to be to the left of the big blind"
 
     # check blind posting / blind states
     if player_chips[texas.sb_loc] <= texas.small_blind:
@@ -193,7 +198,8 @@ def prehand_checks(texas: TexasHoldEm):
 
     for i in active_players:
         if i not in (texas.sb_loc, texas.bb_loc):
-            assert texas.players[i].chips == player_chips[i], f"Expected player {i} to not have posted anything"
+            assert texas.players[i].chips == player_chips[i], \
+                f"Expected player {i} to not have posted anything"
 
     assert sum(pot.get_total_amount() for pot in texas.pots) \
            == sb_posted + bb_posted + starting_pot, \
@@ -203,7 +209,8 @@ def prehand_checks(texas: TexasHoldEm):
     # players have TO_CALL, (we check the small blind above)
     assert all(texas.players[i].state == PlayerState.TO_CALL
                for i in active_players
-               if i not in (texas.sb_loc, texas.bb_loc)), "Expected all players to need to call in the pot"
+               if i not in (texas.sb_loc, texas.bb_loc)), \
+        "Expected all players to need to call in the pot"
 
     # if 0 chips skip
     for player_id, chips in enumerate(player_chips, 0):
@@ -217,7 +224,8 @@ def prehand_checks(texas: TexasHoldEm):
             chips_to_call = sum(texas.pots[pot_id].raised - texas.pots[pot_id].get_player_amount(i)
                                 for pot_id in range(texas.players[i].last_pot+1))
             assert texas.chips_to_call(i) == chips_to_call, \
-                "Expected chips to call to be the raised level of the last eligible pot - player amount"
+                "Expected chips to call to be the raised " \
+                "level of the last eligible pot - player amount"
 
     if texas.players[texas.sb_loc].state != PlayerState.ALL_IN:
         assert texas.chips_to_call(texas.sb_loc) == max(0, bb_posted - sb_posted), \
