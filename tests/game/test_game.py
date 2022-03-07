@@ -31,14 +31,14 @@ from tests.conftest import (strip_comments,
                             GOOD_GAME_HISTORY_DIRECTORY,
                             BAD_GAME_HISTORY_DIRECTORY)
 
-from tests.game.conftest import prehand_checks
+from tests.game.conftest import prehand_checks, BASIC_GAME_RUNS, UNTIL_STOP_RUNS
 
 
-def test_new_game():
+def test_new_game(texas_game):
     """
     Tests the creation of a new game and the starting state.
     """
-    texas = TexasHoldEm(buyin=500, big_blind=5, small_blind=2)
+    texas = texas_game()
 
     assert texas.is_game_running()
     assert texas.hand_phase == HandPhase.PREHAND
@@ -51,16 +51,16 @@ def test_basic_prehand(texas_game):
     Tests basic state after running 1st prehand
 
     """
-    prehand_checks(texas_game)
+    prehand_checks(texas_game())
 
 
-def test_skip_prehand(call_player):
+def test_skip_prehand(random_player, texas_game):
     """
     Players with 0 chips will have SKIP statuses, blinds should skip
     players with SKIP statuses
 
     """
-    texas = TexasHoldEm(buyin=500, big_blind=5, small_blind=2, max_players=6)
+    texas = texas_game(max_players=6)
     # 6 players to make this tests invariant to where the button ends up
 
     # skip every other player
@@ -81,16 +81,16 @@ def test_skip_prehand(call_player):
 
     while texas.is_hand_running():
         assert texas.current_player not in skip_players
-        texas.take_action(*call_player(texas))
+        texas.take_action(*random_player(texas))
 
 
-def test_heads_up_edge_case():
+def test_heads_up_edge_case(texas_game):
     """
     When only two players are active, the button posts the small blind
 
     """
     # only two players to start
-    texas = TexasHoldEm(buyin=500, big_blind=5, small_blind=2, max_players=2)
+    texas = texas_game(max_players=2)
 
     # run PREHAND
     texas.start_hand()
@@ -100,13 +100,13 @@ def test_heads_up_edge_case():
     assert texas.current_player == texas.btn_loc
 
 
-def test_blind_all_in_prehand():
+def test_blind_all_in_prehand(texas_game):
     """
     If a player has 0 < chips < big blind number of chips, allow them to post what
     they have but be ALL_IN.
 
     """
-    texas = TexasHoldEm(buyin=500, big_blind=5, small_blind=2, max_players=3)
+    texas = texas_game(max_players=3)
     for player in texas.players:
         player.chips = 1
 
@@ -123,18 +123,19 @@ def test_game_stop_prehand(texas_game):
     the PREHAND stage and sets texas.game_state to STOPPED
 
     """
-    for player in texas_game.players:
+    texas = texas_game()
+    for player in texas.players:
         player.chips = 0
 
     # cannot run if only one player has chips
-    texas_game.players[0].chips = 10
+    texas.players[0].chips = 10
 
     # run PREHAND
-    texas_game.start_hand()
+    texas.start_hand()
 
-    assert not texas_game.is_game_running()
-    assert not texas_game.is_hand_running()
-    assert texas_game.hand_phase == HandPhase.PREHAND
+    assert not texas.is_game_running()
+    assert not texas.is_hand_running()
+    assert texas.hand_phase == HandPhase.PREHAND
 
 
 @pytest.mark.parametrize('hand_phase,round_num,board_len', [
@@ -149,99 +150,97 @@ def test_basic_betting_rounds(hand_phase, round_num, board_len, texas_game, call
     """
     # pylint: disable=protected-access
     seen_players = []
+    texas = texas_game()
 
     # run hand until given hand_phase is completed
-    texas_game.start_hand()
-    while texas_game.is_hand_running():
-        if texas_game.hand_phase == hand_phase:
-            assert len(texas_game.board) == board_len
-        elif texas_game.hand_phase == hand_phase.next_phase():
+    texas.start_hand()
+    while texas.is_hand_running():
+        if texas.hand_phase == hand_phase:
+            assert len(texas.board) == board_len
+        elif texas.hand_phase == hand_phase.next_phase():
             break
 
-        seen_players.append(texas_game.current_player)
-        texas_game.take_action(*call_player(texas_game))
+        seen_players.append(texas.current_player)
+        texas.take_action(*call_player(texas))
 
     if hand_phase != HandPhase.RIVER:
-        assert texas_game.is_hand_running()
-        assert texas_game.hand_phase == hand_phase.next_phase()
-    assert texas_game.is_game_running()
+        assert texas.is_hand_running()
+        assert texas.hand_phase == hand_phase.next_phase()
+    assert texas.is_game_running()
 
     # all players took expected number of actions
     assert all(len([i for i in seen_players if i == player_id]) == round_num
-               for player_id in range(texas_game.max_players))
+               for player_id in range(texas.max_players))
 
     # all players in pot
     assert all(player.state == PlayerState.IN
-               for player in texas_game.players)
+               for player in texas.players)
 
     # next player should be sb
-    assert texas_game.current_player == texas_game.sb_loc
+    assert texas.current_player == texas.sb_loc
 
     # should be 30 chips in pot
-    assert texas_game._get_last_pot().get_total_amount() \
-           == texas_game.max_players * texas_game.big_blind
+    assert texas._get_last_pot().get_total_amount() \
+           == texas.max_players * texas.big_blind
 
     if hand_phase != HandPhase.RIVER:  # check chips if not SETTLE phase
-        assert all(player.chips == texas_game.buyin - texas_game.big_blind
-                   for player in texas_game.players)
+        assert all(player.chips == texas.buyin - texas.big_blind
+                   for player in texas.players)
 
 
+@pytest.mark.repeat(BASIC_GAME_RUNS)
 def test_basic_settle(texas_game, call_player):
     """
     Test basic state after running a complete hand: only one winner
 
     """
+    random.seed(0)
     # run complete hand
-    random.seed(2)
-    texas_game.start_hand()
-    while texas_game.is_hand_running():
-        texas_game.take_action(*call_player(texas_game))
+    texas = texas_game()
+    texas.start_hand()
+    while texas.is_hand_running():
+        texas.take_action(*call_player(texas))
 
-    assert texas_game.is_game_running()
-    assert not texas_game.is_hand_running()
+    assert texas.is_game_running()
+    assert not texas.is_hand_running()
 
     # find winner
-    winner = min(texas_game.players,
+    winner = min(texas.players,
                  key=lambda player:
-                     evaluate(texas_game.get_hand(player.player_id), texas_game.board))
+                     evaluate(texas.get_hand(player.player_id), texas.board))
 
-    assert winner.chips == texas_game.buyin + (texas_game.max_players - 1) * texas_game.big_blind
-    assert all(player.chips == texas_game.buyin - texas_game.big_blind
-               for player in texas_game.players
+    assert winner.chips == texas.buyin + (texas.max_players - 1) * texas.big_blind
+    assert all(player.chips == texas.buyin - texas.big_blind
+               for player in texas.players
                if player != winner)
 
 
-def test_basic_continuity(texas_game, call_player):
+@pytest.mark.repeat(BASIC_GAME_RUNS)
+def test_basic_continuity(texas_game, random_player):
     """
     Checks basic state continuity between hands
 
     """
-    random.seed(6)
+    texas = texas_game()
 
     # run prehand
-    texas_game.start_hand()
-
-    # note the button position
-    old_btn_loc = texas_game.btn_loc
+    texas.start_hand()
 
     # run the rest of the hand
-    while texas_game.is_hand_running():
-        texas_game.take_action(*call_player(texas_game))
+    while texas.is_hand_running():
+        texas.take_action(*random_player(texas))
 
     # run 2nd prehand
-    prehand_checks(texas_game)
-
-    # check btn position is old_btn + 1
-    assert texas_game.btn_loc == (old_btn_loc + 1) % texas_game.max_players
+    prehand_checks(texas)
 
 
-def test_until_stop(call_player):
+@pytest.mark.repeat(UNTIL_STOP_RUNS)
+def test_until_stop(random_player, texas_game):
     """
     Checks state after until one winner
 
     """
-    random.seed(6)
-    texas_game = TexasHoldEm(buyin=150, big_blind=5, small_blind=2)
+    texas_game = texas_game(buyin=150, big_blind=5, small_blind=2)
 
     while True:
         assert sum(player.chips for player in texas_game.players) + texas_game.starting_pot \
@@ -255,7 +254,7 @@ def test_until_stop(call_player):
                     if player.state == PlayerState.SKIP]) < (texas_game.max_players - 1)
 
         while texas_game.is_hand_running():
-            texas_game.take_action(*call_player(texas_game))
+            texas_game.take_action(*random_player(texas_game))
 
     assert len([player for player in texas_game.players
                 if player.state == PlayerState.SKIP]) == (texas_game.max_players - 1)

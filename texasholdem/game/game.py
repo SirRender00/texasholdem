@@ -528,7 +528,7 @@ class TexasHoldEm:
             settle_history.pot_winners[i] = (pot.get_total_amount(), best_rank, winners)
 
             win_amount = int((pot.get_total_amount()) / len(winners))
-            self.starting_pot = pot.get_total_amount() - (win_amount * len(winners))
+            self.starting_pot += pot.get_total_amount() - (win_amount * len(winners))
             for player_id in winners:
                 self.players[player_id].chips += win_amount
 
