@@ -25,34 +25,36 @@ def test_basic_export(tmpdir, texas_game, call_player):
     Checks if history exists and matches the generated history.
 
     """
+    texas = texas_game()
+
     # mix up chips
-    for i, player in enumerate(texas_game.players, 0):
+    for i, player in enumerate(texas.players, 0):
         player.chips -= i
-    old_chips = [player.chips for player in texas_game.players]
+    old_chips = [player.chips for player in texas.players]
 
-    texas_game.start_hand()
-    while texas_game.is_hand_running():
-        if texas_game.current_player == 8 and texas_game.hand_phase == HandPhase.PREFLOP:
-            texas_game.take_action(ActionType.RAISE, texas_game.big_blind + 5)
-        texas_game.take_action(*call_player(texas_game))
+    texas.start_hand()
+    while texas.is_hand_running():
+        if texas.current_player == 8 and texas.hand_phase == HandPhase.PREFLOP:
+            texas.take_action(ActionType.RAISE, texas.big_blind + 5)
+        texas.take_action(*call_player(texas))
 
-    assert all((texas_game.hand_history.prehand,
-               texas_game.hand_history.preflop,
-               texas_game.hand_history.flop,
-               texas_game.hand_history.turn,
-               texas_game.hand_history.river,
-               texas_game.hand_history.settle))
+    assert all((texas.hand_history.prehand,
+               texas.hand_history.preflop,
+               texas.hand_history.flop,
+               texas.hand_history.turn,
+               texas.hand_history.river,
+               texas.hand_history.settle))
 
-    assert texas_game.hand_history.prehand.btn_loc == texas_game.btn_loc
-    assert texas_game.hand_history.prehand.small_blind == texas_game.small_blind
-    assert texas_game.hand_history.prehand.big_blind == texas_game.big_blind
-    assert all(old_chips[i] == texas_game.hand_history.prehand.player_chips[i]
-               for i in range(len(texas_game.players)))
+    assert texas.hand_history.prehand.btn_loc == texas.btn_loc
+    assert texas.hand_history.prehand.small_blind == texas.small_blind
+    assert texas.hand_history.prehand.big_blind == texas.big_blind
+    assert all(old_chips[i] == texas.hand_history.prehand.player_chips[i]
+               for i in range(len(texas.players)))
 
     history = tmpdir / "texas.pgn"
-    history = texas_game.export_history(history)
+    history = texas.export_history(history)
     with open(history, 'r', encoding="ascii") as file:
-        assert file.read() == texas_game.hand_history.to_string()
+        assert file.read() == texas.hand_history.to_string()
 
 
 def test_basic_import(tmpdir, texas_game, call_player):
@@ -60,14 +62,15 @@ def test_basic_import(tmpdir, texas_game, call_player):
     Checks if exporting, then importing returns same history
 
     """
-    texas_game.start_hand()
-    while texas_game.is_hand_running():
-        if texas_game.current_player == 8 and texas_game.hand_phase == HandPhase.PREFLOP:
-            texas_game.take_action(ActionType.RAISE, texas_game.big_blind + 5)
-        texas_game.take_action(*call_player(texas_game))
+    texas = texas_game()
+    texas.start_hand()
+    while texas.is_hand_running():
+        if texas.current_player == 8 and texas.hand_phase == HandPhase.PREFLOP:
+            texas.take_action(ActionType.RAISE, texas.big_blind + 5)
+        texas.take_action(*call_player(texas))
 
     history = tmpdir / "texas.pgn"
-    history = texas_game.export_history(history)
+    history = texas.export_history(history)
 
     with open(history, 'r', encoding="ascii") as file:
         history_string = file.read()
@@ -94,36 +97,37 @@ def test_file_naming(tmpdir, texas_game, call_player):
         - renaming files when a dir is specified
 
     """
-    texas_game.start_hand()
-    while texas_game.is_hand_running():
-        texas_game.take_action(*call_player(texas_game))
+    texas = texas_game()
+    texas.start_hand()
+    while texas.is_hand_running():
+        texas.take_action(*call_player(texas))
 
     # specify file, writes to it
     history = tmpdir / "my_game.pgn"
-    texas_game.export_history(history)
+    texas.export_history(history)
     assert history.exists()
 
     # specify dir, creates them and makes name texas.pgn
     history = tmpdir / "/pgn/texas_pgns/"
-    history1 = texas_game.export_history(history)
+    history1 = texas.export_history(history)
     assert history / "texas.pgn" == history1
 
     # write again to file no collisions
-    history2 = texas_game.export_history(history)
+    history2 = texas.export_history(history)
     assert history / "texas(1).pgn" == history2
 
     # write again to file no collisions
-    history3 = texas_game.export_history(history)
+    history3 = texas.export_history(history)
     assert history / "texas(2).pgn" == history3
 
     # different game
-    texas_game.start_hand()
-    while texas_game.is_hand_running():
-        texas_game.take_action(*call_player(texas_game))
+    texas.start_hand()
+    while texas.is_hand_running():
+        texas.take_action(*call_player(texas))
 
     # overwrite
     new_path = history / "texas.pgn"
-    new_history = texas_game.export_history(new_path)
+    new_history = texas.export_history(new_path)
 
     # overwrite works
     with open(new_history, 'r', encoding="ascii") as file:
