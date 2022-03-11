@@ -18,6 +18,7 @@ Includes:
 """
 import glob
 import random
+from typing import Iterable, Callable
 
 import pytest
 
@@ -234,10 +235,19 @@ def test_basic_continuity(texas_game, random_player):
     prehand_checks(texas)
 
 
-@pytest.mark.repeat(UNTIL_STOP_RUNS)
-def test_until_stop(random_player, texas_game):
+def empty_pots(game):
     """
-    Checks state after until one winner
+    Predicate. Returns true if any pot has a total amount of 0.
+    """
+    return any(pot.get_total_amount() == 0 for pot in game.pots)
+
+
+@pytest.mark.repeat(UNTIL_STOP_RUNS)
+@pytest.mark.parametrize('predicates', [[empty_pots]])
+def test_until_stop(random_player, texas_game, predicates: Iterable[Callable[[TexasHoldEm], bool]]):
+    """
+    Runs prehand checks and given predicates at each hand and within each action. Runs until
+    only one winner.
 
     """
     texas_game = texas_game(buyin=150, big_blind=5, small_blind=2)
@@ -253,8 +263,16 @@ def test_until_stop(random_player, texas_game):
         assert len([player for player in texas_game.players
                     if player.state == PlayerState.SKIP]) < (texas_game.max_players - 1)
 
+        failed_pred = set()
         while texas_game.is_hand_running():
             texas_game.take_action(*random_player(texas_game))
+
+            for pred in predicates:
+                if pred.__name__ not in failed_pred and pred(texas_game):
+                    failed_pred.add(pred.__name__)
+
+        if failed_pred:
+            raise pytest.fail(f"Predicates {failed_pred} failed.")
 
     assert len([player for player in texas_game.players
                 if player.state == PlayerState.SKIP]) == (texas_game.max_players - 1)
