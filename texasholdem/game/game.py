@@ -80,6 +80,9 @@ class Pot:
             amount (int): The amount to post into this pot
 
         """
+        if amount <= 0:
+            return
+
         self.player_amounts[player_id] = self.player_amounts.get(player_id, 0) + amount
 
         if self.player_amounts[player_id] > self.raised:
@@ -407,6 +410,9 @@ class TexasHoldEm:
         original_amount = amount
         last_pot = self.players[player_id].last_pot
         chips_to_call = self._get_pot(last_pot).chips_to_call(player_id)
+
+        if amount <= 0:
+            return
 
         # if a player posts, they are in the pot
         if amount == self.players[player_id].chips:
