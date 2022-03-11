@@ -246,7 +246,7 @@ def empty_pots(game):
 @pytest.mark.parametrize('predicates', [[empty_pots]])
 def test_until_stop(random_player, texas_game, predicates: Iterable[Callable[[TexasHoldEm], bool]]):
     """
-    Runs prehand checks and and given predicates at each hand and within each action. Runs until
+    Runs prehand checks and given predicates at each hand and within each action. Runs until
     only one winner.
 
     """

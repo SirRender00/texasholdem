@@ -447,11 +447,11 @@ class TexasHoldEm:
     def _get_pot(self, pot_id: int) -> Pot:
         """
         Arguments:
-            pot_id (int): The player_id of the pot to get
+            pot_id (int): The id of the pot to get
         Returns:
-            Pot: The pot with given player_id
+            Pot: The pot with given id
         Raises:
-            ValueError: If a pot with player_id pot_id does not exist.
+            ValueError: If a pot with id pot_id does not exist.
 
         """
         if pot_id >= len(self.pots):
