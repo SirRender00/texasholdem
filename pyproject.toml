@@ -20,7 +20,7 @@ python = ">=3.7, <3.11"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"
-pylint = { version = "^2.11.1", python = "<3.10"}
+pylint = "^2.11.1"
 
 [tool.pylint.master]
 ignore = ["keyboard.py", "text_gui.py"]
