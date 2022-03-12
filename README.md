@@ -1,7 +1,9 @@
 # texasholdem
 A python package for Texas Hold 'Em Poker.
 
-[Current Release Version v0.4.5](https://github.com/SirRender00/texasholdem/releases/tag/v0.4.5)
+Latest Stable Release Version [v0.4.5](https://github.com/SirRender00/texasholdem/releases/tag/v0.4.5)
+
+Latest Experimental Release Version [v0.5-alpha.0](https://github.com/SirRender00/texasholdem/releases/tag/v0.5-alpha.0)
 
 [v1.0.0 Roadmap](https://github.com/SirRender00/texasholdem/wiki/Version-1.0.0-Roadmap)
 
@@ -17,7 +19,8 @@ pip install texasholdem
 ## Quickstart Guide
 Playing a game from the command line is as simple as the following:
 ```python
-from texasholdem import TexasHoldEm, TextGUI
+from texasholdem import TexasHoldEm
+from texasholdem.gui import TextGUI
 
 game = TexasHoldEm(buyin=500,
                    big_blind=5,
@@ -55,7 +58,11 @@ assert HandPhase.PREFLOP.next_phase() == HandPhase.FLOP
 assert game.chips_to_call(game.current_player) == game.big_blind
 
 game.take_action(ActionType.CALL)
+
+player_id = game.current_player
 game.take_action(ActionType.RAISE, value=10)
+assert game.player_bet_amount(player_id) == 10
+assert game.chips_at_stake(player_id) == 20     # total amount in all pots the player is in
 
 assert game.chips_to_call(game.current_player) == 10 - game.big_blind
 ```
@@ -74,29 +81,31 @@ assert card.rank == 11                  # 2nd highest rank (0-12)
 assert card.pretty_string == "[ K ♦ ]"
 ```
 
-The `game.get_hand(player_id=...)` method of the `TexasHoldEm` class 
-will return a list of type `list[Card]`.
-
-## Evaluator Module
-The evaluator module returns the rank of the best 5-card hand from a list of 5 to 7 cards.
-The rank is a number from 1 (strongest) to 7462 (weakest). This determines the winner in the `TexasHoldEm` module:
+## Agents Module
+The package also comes with basic agents including `call_agent` and `random_agent`
 
 ```python
-from texasholdem import Card, evaluate, rank_to_string
+from texasholdem import TexasHoldEm
+from texasholdem.agents import random_agent, call_agent
 
-assert evaluate(cards=[Card("Kd"), Card("5d")],
-                board=[Card("Qd"), 
-                       Card("6d"), 
-                       Card("5s"), 
-                       Card("2d"),
-                       Card("5h")]) == 927
-assert rank_to_string(927) == "Flush, King High"
+game = TexasHoldEm(buyin=500, big_blind=5, small_blind=2)
+game.start_hand()
+
+while game.is_hand_running():
+    if game.current_player % 2 == 0:
+        game.take_action(*random_agent(game))
+    else:
+        game.take_action(*call_agent(game))
 ```
+
+The `game.get_hand(player_id=...)` method of the `TexasHoldEm` class 
+will return a list of type `list[Card]`.
 
 ## History Module
 Export and import the history of hands:
 ```python
-from texasholdem import TexasHoldEm, TextGUI
+from texasholdem import TexasHoldEm
+from texasholdem.gui import TextGUI
 
 game = TexasHoldEm(buyin=500, big_blind=5, small_blind=2)
 game.start_hand()
@@ -113,3 +122,20 @@ for state in TexasHoldEm.import_history("./pgns/my_game.pgn"):
     gui.print_state(state)
 ```
 PGN files also support single line and end of line comments starting with "#".
+
+## Evaluator Module
+The evaluator module returns the rank of the best 5-card hand from a list of 5 to 7 cards.
+The rank is a number from 1 (strongest) to 7462 (weakest). This determines the winner in the `TexasHoldEm` module:
+
+```python
+from texasholdem import Card
+from texasholdem.evaluator import  evaluate, rank_to_string
+
+assert evaluate(cards=[Card("Kd"), Card("5d")],
+                board=[Card("Qd"), 
+                       Card("6d"), 
+                       Card("5s"), 
+                       Card("2d"),
+                       Card("5h")]) == 927
+assert rank_to_string(927) == "Flush, King High"
+```
