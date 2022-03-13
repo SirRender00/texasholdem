@@ -3,7 +3,10 @@ to keep the history of the game to be able to replay hands and
 export/import notation of the game.
 
 Texas Hold Em Notation Conventions:
+
     - The button is assigned ID 0
+    - Each action is a tuple :code:`(player_id, action_type, value)`
+    - The winner section is a per-pot tuple :code:`(Pot id, amount, best rank, winner ids)`
 
 """
 from __future__ import annotations
@@ -18,25 +21,45 @@ from texasholdem.game.hand_phase import HandPhase
 
 
 FILE_EXTENSION = 'pgn'
+"""
+The extension for the game notation file.
+
+"""
 
 
 class HistoryImportError(Exception):
     """
-    History module will throw this error if it cannot import the given
-    PGN file.
+    The history classes will throw this error if it cannot import the given PGN file.
+
     """
 
 
 @dataclass()
 class PrehandHistory:
-    """Prehand history class, button location, and
-    the player chip counts."""
     btn_loc: int
+    """
+    The id of the player with the button
+    """
     big_blind: int
+    """
+    The id of the player with the big blind
+    """
     small_blind: int
+    """
+    The id of the player with the small blind
+    """
     starting_pot: int
+    """
+    How many chips the hand started with in the middle
+    """
     player_chips: dict[int, int]
+    """
+    The number of chips for each player
+    """
     player_cards: dict[int, list[Card]]
+    """
+    The cards for each player
+    """
 
     def to_string(self, canon_ids: dict[int, int]) -> str:
         """
@@ -44,6 +67,7 @@ class PrehandHistory:
             canon_ids (dict[int, int]): Map of old_id -> new_id where the new btn_loc is 0
         Returns:
             str: The string representation of the prehand history: blind sizes, chips, and cards
+
         """
         str_player_cards = {i: [str(card) for card in self.player_cards[i]] for i in canon_ids}
 
@@ -65,6 +89,7 @@ class PrehandHistory:
             PrehandHistory: The prehand history as represented by the string
         Raises:
             HistoryImportError: If missing information or a mismatch between cards and chips
+
         """
         big_blind, small_blind, starting_pot, chips_str, cards_str = string.split('\n')
         _, big_blind = big_blind.split(': ')
@@ -94,11 +119,18 @@ class PrehandHistory:
 
 @dataclass()
 class PlayerAction:
-    """PlayerAction history class, includes the player id, the action type,
-    and the value."""
     player_id: int
+    """
+    The player id
+    """
     action_type: ActionType
+    """
+    The action type
+    """
     value: Optional[int]
+    """
+    The value if action is RAISE
+    """
 
     def to_string(self, canon_ids: dict[int, int]) -> str:
         """
@@ -133,10 +165,14 @@ class PlayerAction:
 
 @dataclass()
 class BettingRoundHistory:
-    """BettingRound history class, includes new cards and
-    a list of PlayerActions."""
     new_cards: list[Card]
+    """
+    The new cards that were added this round
+    """
     actions: list[PlayerAction]
+    """
+    A list of PlayerActions
+    """
 
     def to_string(self, canon_ids: dict[int, int]) -> str:
         """
@@ -197,10 +233,14 @@ class BettingRoundHistory:
 
 @dataclass()
 class SettleHistory:
-    """Settle history class, includes new cards and
-    a dictionary of pot_winners: pot_id -> (amount, best_rank, list of winning players)"""
     new_cards: list[Card]
+    """
+    The new cards that were added this round
+    """
     pot_winners: dict[int, Tuple[int, int, list[int]]]
+    """
+    A map from pot_id to a tuple of winner data :code:`amount, best rank, list of winners`
+    """
 
     def to_string(self, canon_ids: dict[int, int]) -> str:
         """
@@ -255,11 +295,13 @@ class SettleHistory:
 
 @dataclass()
 class History:
-    """History class of a hand of TexasHoldEm. Includes one history item for each HandPhase.
+    """
+    History class of a hand of TexasHoldEm. Includes one history item for each HandPhase.
     In total, this constitutes a minimal amount of information necessary to replay a hand.
 
-    This class also includes to_string() and from_string() methods which provides ways to
+    This class also includes :meth:`to_string()` and :meth:`from_string()` methods which provides ways to
     write / read human-readable information to / from files.
+
     """
     prehand: PrehandHistory = None
     preflop: BettingRoundHistory = None
@@ -277,6 +319,7 @@ class History:
 
         Returns:
             str: The string representation of the hand history.
+
         """
         num_players = len(self.prehand.player_chips)
         old_ids = [i % num_players
@@ -305,6 +348,7 @@ class History:
             string (str): A history string
         Returns:
             str: The history string without comments.
+
         """
         new_lines = []
         for line in string.split('\n'):
@@ -320,14 +364,15 @@ class History:
     @staticmethod
     def from_string(string: str) -> History:
         """
-        Reverse of to_string()
+        Reverse of :meth:`to_string()`
 
         Arguments:
-            string (str): The string as returned from to_string()
+            string (str): The string as returned from :meth:`to_string()`
         Returns:
             History: The hand history as represented by the string
         Raises:
             HistoryImportError: If the PGN file is invalid
+
         """
         history = History()
         sections = History._strip_comments(string).split('\n\n')
@@ -356,13 +401,15 @@ class History:
     def export_history(self, path: Union[str, os.PathLike] = "./texas.pgn") -> os.PathLike:
         """
         Exports the hand history to a human-readable file. If a directory is given,
-        finds a name of the form texas(n).pgn to export to.
+        finds a name of the form :code:`texas(n).pgn` to export to. PGN files can consequently
+        be imported with :meth:`import_history()`.
 
         Arguments:
-            path (Union[str, os.PathLike]): The directory or file to export the history to,
-                defaults to the current working directory (./texas.pgn)
+            path (str | os.PathLike]): The directory or file to export the history to,
+                defaults to the current working directory at the file `./texas.pgn`
         Returns:
             os.PathLike: The path to the history file
+
         """
         path_or_dir = Path(path)
         hist_path = path_or_dir
@@ -389,12 +436,17 @@ class History:
     @staticmethod
     def import_history(path: Union[str, os.PathLike]) -> History:
         """
+        Import a PGN file i.e. as exported from :meth:`export_history()`. Returns an
+        iterator over game states as specified from the history.
+
         Arguments:
-            path (Union[str, os.PathLike]): The PGN file to import from
+            path (str | os.PathLike): The PGN file to import from
         Returns:
-            History: The history class from the file
+            Iterator[TexasHoldEm]: An iterator over game states such that
+                the next hand will play exactly like from the history.
         Raises:
-            HistoryImportError: If the file given does not exist or is improperly formatted.
+            HistoryImportError: If the file given does not exist or if the file is invalid
+
         """
         # pylint: disable=protected-access
         path = Path(path)
@@ -423,6 +475,7 @@ class History:
         """
         Raises:
             HistoryImportError: If there is a section missing
+
         """
         if not self.preflop:
             raise HistoryImportError("Preflop section is missing")
@@ -440,6 +493,7 @@ class History:
         """
         Raises:
             HistoryImportError: If the cards in the history are not unique
+
         """
         cards = sum(self.prehand.player_cards.values(), [])
         for hand_phase in (HandPhase.PREFLOP,
@@ -457,6 +511,7 @@ class History:
         """
         Raises:
             HistoryImportError: If the cards do not come out in the proper amount
+
         """
         total_board_len = 0
         for hand_phase in (HandPhase.PREFLOP,

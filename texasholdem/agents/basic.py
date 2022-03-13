@@ -1,7 +1,8 @@
 """
 Basic agents are included in this module:
-    - call_agent
-    - random_agent
+    - :func:`call_agent`
+    - :func:`random_agent`
+
 """
 
 from typing import Tuple
@@ -31,7 +32,8 @@ def call_agent(game: TexasHoldEm) -> Tuple[ActionType, None]:
 
 def random_agent(game: TexasHoldEm, no_fold: bool = False) -> Tuple[ActionType, int]:
     """
-    A uniformly random player:
+    A uniformly random player
+
         - If someone raised, CALL, FOLD, or RAISE with uniform probability
         - Else, CHECK, (FOLD if no_fold=False), RAISE with uniform probability
         - If RAISE, the value will be uniformly random in [min_raise, # of chips]

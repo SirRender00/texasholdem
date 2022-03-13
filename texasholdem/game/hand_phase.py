@@ -1,6 +1,4 @@
-"""The handphase module contains an enum with the possible handphases
-of the game. It includes the well-known PREHAND, PREFLOP, FLOP, and RIVER
-phases, in addition to new PREHAND and SETTLE phases purely for book-keeping."""
+""""""
 
 from __future__ import annotations
 
@@ -18,27 +16,67 @@ class _HandPhase:
 
 
 class HandPhase(Enum):
-    """An enum representing the phase of the hand."""
+    """An enum representing the phases of each hand which includes the well-known
+
+        - :obj:`HandPhase.PREFLOP`
+        - :obj:`HandPhase.FLOP`
+        - :obj:`HandPhase.TURN`
+        - :obj:`HandPhase.RIVER`
+
+    In addition to two new phases
+
+        - :obj:`HandPhase.PREHAND`
+        - :obj:`HandPhase.SETTLE`
+
+    which are used for book-keeping.
+
+    """
 
     PREHAND = _HandPhase(0, "PREFLOP")
-    """In this phase, players sit out if requested, players
+    """
+    In this phase, players sit out if requested, players
     rejoin if requested, blinds are moved and posted, and card
-    are dealt."""
+    are dealt.
+    
+    """
 
     PREFLOP = _HandPhase(0, "FLOP")
+    """
+    The first betting round of the game. Players have two cards with no
+    communal cards yet.
+    
+    """
+
     FLOP = _HandPhase(3, "TURN")
+    """
+    The second betting round of the game. Three communal cards come out.
+    
+    """
+
     TURN = _HandPhase(1, "RIVER")
+    """
+    The third betting round of the game. One more communal card comes out.
+
+    """
+
     RIVER = _HandPhase(1, "SETTLE")
+    """
+    The fourth and final betting round of the game. One more communal cards come out.
+
+    """
 
     SETTLE = _HandPhase(0, "PREHAND")
-    """In this phase, the pots are settled and the last aggressor
-    shows their card, while every player in turn either shows
-    or folds their card."""
+    """
+    If the hand ended early in a previous round, the rest of the communal cards come out
+    to total 5. Winners are decided per pot based on hand strength and rewarded chips.
+    
+    """
 
     def next_phase(self) -> HandPhase:
         """
         Returns:
             HandPhase: The next HandPhase after this one
+
         """
         return HandPhase[self.value.next_phase]
 
@@ -46,5 +84,6 @@ class HandPhase(Enum):
         """
         Returns:
             int: The number of new cards to add to the board
+
         """
         return self.value.new_cards

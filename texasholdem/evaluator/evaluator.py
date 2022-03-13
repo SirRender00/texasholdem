@@ -1,11 +1,6 @@
 """
-Evaluates hand strengths using a variant of Cactus Kev's algorithm:
-http://www.suffecool.net/poker/evaluator.html
+Evaluates hand strengths with optimizations in terms of speed and memory usage.
 
-I make considerable optimizations in terms of speed and memory usage,
-in fact the lookup table generation can be done in under a second and
-consequent evaluations are very fast. Won't beat C, but very fast as
-all calculations are done with bit arithmetic and table lookups.
 """
 
 import itertools
@@ -40,8 +35,8 @@ def _five(cards: list[Card]) -> int:
 
 def evaluate(cards: list[Card], board: list[Card]) -> int:
     """
-    Evaluates hand strengths using a variant of Cactus Kev's algorithm:
-    http://www.suffecool.net/poker/evaluator.html
+    Evaluates the best five-card hand from the given cards and board. Returns
+    the corresponding rank.
 
     Args:
         cards (list[int]): A list of length two of card ints that a player holds.
@@ -57,8 +52,15 @@ def evaluate(cards: list[Card], board: list[Card]) -> int:
 
 def get_rank_class(hand_rank: int) -> int:
     """
-    Returns the class of hand given the hand hand_rank
-    returned from evaluate.
+    Returns the class of hand given the hand hand_rank returned from evaluate from
+    9 rank classes.
+
+    Example:
+        straight flush is class 1, high card is class 9, full house is class 3.
+
+    Returns:
+        int: A rank class int describing the general category of hand from 9 rank classes.
+            Example, straight flush is class 1, high card is class 9, full house is class 3.
 
     """
     max_rank = min(rank
@@ -69,6 +71,11 @@ def get_rank_class(hand_rank: int) -> int:
 
 def rank_to_string(hand_rank: int) -> str:
     """
+    Returns a string describing the hand of the hand_rank.
+
+    Example:
+        166 -> "Four of a Kind"
+
     Args:
         hand_rank (int): The rank of the hand given by :meth:`evaluate`
     Returns:
@@ -80,6 +87,8 @@ def rank_to_string(hand_rank: int) -> str:
 
 def get_five_card_rank_percentage(hand_rank: int) -> float:
     """
+    The percentage of how many of the 7462 hand strengths are worse than the given one.
+
     Args:
         hand_rank (int): The rank of the hand given by :meth:`evaluate`
     Returns:

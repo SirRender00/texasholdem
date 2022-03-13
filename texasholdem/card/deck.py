@@ -1,4 +1,4 @@
-"""The deck module"""
+""""""
 
 import random
 from texasholdem.card import card
@@ -10,6 +10,7 @@ class Deck:
     Class representing a deck. The first time we create, we seed the static
     deck with the list of unique card integers. Each object instantiated simply
     makes a copy of this object and shuffles it.
+
     """
     _FULL_DECK: list[Card] = []
 
@@ -31,7 +32,7 @@ class Deck:
         Args:
             num (int): How many cards to draw. Defaults to 1.
         Returns:
-           list[Card]: A list of length n of cards (See :mod:`card`).
+           list[Card]: A list of length n of cards (See :class:`~texasholdem.card.card.Card`).
         Raises:
             ValueError: If the deck size is less than the given n.
 

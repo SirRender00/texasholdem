@@ -21,6 +21,7 @@ python = ">=3.7, <3.11"
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"
 pylint = "^2.11.1"
+sphinx-rtd-theme = "^1.0.0"
 
 [tool.pylint.master]
 ignore = ["keyboard.py", "text_gui.py"]
