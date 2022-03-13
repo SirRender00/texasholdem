@@ -3,7 +3,7 @@ A python package for Texas Hold 'Em Poker.
 
 Latest Stable Release Version [v0.4.5](https://github.com/SirRender00/texasholdem/releases/tag/v0.4.5)
 
-Latest Experimental Release Version [v0.5-alpha.0](https://github.com/SirRender00/texasholdem/releases/tag/v0.5-alpha.0)
+Latest Experimental Release Version [v0.5-alpha.1](https://github.com/SirRender00/texasholdem/releases/tag/v0.5-alpha.1)
 
 [v1.0.0 Roadmap](https://github.com/SirRender00/texasholdem/wiki/Version-1.0.0-Roadmap)
 
