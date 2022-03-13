@@ -564,20 +564,29 @@ class TexasHoldEm:
                    for i in range(len(self.pots))
                    if player_id in self._get_pot(i).players_in_pot())
 
-    def validate_move(self, player_id: int,
-                      action: ActionType,
-                      value: Optional[int] = None) -> bool:
+    def validate_move(self,
+                      player_id: Optional[int] = None,
+                      action: Optional[ActionType] = None,
+                      value: Optional[int] = None,
+                      throws: bool = False):
         """
         Validate the potentially invalid action for the given player.
 
         Arguments:
-            player_id (int): the player to take action
-            action (ActionType): The ActionType to take
-            value (int, optional): In the case of raise, how much to raise
+            player_id (Optional[int]): The player to take action. Default current_player.
+            action (Optional[ActionType]): The ActionType to take
+            value (Optional[int]): In the case of raise, how much to raise
+            throws (bool): If true, will throw an Exception instead if
+                the move is invalid. Default False.
         Returns:
-            bool: True if the move is valid, False o/w
+            bool: True if the move is valid, False otherwise.
+        Raises:
+            ValueError: If move is invalid and throws is True
 
         """
+        if player_id is None:
+            player_id = self.current_player
+
         # ALL_IN should be translated
         new_action, new_value = action, value
         if new_action == ActionType.ALL_IN:
@@ -587,66 +596,64 @@ class TexasHoldEm:
         chips_to_call = self.chips_to_call(player_id)
         raised_level = self._get_pot(self.players[player_id].last_pot).raised
 
-        # Check if player player_id is current player
+        result, msg = True, ""
+
         if self.current_player != player_id:
-            return False
+            result, msg = False, f"Player {player_id} is not the current " \
+                                 f"player (Current player {self.current_player})"
 
-        if new_action == ActionType.CALL:
-            return self.players[player_id].state == PlayerState.TO_CALL
-        if new_action == ActionType.CHECK:
-            return self.players[player_id].state == PlayerState.IN
+        if new_action == ActionType.CALL and \
+                self.players[player_id].state != PlayerState.TO_CALL:
+            result, msg = False, f"Player {player_id} has state " \
+                                 f"{self.players[player_id].state} cannot CALL"
+        if new_action == ActionType.CHECK and \
+                self.players[player_id].state != PlayerState.IN:
+            result, msg = False, \
+                          f"Player {player_id} has state {self.players[player_id]} cannot CHECK"
         if new_action == ActionType.RAISE:
-            return not (
-               new_value is None or
-               (new_value < raised_level + self.big_blind
-                and new_value < player_amount + self.players[player_id].chips) or
-               player_amount + self.players[player_id].chips < new_value or
-               new_value < chips_to_call
-            )
-        if new_action == ActionType.FOLD:
-            return True
+            if new_value is None:
+                result, msg = False, "Expected value to not be None for action RAISE."
+            if (new_value < raised_level + self.big_blind
+               and new_value < player_amount + self.players[player_id].chips):
+                result, msg = False, "Cannot RAISE less than a big blind (only when going ALL_IN)"
+            if player_amount + self.players[player_id].chips < new_value:
+                result, msg = False, "Cannot RAISE more than the number of chips available"
+            if new_value < chips_to_call:
+                result, msg = False, f"Expected RAISE value {new_value} to be more " \
+                                     f"than the chips to call {chips_to_call}"
 
-        return False
+        if not result and throws:
+            raise ValueError(f"Invalid move, {msg}")
+        return result
 
-    def _safe_execute(self, player_id: int,
-                      action: ActionType,
-                      value: Optional[int] = None) -> bool:
+    def _take_action(self,
+                     action: ActionType,
+                     value: Optional[int] = None):
         """
-        Safely execute the potentially Invalid action for the given player.
+        Execute the action for the current player. Assumes the move is valid.
 
         Arguments:
-            player_id (int) 				- the player to take action
             action (ActionType) 	- The ActionType to take
             value (Optional[int]) - In the case of raise, how much to raise
-        Returns:
-            bool - True if successfully executed, False otherwise
         """
-        # Validate move
-        if not self.validate_move(player_id, action, value):
-            return False
-
         # ALL_IN should be translated
         if action == ActionType.ALL_IN:
             action, value = self._translate_allin(action, value)
 
-        player_amount = self.player_bet_amount(player_id)
-        chips_to_call = self.chips_to_call(player_id)
+        player_amount = self.player_bet_amount(self.current_player)
+        chips_to_call = self.chips_to_call(self.current_player)
 
         # Execute move
         if action == ActionType.CALL:
-            self._player_post(player_id, chips_to_call)
+            self._player_post(self.current_player, chips_to_call)
         elif action == ActionType.CHECK:
             pass
         elif action == ActionType.RAISE:
-            self._player_post(player_id, value - player_amount)
+            self._player_post(self.current_player, value - player_amount)
         elif action == ActionType.FOLD:
-            self.players[player_id].state = PlayerState.OUT
-            for i in range(self.players[player_id].last_pot + 1):
-                self.pots[i].remove_player(player_id)
-        else:
-            return False
-
-        return True
+            self.players[self.current_player].state = PlayerState.OUT
+            for i in range(self.players[self.current_player].last_pot + 1):
+                self.pots[i].remove_player(self.current_player)
 
     def _translate_allin(self,
                          action: ActionType,
@@ -705,11 +712,8 @@ class TexasHoldEm:
             yield self
 
             action, val = self._translate_allin(*self._action)
-            passed = self._safe_execute(self.current_player, action, val)
-
-            if not passed:
-                raise ValueError(f"Invalid move for player {self.current_player}: "
-                                 f"{action}, {val}")
+            self.validate_move(action=action, value=val, throws=True)
+            self._take_action(action, val)
 
             betting_history = self.hand_history[self.hand_phase]
             betting_history.actions.append(PlayerAction(
@@ -781,9 +785,7 @@ class TexasHoldEm:
         if not self.is_hand_running():
             raise ValueError("No hand is running")
 
-        if not self.validate_move(self.current_player, action_type, value=value):
-            raise ValueError("Move is invalid!")
-
+        self.validate_move(action=action_type, value=value, throws=True)
         self._action = (action_type, value)
 
         try:
