@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "texasholdem"
-version = "0.5-alpha.1"
+version = "0.5-alpha.2"
 description = "A texasholdem python package"
 authors = ["Evyn Machi <evyn.machi@gmail.com>"]
 keywords = ['texasholdem', 'holdem', 'poker']
@@ -21,10 +21,11 @@ python = ">=3.7, <3.11"
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"
 pylint = "^2.11.1"
+sphinx-rtd-theme = "^1.0.0"
 
 [tool.pylint.master]
 ignore = ["keyboard.py", "text_gui.py"]
-disable = ["import-error"]
+disable = ["import-error", "missing-module-docstring"]
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

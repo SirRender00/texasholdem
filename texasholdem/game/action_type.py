@@ -1,7 +1,3 @@
-"""
-The ActionType module, enum that represents all possible actions.
-"""
-
 from enum import Enum, auto
 
 

@@ -1,3 +1,6 @@
+# local docs
+./docs/_build
+
 # texas history
 *.pgn
 !tests/pgns/*.pgn

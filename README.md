@@ -1,11 +1,16 @@
 # texasholdem
 A python package for Texas Hold 'Em Poker.
 
-Latest Stable Release Version [v0.4.5](https://github.com/SirRender00/texasholdem/releases/tag/v0.4.5)
+Latest Stable Release Version: v0.4.5 \
+[Changelog](https://github.com/SirRender00/texasholdem/releases/tag/v0.4.5) \
+[Documentation](https://texasholdem.readthedocs.io/en/stable/)
 
-Latest Experimental Release Version [v0.5-alpha.1](https://github.com/SirRender00/texasholdem/releases/tag/v0.5-alpha.1)
+Latest Experimental Release Version v0.5-alpha.2 \
+[Changelog](https://github.com/SirRender00/texasholdem/releases/tag/v0.5-alpha.2) \
+[Documentation](https://texasholdem.readthedocs.io/en/latest/)
 
-[v1.0.0 Roadmap](https://github.com/SirRender00/texasholdem/wiki/Version-1.0.0-Roadmap)
+Roadmap \
+[v1.0.0](https://github.com/SirRender00/texasholdem/wiki/Version-1.0.0-Roadmap)
 
 ## Contributing
 To be added as a contributor, please email me at evyn.machi@gmail.com with your GitHub username and mention one of the open issues / a new issue you would like to tackle first.
@@ -16,7 +21,7 @@ For more information about contributing, please see the wiki.
 pip install texasholdem
 ```
 
-## Quickstart Guide
+## Quickstart
 Playing a game from the command line is as simple as the following:
 ```python
 from texasholdem import TexasHoldEm
@@ -42,7 +47,8 @@ while game.is_game_running():
         game.take_action(action, val)
 ```
 
-## Game Information
+## Overview
+### Game Information
 Get game information and take actions through intuitive attributes:
 ```python
 from texasholdem import TexasHoldEm, HandPhase, ActionType
@@ -67,7 +73,7 @@ assert game.chips_at_stake(player_id) == 20     # total amount in all pots the p
 assert game.chips_to_call(game.current_player) == 10 - game.big_blind
 ```
 
-## Card Module
+### Cards
 The card module represents cards as 32-bit integers for simple and fast hand
 evaluations. For more information about the representation, see the `Card`
 module.
@@ -81,7 +87,7 @@ assert card.rank == 11                  # 2nd highest rank (0-12)
 assert card.pretty_string == "[ K ♦ ]"
 ```
 
-## Agents Module
+### Agents
 The package also comes with basic agents including `call_agent` and `random_agent`
 
 ```python
@@ -101,7 +107,7 @@ while game.is_hand_running():
 The `game.get_hand(player_id=...)` method of the `TexasHoldEm` class 
 will return a list of type `list[Card]`.
 
-## History Module
+### Game History
 Export and import the history of hands:
 ```python
 from texasholdem import TexasHoldEm
@@ -123,7 +129,7 @@ for state in TexasHoldEm.import_history("./pgns/my_game.pgn"):
 ```
 PGN files also support single line and end of line comments starting with "#".
 
-## Evaluator Module
+### Poker Evaluator
 The evaluator module returns the rank of the best 5-card hand from a list of 5 to 7 cards.
 The rank is a number from 1 (strongest) to 7462 (weakest). This determines the winner in the `TexasHoldEm` module:
 

@@ -2,26 +2,28 @@
 The lookup table module keeps the books on all possible hand strengths.
 We construct the table once on import and reference it repeatedly.
 
-Number of Distinct Hand Values:
+Number of Distinct Hand Values::
 
-Straight Flush   10
-Four of a Kind   156      [(13 choose 2) * (2 choose 1)]
-Full Houses      156      [(13 choose 2) * (2 choose 1)]
-Flush            1277     [(13 choose 5) - 10 straight flushes]
-Straight         10
-Three of a Kind  858      [(13 choose 3) * (3 choose 1)]
-Two Pair         858      [(13 choose 3) * (3 choose 2)]
-One Pair         2860     [(13 choose 4) * (4 choose 1)]
-High card      + 1277     [(13 choose 5) - 10 straights]
--------------------------
-TOTAL            7462
+    Straight Flush   10
+    Four of a Kind   156      [(13 choose 2) * (2 choose 1)]
+    Full Houses      156      [(13 choose 2) * (2 choose 1)]
+    Flush            1277     [(13 choose 5) - 10 straight flushes]
+    Straight         10
+    Three of a Kind  858      [(13 choose 3) * (3 choose 1)]
+    Two Pair         858      [(13 choose 3) * (3 choose 2)]
+    One Pair         2860     [(13 choose 4) * (4 choose 1)]
+    High card      + 1277     [(13 choose 5) - 10 straights]
+    -------------------------
+    TOTAL            7462
 
 Here we create a lookup table which maps:
-    5 card hand's unique prime product => rank in range [1, 7462]
 
-Examples:
-* Royal flush (best hand possible)          => 1
-* 7-5-4-3-2 unsuited (worst hand possible)  => 7462
+    - 5 card hand's unique prime product -> rank in range [1, 7462]
+
+Example:
+    - Royal flush (best hand possible) -> 1
+    - 7-5-4-3-2 unsuited (worst hand possible) -> 7462
+
 """
 
 from typing import Dict
@@ -34,7 +36,10 @@ from texasholdem.card.card import Card
 class LookupTable:
     # pylint: disable=too-few-public-methods
     """
-    The lookup table class
+    Attributes:
+        flush_lookup (dict[int, int]): map from prime-product to rank for suited cards
+        unsuited_lookup (dict[int, int]): map from prime-product to rank for unsuited cards
+
     """
 
     MAX_STRAIGHT_FLUSH = 10
@@ -72,9 +77,6 @@ class LookupTable:
     }
 
     def __init__(self):
-        """
-        Calculates lookup tables
-        """
         # create dictionaries
         self.flush_lookup: Dict[int, int] = {}
         self.unsuited_lookup: Dict[int, int] = {}
@@ -90,6 +92,7 @@ class LookupTable:
 
         Lookup is done on 13 bit integer (2^13 > 7462):
         xxxbbbbb bbbbbbbb => integer hand index
+
         """
 
         # straight flushes in rank order
@@ -274,3 +277,7 @@ class LookupTable:
 
 
 LOOKUP_TABLE = LookupTable()
+"""
+The lookup table that is created when imported
+
+"""

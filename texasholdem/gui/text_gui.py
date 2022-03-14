@@ -1,3 +1,6 @@
+from typing import Iterable, Tuple, Optional
+
+from texasholdem.game.game import TexasHoldEm
 from texasholdem.game.player_state import PlayerState
 from texasholdem.game.game import HandPhase
 from texasholdem.card import card
@@ -10,7 +13,14 @@ class TextGUI:
         self.spaces_between = 2
         self.player_ids = []
 
-    def set_player_ids(self, ids):
+    def set_player_ids(self, ids: Iterable[int]):
+        """
+        Sets the player ids to see the cards for.
+
+        Args:
+            ids (Iterable[int]): The player ids to see cards for
+
+        """
         self.player_ids = ids
 
     def _player_state_to_string(self, state):
@@ -91,7 +101,13 @@ class TextGUI:
 
         return lines
 
-    def accept_input(self):
+    def accept_input(self) -> Tuple[ActionType, Optional[int]]:
+        """
+        Accepts input from StdIn and returns the corresponding action tuple.
+
+        Returns:
+            Tuple[ActionType, Optional[int]]: The ActionType, value tuple
+        """
         args = input("Your Turn!: ")
 
         if " " in args:
@@ -114,11 +130,29 @@ class TextGUI:
             # always invalid
             return ActionType.RAISE, -1
 
-    def print_action(self, id, action, val):
+    def print_action(self, id: int, action: ActionType, val: Optional[int] = None):
+        """
+        Prints an announcement of the action.
+
+        Args:
+            id (int): The player id
+            action (ActionType): The action
+            val (Optional[int]): The number of chips
+
+        """
         text = "Player {} {}.".format(id, self._action_to_string(action, val))
         print(text)
 
-    def print_state(self, poker_game):
+    def print_state(self, poker_game: TexasHoldEm):
+        """
+        Prints the state of the given 6 player poker_game. Revealing cards given by
+        :meth:`set_player_ids()`
+
+        Args:
+            poker_game (TexasHoldEm): The game
+
+        """
+
         text = ""
         ordering = [[3], [2, 4], ["board"], [1, 5], [0]]
 

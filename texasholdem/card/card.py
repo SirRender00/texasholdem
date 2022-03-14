@@ -1,45 +1,3 @@
-"""
-We represent cards as 32-bit integers, so there is no object instantiation -
-they are just ints. Most of the bits are used, and have a specific meaning.
-See below:
-
-.. table:: Card
-    :align: center
-    :widths: auto
-
-    ========  ========  ========  ========
-    xxxbbbbb  bbbbbbbb  cdhsrrrr  xxpppppp
-    ========  ========  ========  ========
-
-- p = prime number of rank (deuce=2,trey=3,four=5,...,ace=41)
-- r = rank of card (deuce=0,trey=1,four=2,five=3,...,ace=12)
-- cdhs = suit of card (bit turned on based on suit of card)
-- b = bit turned on depending on rank of card
-(i.e. the least significant bit is turned on if deuce, etc.)
-- x = unused
-
-Example:
-    .. table::
-        :align: center
-        :widths: auto
-
-        ========  ========  ========  ========  ================
-        xxxAKQJT  98765432  CDHSrrrr  xxPPPPPP  Card
-        ========  ========  ========  ========  ================
-        00001000  00000000  01001011  00100101  King of Diamonds
-        00000000  00001000  00010011  00000111  Five of Spades
-        00000010  00000000  10001001  00011101  Jack of Clubs
-        ========  ========  ========  ========  ================
-
-This representation will allow us to do very important things like:
-
-- Make a unique prime product for each hand
-- Detect flushes
-- Detect straights
-
-and is also quite performant.
-"""
-
 from __future__ import annotations
 
 import math
@@ -48,7 +6,51 @@ from typing import Union, Iterable
 
 class Card(int):
     """
-    The 32-bit integer Card as described in the module docstring.
+    Usage :code:`Card("Kd")`
+
+    We represent cards as 32-bit integers, so there is no object instantiation -
+    they are just ints. Most of the bits are used, and have a specific meaning.
+    See below:
+
+    .. table:: Card
+        :align: center
+        :widths: auto
+
+        ========  ========  ========  ========
+        xxxbbbbb  bbbbbbbb  cdhsrrrr  xxpppppp
+        ========  ========  ========  ========
+
+    - p = prime number of rank (deuce=2,trey=3,four=5,...,ace=41)
+    - r = rank of card (deuce=0,trey=1,four=2,five=3,...,ace=12)
+    - cdhs = suit of card (bit turned on based on suit of card)
+    - b = bit turned on depending on rank of card
+    - x = unused
+
+    Example:
+        .. table::
+            :align: center
+            :widths: auto
+
+            ========  ========  ========  ========  ================
+            xxxAKQJT  98765432  CDHSrrrr  xxPPPPPP  Card
+            ========  ========  ========  ========  ================
+            00001000  00000000  01001011  00100101  King of Diamonds
+            00000000  00001000  00010011  00000111  Five of Spades
+            00000010  00000000  10001001  00011101  Jack of Clubs
+            ========  ========  ========  ========  ================
+
+    This representation will allow us to do very important things like:
+
+    - Make a unique prime product for each hand
+    - Detect flushes
+    - Detect straights
+
+    and is also quite performant.
+
+    Args:
+        arg (str | int): A string of the form "{rank}{suite}" e.g. "Kd" or "As" or a properly-formed
+            Card-int as described above.
+
     """
 
     # the basics
@@ -75,41 +77,8 @@ class Card(int):
     }
 
     def __new__(cls, arg: Union[str, int]) -> Card:
-        """
-        Get a binary integer representation of a card, inspired by:
-
-        http://suffe.cool/poker/evaluator.html
-
-        See below:
-
-        .. table:: Card
-            :align: center
-            :widths: auto
-
-            ========  ========  ========  ========
-            xxxbbbbb  bbbbbbbb  cdhsrrrr  xxpppppp
-            ========  ========  ========  ========
-
-        - p = prime number of rank (deuce=2,trey=3,four=5,...,ace=41)
-        - r = rank of card (deuce=0,trey=1,four=2,five=3,...,ace=12)
-        - cdhs = suit of card (bit turned on based on suit of card)
-        - b = bit turned on depending on rank of card
-        (i.e. the least significant bit is turned on if deuce, etc.)
-        - x = unused
-
-        Example:
-            "Kd" --> int(0b 00001000  00000000  01001011  00100101) = 134236965
-
-        Args:
-            arg (str or int): A representation of a card. (i.e. "Kd" or an already
-                well-formed integer like 134236965.)
-        Returns:
-            Card: The 32bit int representing the card according to above.
-
-        """
         if isinstance(arg, str):
             return Card.from_string(arg)
-
         return Card.from_int(arg)
 
     @classmethod
@@ -125,7 +94,7 @@ class Card(int):
         Args:
             string (str): A string representing a card.
         Returns:
-            (Card): The 32bit int representing the card as described above
+            Card: The 32-bit int representing the card as described above
         """
 
         rank_char = string[0]
@@ -144,8 +113,7 @@ class Card(int):
     @classmethod
     def from_int(cls, card_int: int) -> Card:
         """
-        Converts an already well-formed card integer (as described in the module
-        docstring) into a Card.
+        Converts an already well-formed card integer as described above
 
         Example:
             134236965 --> Card("Kd")
@@ -153,7 +121,8 @@ class Card(int):
         Args:
             card_int (int): An int representing a card.
         Returns:
-            (Card): The 32bit int representing the card as described above
+            Card: The 32-bit int representing the card as described above
+
         """
         return super(Card, cls).__new__(cls, card_int)
 
@@ -204,7 +173,7 @@ class Card(int):
             Spades      1
             Hearts      2
             Diamonds    4
-            clubs       8
+            Clubs       8
             ========  ======
 
         Example:
@@ -234,14 +203,11 @@ class Card(int):
     @property
     def prime(self) -> int:
         """
-        Gets the prime associated with the card. This returns the kth prime
+        The prime associated with the card. This returns the kth prime
         starting at 2 where k is the rank of the card.
 
         Example:
             134236965 ("Kd") --> 37
-
-        Returns:
-            int: The kth prime number (starting at 2) where k is the rank of the card.
 
         """
         return self & 0x3F
@@ -249,8 +215,7 @@ class Card(int):
     @property
     def pretty_string(self) -> str:
         """
-        Returns:
-            string: A human-readable pretty string with ascii suites.
+        A human-readable pretty string with ascii suites.
 
         """
         return f" [ {Card.STR_RANKS[self.rank]} {Card.PRETTY_SUITS[self.suit]} ] "
@@ -260,6 +225,7 @@ class Card(int):
         """
         For debugging purposes. Displays the binary number as a
         human readable string in groups of four digits.
+
         """
         bstr = bin(self)[2:][::-1]  # chop off the 0b and THEN reverse string
         output = list("".join(["0000" + "\t"] * 7) + "0000")
@@ -293,6 +259,7 @@ def prime_product_from_hand(cards: Iterable[Card]) -> int:
     Returns:
         int: The product of all primes in the hand, corresponding to the rank of the
             card (See :meth:`Card.prime`)
+
     """
     return math.prod(card.prime for card in cards)
 
@@ -321,6 +288,7 @@ def prime_product_from_rankbits(rankbits: int) -> int:
     Returns:
         int: The product of all primes in the hand, corresponding
             to the rank of the card.
+
     """
     product = 1
     for i in Card.INT_RANKS:
@@ -339,6 +307,7 @@ def card_list_to_pretty_str(cards: list[Card]) -> str:
         cards (list[Card]): A list of card ints in the proper form.
     Returns:
         string: A human-readable pretty string with ascii suites.
+
     """
     output = " "
     for i, card in enumerate(cards, 0):
