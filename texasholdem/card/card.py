@@ -1,5 +1,3 @@
-""""""
-
 from __future__ import annotations
 
 import math
@@ -25,7 +23,7 @@ class Card(int):
     - p = prime number of rank (deuce=2,trey=3,four=5,...,ace=41)
     - r = rank of card (deuce=0,trey=1,four=2,five=3,...,ace=12)
     - cdhs = suit of card (bit turned on based on suit of card)
-    - b = bit turned on depending on rank of card (i.e. the least significant bit is turned on if deuce, etc.)
+    - b = bit turned on depending on rank of card
     - x = unused
 
     Example:

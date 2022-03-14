@@ -36,6 +36,10 @@ class HistoryImportError(Exception):
 
 @dataclass()
 class PrehandHistory:
+    """
+    History of the Prehand Phase
+
+    """
     btn_loc: int
     """
     The id of the player with the button
@@ -119,6 +123,10 @@ class PrehandHistory:
 
 @dataclass()
 class PlayerAction:
+    """
+    History of a Player Action
+
+    """
     player_id: int
     """
     The player id
@@ -165,6 +173,10 @@ class PlayerAction:
 
 @dataclass()
 class BettingRoundHistory:
+    """
+    History of a Betting Round
+
+    """
     new_cards: list[Card]
     """
     The new cards that were added this round
@@ -233,6 +245,10 @@ class BettingRoundHistory:
 
 @dataclass()
 class SettleHistory:
+    """
+    History of the Settle Phase
+
+    """
     new_cards: list[Card]
     """
     The new cards that were added this round
@@ -299,8 +315,8 @@ class History:
     History class of a hand of TexasHoldEm. Includes one history item for each HandPhase.
     In total, this constitutes a minimal amount of information necessary to replay a hand.
 
-    This class also includes :meth:`to_string()` and :meth:`from_string()` methods which provides ways to
-    write / read human-readable information to / from files.
+    This class also includes :meth:`to_string()` and :meth:`from_string()` methods which
+    provides ways to write / read human-readable information to / from files.
 
     """
     prehand: PrehandHistory = None
