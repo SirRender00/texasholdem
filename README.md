@@ -5,8 +5,8 @@ Latest Stable Release Version: v0.4.5 \
 [Changelog](https://github.com/SirRender00/texasholdem/releases/tag/v0.4.5) \
 [Documentation](https://texasholdem.readthedocs.io/en/stable/)
 
-Latest Experimental Release Version v0.5-alpha.2 \
-[Changelog](https://github.com/SirRender00/texasholdem/releases/tag/v0.5-alpha.2) \
+Latest Experimental Release Version v0.5-alpha.3 \
+[Changelog](https://github.com/SirRender00/texasholdem/releases/tag/v0.5-alpha.3) \
 [Documentation](https://texasholdem.readthedocs.io/en/latest/)
 
 Roadmap \
