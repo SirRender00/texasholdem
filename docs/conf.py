@@ -13,7 +13,7 @@
 import os
 import sys
 import sphinx_rtd_theme
-sys.path.insert(0, os.path.abspath('../texasholdem'))
+sys.path.insert(0, os.path.abspath('../'))
 
 
 # -- Project information -----------------------------------------------------
@@ -23,7 +23,7 @@ copyright = '2022, Evyn Machi'
 author = 'Evyn Machi'
 
 # The full version, including alpha/beta/rc tags
-release = 'v0.5-alpha.3'
+release = 'v0.5-alpha.4'
 
 
 # -- General configuration ---------------------------------------------------
