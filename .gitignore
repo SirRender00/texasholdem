@@ -5,6 +5,7 @@
 *.pgn
 !tests/pgns/*.pgn
 !tests/pgns/*/*.pgn
+!docs/*.pgn
 
 # lock files
 *.lock

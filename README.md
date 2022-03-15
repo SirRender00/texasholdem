@@ -13,16 +13,27 @@ Roadmap \
 [v1.0.0](https://github.com/SirRender00/texasholdem/wiki/Version-1.0.0-Roadmap)
 
 ## Contributing
-To be added as a contributor, please email me at evyn.machi@gmail.com with your GitHub username and mention one of the open issues / a new issue you would like to tackle first.
-For more information about contributing, please see the wiki.
+Want a new feature, found a bug, or have questions? Feel free to add to our issue board on Github!
+[Open Issues](https://github.com/SirRender00/texasholdem/issues>).
+
+We welcome any developer who enjoys the package enough to contribute! Please message me at evyn.machi@gmail.com
+if you want to be added as a contributor.
 
 ## Install
+The package is available on pypi and can be installed with
+
 ```bash
 pip install texasholdem
 ```
 
+For the latest experimental version
+```bash
+pip install texasholdem --pre
+```
+
 ## Quickstart
-Playing a game from the command line is as simple as the following:
+Play a game from the command line and take turns for every player out of the box.
+
 ```python
 from texasholdem import TexasHoldEm
 from texasholdem.gui import TextGUI
@@ -48,13 +59,18 @@ while game.is_game_running():
 ```
 
 ## Overview
+The following is a quick summary of what's in the package. Please see the 
+[docs](https://texasholdem.readthedocs.io/en/stable/) for all the details.
+
 ### Game Information
-Get game information and take actions through intuitive attributes:
+
+Get game information and take actions through intuitive attributes.
+
 ```python
 from texasholdem import TexasHoldEm, HandPhase, ActionType
 
-game = TexasHoldEm(buyin=500, 
-                   big_blind=5, 
+game = TexasHoldEm(buyin=500,
+                   big_blind=5,
                    small_blind=2,
                    max_players=9)
 game.start_hand()
@@ -62,6 +78,7 @@ game.start_hand()
 assert game.hand_phase == HandPhase.PREFLOP
 assert HandPhase.PREFLOP.next_phase() == HandPhase.FLOP
 assert game.chips_to_call(game.current_player) == game.big_blind
+assert len(game.get_hand(game.current_player)) == 2
 
 game.take_action(ActionType.CALL)
 
@@ -75,8 +92,7 @@ assert game.chips_to_call(game.current_player) == 10 - game.big_blind
 
 ### Cards
 The card module represents cards as 32-bit integers for simple and fast hand
-evaluations. For more information about the representation, see the `Card`
-module.
+evaluations.
 
 ```python
 from texasholdem import Card
@@ -104,11 +120,9 @@ while game.is_hand_running():
         game.take_action(*call_agent(game))
 ```
 
-The `game.get_hand(player_id=...)` method of the `TexasHoldEm` class 
-will return a list of type `list[Card]`.
-
 ### Game History
-Export and import the history of hands:
+Export and import the history of hands to files.
+
 ```python
 from texasholdem import TexasHoldEm
 from texasholdem.gui import TextGUI
@@ -131,17 +145,21 @@ PGN files also support single line and end of line comments starting with "#".
 
 ### Poker Evaluator
 The evaluator module returns the rank of the best 5-card hand from a list of 5 to 7 cards.
-The rank is a number from 1 (strongest) to 7462 (weakest). This determines the winner in the `TexasHoldEm` module:
+The rank is a number from 1 (strongest) to 7462 (weakest).
 
 ```python
 from texasholdem import Card
 from texasholdem.evaluator import  evaluate, rank_to_string
 
 assert evaluate(cards=[Card("Kd"), Card("5d")],
-                board=[Card("Qd"), 
-                       Card("6d"), 
-                       Card("5s"), 
+                board=[Card("Qd"),
+                       Card("6d"),
+                       Card("5s"),
                        Card("2d"),
                        Card("5h")]) == 927
 assert rank_to_string(927) == "Flush, King High"
 ```
+
+### GUIs
+The GUI package currently comes with a text-based GUI to play games from the command line. Coming later
+will be web-app based GUIs.

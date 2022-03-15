@@ -71,4 +71,4 @@ def linkcode_resolve(domain, info):
 
 
 # ext-links
-extlinks = {'source_code': (f'https://github.com/SirRender00/texasholdem/tree/{release}/%s', 'source')}
+extlinks = {'source_code': (f'https://github.com/SirRender00/texasholdem/tree/{release}/%s', '%s')}

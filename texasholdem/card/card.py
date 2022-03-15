@@ -8,9 +8,8 @@ class Card(int):
     """
     Usage :code:`Card("Kd")`
 
-    We represent cards as 32-bit integers, so there is no object instantiation -
-    they are just ints. Most of the bits are used, and have a specific meaning.
-    See below:
+    We represent :class:`~texasholdem.card.card.Card` objects as native Python 32-bit integers. Most of the
+    bits are used, and have a specific meaning. See below:
 
     .. table:: Card
         :align: center
@@ -20,35 +19,35 @@ class Card(int):
         xxxbbbbb  bbbbbbbb  cdhsrrrr  xxpppppp
         ========  ========  ========  ========
 
-    - p = prime number of rank (deuce=2,trey=3,four=5,...,ace=41)
-    - r = rank of card (deuce=0,trey=1,four=2,five=3,...,ace=12)
+
+    - p = prime number of rank (in binary) (deuce=2, trey=3, four=5, ..., ace=41)
+    - r = rank of card (in binary) (deuce=0, trey=1, four=2, five=3, ..., ace=12)
     - cdhs = suit of card (bit turned on based on suit of card)
-    - b = bit turned on depending on rank of card
+    - b = bit turned on depending on rank of card (deuce=1st bit, trey=2nd bit, ...)
     - x = unused
 
-    Example:
+    **Example**
         .. table::
             :align: center
             :widths: auto
 
-            ========  ========  ========  ========  ================
-            xxxAKQJT  98765432  CDHSrrrr  xxPPPPPP  Card
-            ========  ========  ========  ========  ================
-            00001000  00000000  01001011  00100101  King of Diamonds
-            00000000  00001000  00010011  00000111  Five of Spades
-            00000010  00000000  10001001  00011101  Jack of Clubs
-            ========  ========  ========  ========  ================
+            ================ ========  ========  ========  ========
+            Card             xxxAKQJT  98765432  CDHSrrrr  xxPPPPPP
+            ================ ========  ========  ========  ========
+            King of Diamonds 00001000  00000000  01001011  00100101
+            Five of Spades   00000000  00001000  00010011  00000111
+            Jack of Clubs    00000010  00000000  10001001  00011101
+            ================ ========  ========  ========  ========
 
-    This representation will allow us to do very important things like:
 
-    - Make a unique prime product for each hand
-    - Detect flushes
-    - Detect straights
+    This representation allows for minimal memory overhead along with fast applications necessary for poker:
 
-    and is also quite performant.
+        - Make a unique prime product for each hand (by multiplying the prime bits)
+        - Detect flushes (bitwise && for the suits)
+        - Detect straights (shift and bitwise &&)
 
     Args:
-        arg (str | int): A string of the form "{rank}{suite}" e.g. "Kd" or "As" or a properly-formed
+        arg (str | int): A string of the form "{rank}{suit}" e.g. "Kd" or "As" or a properly-formed
             Card-int as described above.
 
     """
@@ -180,7 +179,7 @@ class Card(int):
             134236965 ("Kd") --> 2
 
         Returns:
-            int: 1,2,4, or 8, representing the suite of the card from the above table.
+            int: 1,2,4, or 8, representing the suit of the card from the above table.
 
         """
         return (self >> 12) & 0xF
@@ -215,7 +214,7 @@ class Card(int):
     @property
     def pretty_string(self) -> str:
         """
-        A human-readable pretty string with ascii suites.
+        A human-readable pretty string with ascii suits.
 
         """
         return f" [ {Card.STR_RANKS[self.rank]} {Card.PRETTY_SUITS[self.suit]} ] "
@@ -301,12 +300,12 @@ def prime_product_from_rankbits(rankbits: int) -> int:
 def card_list_to_pretty_str(cards: list[Card]) -> str:
     """
     Prints the given card in a human-readable pretty string with
-    ascii suites.
+    ascii suit.
 
     Args:
         cards (list[Card]): A list of card ints in the proper form.
     Returns:
-        string: A human-readable pretty string with ascii suites.
+        string: A human-readable pretty string with ascii suits.
 
     """
     output = " "

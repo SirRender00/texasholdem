@@ -39,7 +39,7 @@ def test_card_rank(card_tuple):
 
 @pytest.mark.parametrize("card_tuple", get_sample_cards())
 def test_card_suit(card_tuple):
-    """Test suite getter."""
+    """Test suit getter."""
     card_str, _ = card_tuple
     assert Card(card_str).suit == Card.CHAR_SUIT_TO_INT_SUIT[card_str[1]]
 

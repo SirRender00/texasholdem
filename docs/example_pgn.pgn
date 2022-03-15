@@ -1,0 +1,36 @@
+# We can comment anywhere that takes up the whole line
+# There is a section for each hand phase
+# Note: By convention, the button location is always assumed to be player 0
+PREHAND
+Big Blind: 5        # We also support end-of-line comments
+Small Blind: 2
+Starting Pot: 0
+Player Chips: 500,500,500,500,500,500
+Player Cards: [Ks 6c],[7d As],[Kc Ac],[7h 7s],[5h Ts],[6h 5d]
+
+PREFLOP
+# Each action is a tuple of (player_id,ActionType,value)
+New Cards: []
+1. (3,FOLD);(4,FOLD);(5,FOLD);(0,CALL);(1,CALL);(2,RAISE,12)
+# New orbit number 2 means that each player here has already played once
+2. (0,CALL);(1,CALL)
+
+FLOP
+New Cards: [8s,9s,6d]
+1. (1,RAISE,13);(2,FOLD);(0,CALL)
+
+TURN
+New Cards: [4s]
+1. (1,CHECK);(0,CHECK)
+
+RIVER
+New Cards: [3s]
+1. (1,RAISE,90);(0,RAISE,183)
+2. (1,RAISE,200);(0,RAISE,470)
+3. (1,FOLD)
+
+SETTLE
+# We settle by pot in a tuple (Pot pot_id, amount, best_rank, winners)
+# Note: best_rank is -1 if there is only one winner in the pot due to everyone folding
+New Cards: []
+Winners: (Pot 0,732,-1,[0])
