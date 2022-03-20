@@ -223,7 +223,7 @@ def generate_flush(board: Optional[list[Card]] = None) -> list[str]:
     Arguments:
         board (Optional[List[Card]]): The board to use of length 3, 4, or 5 (default None).
     Returns:
-        List[str]: A list of two str suites (or five if board is None)
+        List[str]: A list of two str suits (or five if board is None)
             that form a flush when combined with the board
     Raises:
         ValueError: If it's impossible to generate a flush

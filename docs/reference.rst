@@ -1,4 +1,6 @@
-Reference
+.. _api_reference:
+
+API Reference
 =======================
 
 All references here are implicitly prefixed with :code:`texasholdem`

@@ -320,11 +320,29 @@ class History:
 
     """
     prehand: PrehandHistory = None
+    """
+    The Prehand History
+    """
     preflop: BettingRoundHistory = None
+    """
+    The Preflop History
+    """
     settle: SettleHistory = None
+    """
+    The Settle History
+    """
     flop: Optional[BettingRoundHistory] = None
+    """
+    The Flop History
+    """
     turn: Optional[BettingRoundHistory] = None
+    """
+    The Turn History
+    """
     river: Optional[BettingRoundHistory] = None
+    """
+    The River History
+    """
 
     def to_string(self) -> str:
         """
@@ -421,8 +439,8 @@ class History:
         be imported with :meth:`import_history()`.
 
         Arguments:
-            path (str | os.PathLike]): The directory or file to export the history to,
-                defaults to the current working directory at the file `./texas.pgn`
+            path (str | os.PathLike]): The directory or file to export the history to, defaults
+                to the current working directory at the file `./texas.pgn`
         Returns:
             os.PathLike: The path to the history file
 
@@ -458,8 +476,7 @@ class History:
         Arguments:
             path (str | os.PathLike): The PGN file to import from
         Returns:
-            Iterator[TexasHoldEm]: An iterator over game states such that
-                the next hand will play exactly like from the history.
+            History: The history object represented by the PGN file
         Raises:
             HistoryImportError: If the file given does not exist or if the file is invalid
 

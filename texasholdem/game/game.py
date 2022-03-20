@@ -60,7 +60,7 @@ class Pot:
         amount (int): The amount of chips in the pot NOT including the current betting round
         raised (int): The highest bet amount in the current betting round
         player_amounts (dict[int, int]): A map from player id to # chips each player has posted
-            this round
+                                         this round
 
     """
 
@@ -77,7 +77,7 @@ class Pot:
 
         Returns:
             int: The amount the player needs to call to be in this pot.
-                This is just :attr:`raised` if the player hasn't bet yet.
+              This is just :attr:`raised` if the player hasn't bet yet.
 
         """
         return self.raised - self.player_amounts.get(player_id, 0)
@@ -228,7 +228,7 @@ class TexasHoldEm:
         current_player (int): The id of the player who is to act.
         pots (list[Pot]): The active :class:`Pot` objects in the game.
         starting_pot (int): The amount of chips that are in the the middle at the start of the game
-            (This is mainly relevant for cases where players cannot split the last pot evenly.
+            (This is mainly used for cases where players cannot split the last pot evenly.)
         board (list[Card]): The communal cards that are out.
         hands (dict[int, list[Card]]): Map from player id to their hand
         num_hands (int): The number of hands played so far.

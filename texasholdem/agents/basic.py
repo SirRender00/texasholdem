@@ -44,6 +44,7 @@ def random_agent(game: TexasHoldEm, no_fold: bool = False) -> Tuple[ActionType, 
     Returns:
         tuple[ActionType, int]: Returns a uniformly random action from the
             available moves.
+
     """
     bet_amount = game.player_bet_amount(game.current_player)
     chips = game.players[game.current_player].chips
