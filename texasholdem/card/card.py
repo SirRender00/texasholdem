@@ -8,8 +8,8 @@ class Card(int):
     """
     Usage :code:`Card("Kd")`
 
-    We represent :class:`~texasholdem.card.card.Card` objects as native Python 32-bit integers. Most of the
-    bits are used, and have a specific meaning. See below:
+    We represent :class:`~texasholdem.card.card.Card` objects as native Python 32-bit
+    integers. Most of the bits are used, and have a specific meaning. See below:
 
     .. table:: Card
         :align: center
@@ -40,7 +40,8 @@ class Card(int):
             ================ ========  ========  ========  ========
 
 
-    This representation allows for minimal memory overhead along with fast applications necessary for poker:
+    This representation allows for minimal memory overhead along with fast applications
+    necessary for poker:
 
         - Make a unique prime product for each hand (by multiplying the prime bits)
         - Detect flushes (bitwise && for the suits)
