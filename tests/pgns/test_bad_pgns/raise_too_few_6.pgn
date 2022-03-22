@@ -1,4 +1,4 @@
-# Everyone but one folds on the river so win by default
+# Player raises less than the previous raise amount (Turn, orbit 2, player 1)
 PREHAND
 Big Blind: 5
 Small Blind: 2
@@ -16,14 +16,10 @@ New Cards: [8s,9s,6d]
 
 TURN
 New Cards: [4s]
-1. (1,CHECK);(0,CHECK)
-
-RIVER
-New Cards: [3s]
 1. (1,RAISE,90);(0,RAISE,183)
-2. (1,RAISE,366);(0,RAISE,475)
+2. (1,RAISE,250);(0,RAISE,470)
 3. (1,FOLD)
 
 SETTLE
 New Cards: []
-Winners: (Pot 0,903,-1,[0])
+Winners: (Pot 0,772,-1,[0])

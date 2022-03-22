@@ -81,7 +81,9 @@ def random_player():
     def get_action(game: TexasHoldEm, no_fold: bool = False) -> Tuple[ActionType, int]:
         bet_amount = game.player_bet_amount(game.current_player)
         chips = game.players[game.current_player].chips
-        min_raise = game.chips_to_call(game.current_player) + bet_amount + game.big_blind
+        min_raise = game.chips_to_call(game.current_player) \
+            + bet_amount \
+            + max(game.big_blind, game.last_raise)
         max_raise = bet_amount + chips
 
         possible = list(ActionType)
@@ -131,7 +133,6 @@ def prehand_checks(texas: TexasHoldEm):
     player_chips = [texas.players[i].chips for i in range(texas.max_players)]
     active_players = [i for i in range(texas.max_players)
                       if player_chips[i] > 0]
-    starting_pot = texas.starting_pot
 
     # RUN PREHAND
     texas.start_hand()
@@ -210,8 +211,8 @@ def prehand_checks(texas: TexasHoldEm):
                 f"Expected player {i} to not have posted anything"
 
     assert sum(pot.get_total_amount() for pot in texas.pots) \
-           == sb_posted + bb_posted + starting_pot, \
-           "Expected pot to be the sum of sb posted, bb posted, and any leftover from last round"
+           == sb_posted + bb_posted, \
+           "Expected pot to be the sum of sb posted and bb posted"
 
     # check player states
     # players have TO_CALL, (we check the small blind above)

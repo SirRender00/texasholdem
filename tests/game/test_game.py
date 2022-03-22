@@ -253,7 +253,7 @@ def test_until_stop(random_player, texas_game, predicates: Iterable[Callable[[Te
     texas_game = texas_game(buyin=150, big_blind=5, small_blind=2)
 
     while True:
-        assert sum(player.chips for player in texas_game.players) + texas_game.starting_pot \
+        assert sum(player.chips for player in texas_game.players) \
                == texas_game.max_players * texas_game.buyin
         prehand_checks(texas_game)
 
@@ -285,7 +285,7 @@ def test_until_stop(random_player, texas_game, predicates: Iterable[Callable[[Te
                                           recursive=True))
 def test_good_game_history(pgn):
     """
-    Runs the given history and ensures they match the replay
+    Runs the given history and ensures they match_states the replay
     """
     history_string = strip_comments(pgn)
     last_string = ""
@@ -301,6 +301,6 @@ def test_bad_game_history(pgn):
     """
     Runs the given history and ensures it errors.
     """
-    with pytest.raises((ValueError, HistoryImportError)):
+    with pytest.raises(ValueError):
         for _ in TexasHoldEm.import_history(pgn):
             pass

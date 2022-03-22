@@ -1,0 +1,28 @@
+# Tests the exception case of WSOP 2021 Rule 96
+# An ALL-IN action that is less than a min-raise does not reopen
+# the betting action EXCEPT when two or more such ALL-IN raises total
+# more than the previous raise.
+# Edge case: last raised should be the sum i.e. here 75
+PREHAND
+Big Blind: 5
+Small Blind: 2
+Player Chips: 140,150,100,80
+Player Cards: [5d Kc],[Kd 6h],[Ks 2d],[Kh Tc]
+
+PREFLOP
+New Cards: []
+1. (3,CALL);(0,CALL);(1,CALL);(2,CHECK)
+
+FLOP
+New Cards: [Qd,Ac,Ts]
+1. (1,CHECK);(2,CHECK);(3,CHECK);(0,CHECK)
+
+TURN
+New Cards: [Js]
+1. (1,CHECK);(2,CHECK);(3,CHECK);(0,RAISE,10)
+2. (1,RAISE,60);(2,RAISE,95);(3,CALL);(0,RAISE,135)
+3. (1,RAISE,140)
+
+SETTLE
+New Cards: [Td]
+Winners: (Pot 0,320,1600,[1, 2, 3, 0]);(Pot 1,60,1600,[2, 0, 1]);(Pot 2,80,1600,[0, 1]);(Pot 3,10,-1,[1])

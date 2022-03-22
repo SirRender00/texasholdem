@@ -147,4 +147,5 @@ def test_bad_format_history(pgn):
     Tries to import the given bad format files and ensures it errors.
     """
     with pytest.raises(HistoryImportError):
-        TexasHoldEm.import_history(pgn)
+        for _ in TexasHoldEm.import_history(pgn):
+            pass

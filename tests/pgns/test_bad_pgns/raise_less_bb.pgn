@@ -2,7 +2,6 @@
 PREHAND
 Big Blind: 10
 Small Blind: 5
-Starting Pot: 0
 Player Chips: 500,500,500,500,500,500
 Player Cards: [Qh Ac],[Jd 3c],[2h Kc],[9c 4h],[Td Kd],[6h As]
 
@@ -12,7 +11,8 @@ New Cards: []
 
 FLOP
 New Cards: [3s,7h,8h]
-1. (1,RAISE,20);(2,CALL);(3,CALL);(5,CALL);(4,CALL);(0,RAISE,25)
+1. (1,RAISE,20);(2,CALL);(3,CALL);(4,CALL);(5,CALL);(0,RAISE,25) # Should error here
+2. (1,CALL);(2,CALL);(3,CALL);(4,CALL);(5,CALL)
 
 TURN
 New Cards: [Qs]
