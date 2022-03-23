@@ -648,10 +648,9 @@ class TexasHoldEm:
             raise ValueError("Got arguments for both total and value. Expected only one.")
 
         if value:
-            warnings.warn("The :code:`value` argument will be redefined in 1.0. "
-                          "Currently, :code:`value` and :code:`total` mean to raise "
-                          "*to* the amount given. In 1.0, :code:`value` will mean to "
-                          "raise an amount more than the current bet amount.",
+            warnings.warn("The value argument will be redefined in 1.0. Currently, value "
+                          "and total mean to raise *to* the amount given. In 1.0, value will "
+                          "mean to raise an amount more than the current bet amount.",
                           DeprecationWarning)
             total = value
 
@@ -874,10 +873,9 @@ class TexasHoldEm:
             raise ValueError("Got arguments for both total and value. Expected only one.")
 
         if value:
-            warnings.warn("The :code:`value` argument will be redefined in 1.0. "
-                          "Currently, :code:`value` and :code:`total` mean to raise "
-                          "*to* the amount given. In 1.0, :code:`value` will mean to "
-                          "raise an amount more than the current bet amount.",
+            warnings.warn("The value argument will be redefined in 1.0. Currently, value "
+                          "and total mean to raise *to* the amount given. In 1.0, value will "
+                          "mean to raise an amount more than the current bet amount.",
                           DeprecationWarning)
             total = value
 
