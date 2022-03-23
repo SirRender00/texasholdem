@@ -8,9 +8,9 @@ Agents are a relatively new feature and currently the package comes with two bas
 
 Agents are implemented as functions and take a game as input and output an action of the current player::
 
-    action, val = call_agent(game)
+    action, total = call_agent(game)
     assert action == ActionType.CALL
-    assert val == None
+    assert total == None
 
 Basic Agents
 -------------

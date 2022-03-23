@@ -35,7 +35,7 @@ def test_basic_export(tmpdir, texas_game, call_player):
     texas.start_hand()
     while texas.is_hand_running():
         if texas.current_player == 8 and texas.hand_phase == HandPhase.PREFLOP:
-            texas.take_action(ActionType.RAISE, texas.big_blind + 5)
+            texas.take_action(ActionType.RAISE, total=texas.big_blind + 5)
         texas.take_action(*call_player(texas))
 
     assert all((texas.hand_history.prehand,
@@ -66,7 +66,7 @@ def test_basic_import(tmpdir, texas_game, call_player):
     texas.start_hand()
     while texas.is_hand_running():
         if texas.current_player == 8 and texas.hand_phase == HandPhase.PREFLOP:
-            texas.take_action(ActionType.RAISE, texas.big_blind + 5)
+            texas.take_action(ActionType.RAISE, total=texas.big_blind + 5)
         texas.take_action(*call_player(texas))
 
     history = tmpdir / "texas.pgn"

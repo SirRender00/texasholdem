@@ -36,7 +36,7 @@ played with the :attr:`~texasholdem.game.game.TexasHoldEm.num_hands` attribute.
 Actions
 ********
 To let the current player act we call the :meth:`~texasholdem.game.game.TexasHoldEm.take_action()` method.
-For example, :code:`game.take_action(ActionType.CALL)`, or :code:`game.take_action(ActionType.RAISE, 50)`
+For example, :code:`game.take_action(ActionType.CALL)`, or :code:`game.take_action(ActionType.RAISE, total=50)`
 for a raise action.
 
 Available actions include :obj:`~texasholdem.game.action_type.ActionType.CALL`,
@@ -45,8 +45,14 @@ Available actions include :obj:`~texasholdem.game.action_type.ActionType.CALL`,
 :class:`~texasholdem.game.action_type.ActionType`.
 
 .. note::
-    The action :code:`game.take_action(ActionType.RAISE, 50)` is read raise *to* 50. i.e. the player posts
-    the different between what they've already put in the pot and the amount to get to 50.
+    The :meth:`~texasholdem.game.game.TexasHoldEm.take_action()` takes two optional arguments
+    :code:`value` and :code:`total` that are mutually exclusive (both mean how much to raise *to*).
+
+.. warning::
+    As of version 0.6, the :code:`value` argument has been renamed to :code:`total`. The
+    :code:`value` argument will be redefined in 1.0. Currently, :code:`value` and :code:`total`
+    mean to raise *to* the amount given. In 1.0, :code:`value` will mean to raise an amount more
+    than the current bet amount.
 
 Canonical Loop
 ***************
@@ -58,9 +64,9 @@ only one winner). Try it out with one of the basic agents, :func:`~texasholdem.a
     while game.is_game_running():
         game.start_hand()
         while game.is_hand_running():
-            action, val = random_agent(game)
-            print(f"Player {game.current_player} {action} {val}")
-            game.take_action(action, val)
+            action, total = random_agent(game)
+            print(f"Player {game.current_player} {action} {total}")
+            game.take_action(action, total=total)
 
 General Information
 ^^^^^^^^^^^^^^^^^^^^^^^

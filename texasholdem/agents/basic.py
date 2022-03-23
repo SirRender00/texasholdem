@@ -68,8 +68,8 @@ def random_agent(game: TexasHoldEm, no_fold: bool = False) -> Tuple[ActionType, 
     if max_raise < min_raise:
         possible.remove(ActionType.RAISE)
 
-    action_type, value = random.choice(possible), None
+    action_type, total = random.choice(possible), None
     if action_type == ActionType.RAISE:
-        value = random.randint(min_raise, max_raise)
+        total = random.randint(min_raise, max_raise)
 
-    return action_type, value
+    return action_type, total
