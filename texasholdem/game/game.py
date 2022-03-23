@@ -1,3 +1,4 @@
+# pylint: disable=too-many-lines
 """
 The game module includes lightweight data classes:
 
@@ -9,11 +10,11 @@ It also includes the main :class:`TexasHoldEm` class.
 
 """
 from __future__ import annotations
-
 import os
 from typing import Iterator, Callable, Dict, Tuple, Optional, Union, List
 from enum import Enum, auto
 import random
+import warnings
 
 from texasholdem.card.card import Card
 from texasholdem.card.deck import Deck
@@ -24,6 +25,7 @@ from texasholdem.game.action_type import ActionType
 from texasholdem.game.hand_phase import HandPhase
 from texasholdem.game.player_state import PlayerState
 from texasholdem.evaluator import evaluator
+from texasholdem.util.functions import check_raise
 
 
 class Player:
@@ -606,18 +608,31 @@ class TexasHoldEm:
                    for i in range(len(self.pots))
                    if player_id in self._get_pot(i).players_in_pot())
 
+    @check_raise(ValueError)
     def validate_move(self,
                       player_id: Optional[int] = None,
                       action: Optional[ActionType] = None,
                       value: Optional[int] = None,
+                      total: Optional[int] = None,
                       throws: bool = False):
+        # pylint: disable=unused-argument,too-many-arguments,
+        # pylint: disable=too-many-branches,too-many-return-statements
         """
         Validate the potentially invalid action for the given player.
 
+        .. note::
+            :code:`value` and :code:`total` are mutually exclusive.
+
+        .. deprecated:: 0.6
+            The :code:`value` argument will be redefined in 1.0. Currently, :code:`value`
+            and :code:`total` mean to raise *to* the amount given. In 1.0, :code:`value`
+            will mean to raise an amount more than the current bet amount.
+
         Arguments:
-            player_id (Optional[int]): The player to take action. Default current_player.
-            action (Optional[ActionType]): The ActionType to take
-            value (Optional[int]): In the case of raise, how much to raise
+            player_id (int, optional): The player to take action. Default current_player.
+            action (int, optional): The ActionType to take
+            value (int, optional): For a raise action, how much to raise *to*.
+            total (int, optional): For a raise action, how much to raise *to*.
             throws (bool): If true, will throw an Exception instead if
                 the move is invalid. Default False.
         Returns:
@@ -629,59 +644,70 @@ class TexasHoldEm:
         if player_id is None:
             player_id = self.current_player
 
+        if total and value:
+            raise ValueError("Got arguments for both total and value. Expected only one.")
+
+        if value:
+            warnings.warn("The value argument will be redefined in 1.0. Currently, value "
+                          "and total mean to raise *to* the amount given. In 1.0, value will "
+                          "mean to raise an amount more than the current bet amount.",
+                          DeprecationWarning)
+            total = value
+
         # ALL_IN should be translated
-        new_action, new_value = action, value
+        new_action, new_total = action, total
         if new_action == ActionType.ALL_IN:
-            new_action, new_value = self._translate_allin(new_action, new_value)
+            new_action, new_total = self._translate_allin(new_action, new_total)
 
         player_amount = self.player_bet_amount(player_id)
         chips_to_call = self.chips_to_call(player_id)
         raised_level = self._get_pot(self.players[player_id].last_pot).raised
 
-        result, msg = True, ""
+        if not action:
+            return False, "Action is None."
 
         if self.current_player != player_id:
-            result, msg = False, f"Player {player_id} is not the current " \
-                                 f"player (Current player {self.current_player})"
+            return False, f"Player {player_id} is not the current " \
+                          f"player (Current player {self.current_player})"
 
         if new_action == ActionType.CALL and \
                 self.players[player_id].state != PlayerState.TO_CALL:
-            result, msg = False, f"Player {player_id} has state " \
-                                 f"{self.players[player_id].state} cannot CALL"
+            return False, f"Player {player_id} has state " \
+                          f"{self.players[player_id].state} cannot CALL"
+
         if new_action == ActionType.CHECK and \
                 self.players[player_id].state != PlayerState.IN:
-            result, msg = False, \
-                          f"Player {player_id} has state {self.players[player_id]} cannot CHECK"
-        if new_action == ActionType.RAISE:
-            if new_value is None:
-                result, msg = False, "Expected value to not be None for action RAISE."
-            if (new_value < raised_level + self.big_blind
-               and new_value < player_amount + self.players[player_id].chips):
-                result, msg = False, "Cannot RAISE less than a big blind (only when going ALL_IN)"
-            if player_amount + self.players[player_id].chips < new_value:
-                result, msg = False, "Cannot RAISE more than the number of chips available"
-            if new_value < chips_to_call:
-                result, msg = False, f"Expected RAISE value {new_value} to be more " \
-                                     f"than the chips to call {chips_to_call}"
+            return False, \
+                   f"Player {player_id} has state {self.players[player_id]} cannot CHECK"
 
-        if not result and throws:
-            raise ValueError(f"Invalid move, {msg}")
-        return result
+        if new_action == ActionType.RAISE:
+            if new_total is None:
+                return False, "Expected value to not be None for action RAISE."
+            if (new_total < raised_level + self.big_blind
+               and new_total < player_amount + self.players[player_id].chips):
+                return False, "Cannot RAISE less than a big blind (only when going ALL_IN)"
+            if player_amount + self.players[player_id].chips < new_total:
+                return False, "Cannot RAISE more than the number of chips available"
+            if new_total < chips_to_call:
+                return False, f"Expected RAISE value {new_total} to be more " \
+                              f"than the chips to call {chips_to_call}"
+
+        return True, ""
 
     def _take_action(self,
                      action: ActionType,
-                     value: Optional[int] = None):
+                     total: Optional[int] = None):
         """
         Execute the action for the current player. Assumes the move is valid.
 
         Arguments:
             action (ActionType): The ActionType to take
-            value (int, optional): In the case of raise, how much to raise
+            total (int, optional): In the case of raise, how much to raise *to*
 
         """
         # ALL_IN should be translated
         if action == ActionType.ALL_IN:
-            action, value = self._translate_allin(action, value)
+            action, total = self._translate_allin(action, total=total)
 
         player_amount = self.player_bet_amount(self.current_player)
         chips_to_call = self.chips_to_call(self.current_player)
@@ -692,7 +718,7 @@ class TexasHoldEm:
         elif action == ActionType.CHECK:
             pass
         elif action == ActionType.RAISE:
-            self._player_post(self.current_player, value - player_amount)
+            self._player_post(self.current_player, total - player_amount)
         elif action == ActionType.FOLD:
             self.players[self.current_player].state = PlayerState.OUT
             for i in range(self.players[self.current_player].last_pot + 1):
@@ -700,14 +726,14 @@ class TexasHoldEm:
 
     def _translate_allin(self,
                          action: ActionType,
-                         value: int = None) -> Tuple[ActionType, Optional[int]]:
+                         total: int = None) -> Tuple[ActionType, Optional[int]]:
         """
         Translates an all-in action to the appropriate action,
         either call or raise.
 
         """
         if action != ActionType.ALL_IN:
-            return action, value
+            return action, total
 
         if self.players[self.current_player].chips <= self.chips_to_call(self.current_player):
             return ActionType.CALL, None
@@ -756,15 +782,15 @@ class TexasHoldEm:
 
             yield self
 
-            action, val = self._translate_allin(*self._action)
-            self.validate_move(action=action, value=val, throws=True)
-            self._take_action(action, val)
+            action, total = self._translate_allin(*self._action)
+            self.validate_move(action=action, total=total, throws=True)
+            self._take_action(action, total=total)
 
             betting_history = self.hand_history[self.hand_phase]
             betting_history.actions.append(PlayerAction(
                 player_id=self.current_player,
                 action_type=action,
-                value=val)
+                total=total)
             )
 
             # On raise, everyone eligible gets to take another action
@@ -817,13 +843,25 @@ class TexasHoldEm:
         except StopIteration:
             pass
 
-    def take_action(self, action_type: ActionType, value: Optional[int] = None):
+    def take_action(self,
+                    action_type: ActionType,
+                    value: Optional[int] = None,
+                    total: Optional[int] = None):
         """
         The current player takes the specified action.
 
+        .. note::
+            :code:`value` and :code:`total` are mutually exclusive.
+
+        .. deprecated:: 0.6
+            The :code:`value` argument will be redefined in 1.0. Currently, :code:`value`
+            and :code:`total` mean to raise *to* the amount given. In 1.0, :code:`value`
+            will mean to raise an amount more than the current bet amount.
+
         Arguments:
             action_type (ActionType): The action type
-            value (int, optional): The value
+            value (int, optional): For a raise action, how much to raise *to*.
+            total (int, optional): For a raise action, how much to raise *to*.
         Raises:
             ValueError: If no hand is running or if the move is invalid.
 
@@ -831,8 +869,18 @@ class TexasHoldEm:
         if not self.is_hand_running():
             raise ValueError("No hand is running")
 
-        self.validate_move(action=action_type, value=value, throws=True)
-        self._action = (action_type, value)
+        if total and value:
+            raise ValueError("Got arguments for both total and value. Expected only one.")
+
+        if value:
+            warnings.warn("The value argument will be redefined in 1.0. Currently, value "
+                          "and total mean to raise *to* the amount given. In 1.0, value will "
+                          "mean to raise an amount more than the current bet amount.",
+                          DeprecationWarning)
+            total = value
+
+        self.validate_move(action=action_type, total=total, throws=True)
+        self._action = (action_type, total)
 
         try:
             next(self._hand_gen)
@@ -949,7 +997,7 @@ class TexasHoldEm:
             if bet_round:
                 deck.cards = bet_round.new_cards + deck.cards
                 for action in reversed(bet_round.actions):
-                    player_actions.insert(0, (action.player_id, action.action_type, action.value))
+                    player_actions.insert(0, (action.player_id, action.action_type, action.total))
 
         # start hand (deck will deal)
         game.start_hand()
@@ -965,7 +1013,7 @@ class TexasHoldEm:
             yield game
 
             try:
-                player_id, action, value = player_actions.pop(0)
+                player_id, action, total = player_actions.pop(0)
             except IndexError as err:
                 raise HistoryImportError("Expected more actions than "
                                          "given in the history file.") from err
@@ -974,5 +1022,5 @@ class TexasHoldEm:
                 raise HistoryImportError(f"Error replaying history: action player {player_id} "
                                          f"is not current player {game.current_player}")
 
-            game.take_action(action, value)
+            game.take_action(action, total=total)
         yield game

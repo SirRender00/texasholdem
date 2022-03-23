@@ -13,3 +13,4 @@ All references here are implicitly prefixed with :code:`texasholdem`
    texasholdem.card
    texasholdem.evaluator
    texasholdem.gui
+   texasholdem.util

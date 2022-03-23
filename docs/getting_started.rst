@@ -31,13 +31,13 @@ Play a game from the command line and take turns for every player out of the box
         while game.is_hand_running():
             gui.print_state(game)
 
-            action, val = gui.accept_input()
-            while not game.validate_move(game.current_player, action, val):
+            action, total = gui.accept_input()
+            while not game.validate_move(game.current_player, action, total):
                 print(f"{action} {val} is not valid for player {game.current_player}")
                 action, val = gui.accept_input()
 
-            gui.print_action(game.current_player, action, val)
-            game.take_action(action, val)
+            gui.print_action(game.current_player, action, total)
+            game.take_action(action, total=total)
 
 Overview
 ----------
@@ -64,7 +64,7 @@ Get game information and take actions through intuitive attributes::
     game.take_action(ActionType.CALL)
 
     player_id = game.current_player
-    game.take_action(ActionType.RAISE, value=10)
+    game.take_action(ActionType.RAISE, total=10)
     assert game.player_bet_amount(player_id) == 10
     assert game.chips_at_stake(player_id) == 20     # total amount in all pots the player is in
 

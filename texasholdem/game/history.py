@@ -5,7 +5,7 @@ export/import notation of the game.
 Texas Hold Em Notation Conventions:
 
     - The button is assigned ID 0
-    - Each action is a tuple :code:`(player_id, action_type, value)`
+    - Each action is a tuple :code:`(player_id, action_type, total)`
     - The winner section is a per-pot tuple :code:`(Pot id, amount, best rank, winner ids)`
 
 """
@@ -135,9 +135,9 @@ class PlayerAction:
     """
     The action type
     """
-    value: Optional[int]
+    total: Optional[int]
     """
-    The value if action is RAISE
+    The total raise amount
     """
 
     def to_string(self, canon_ids: dict[int, int]) -> str:
@@ -148,8 +148,8 @@ class PlayerAction:
             str: The string representation of a player action: id, action, amount
         """
         string = f"({canon_ids[self.player_id]},{self.action_type.name}"
-        if self.value is not None and self.value > 0:
-            string += "," + str(self.value)
+        if self.total is not None and self.total > 0:
+            string += "," + str(self.total)
         string += ")"
 
         return string
@@ -167,8 +167,8 @@ class PlayerAction:
         string = string.strip().strip('()')
         data = string.split(",")
         player_id, action_type = int(data[0]), ActionType[data[1]]
-        value = None if len(data) <= 2 else int(data[2])
-        return PlayerAction(player_id, action_type, value)
+        total = None if len(data) <= 2 else int(data[2])
+        return PlayerAction(player_id, action_type, total)
 
 
 @dataclass()
