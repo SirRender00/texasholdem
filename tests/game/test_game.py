@@ -284,7 +284,7 @@ def test_until_stop(random_player, texas_game, predicates: Iterable[Callable[[Te
                                           recursive=True))
 def test_good_game_history(pgn):
     """
-    Runs the given history and ensures they match_states the replay
+    Runs the given history and ensures they match the replay
     """
     history_string = strip_comments(pgn)
     last_string = ""
