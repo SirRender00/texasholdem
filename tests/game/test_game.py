@@ -22,7 +22,6 @@ from typing import Iterable, Callable
 
 import pytest
 
-from texasholdem.game.history import HistoryImportError
 from texasholdem.game.game import TexasHoldEm
 from texasholdem.game.hand_phase import HandPhase
 from texasholdem.game.player_state import PlayerState
