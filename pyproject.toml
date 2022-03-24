@@ -20,6 +20,7 @@ python = ">=3.7, <3.11"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"
+pytest-parallel = "^0.1.1"
 pylint = "^2.11.1"
 sphinx-rtd-theme = "^1.0.0"
 
