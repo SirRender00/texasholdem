@@ -48,7 +48,7 @@ def random_agent(game: TexasHoldEm, no_fold: bool = False) -> Tuple[ActionType, 
     """
     bet_amount = game.player_bet_amount(game.current_player)
     chips = game.players[game.current_player].chips
-    min_raise = game.chips_to_call(game.current_player) + bet_amount + game.big_blind
+    min_raise = game.value_to_total(game.min_raise(), game.current_player)
     max_raise = bet_amount + chips
 
     possible = list(ActionType)

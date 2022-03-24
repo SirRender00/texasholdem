@@ -1,8 +1,7 @@
-# A player raises more than their chip-count (FLOP, player 1)
+# A player raises more than their chip-count (FLOP, player 0)
 PREHAND
 Big Blind: 5
 Small Blind: 2
-Starting Pot: 0
 Player Chips: 500,500,500,500,500,500
 Player Cards: [Qh Ac],[Jd 3c],[2h Kc],[9c 4h],[Td Kd],[6h As]
 
@@ -12,7 +11,7 @@ New Cards: []
 
 FLOP
 New Cards: [3s,7h,8h]
-1. (1,RAISE,20);(2,CALL);(3,CALL);(5,CALL);(4,CALL);(0,RAISE,500)
+1. (1,RAISE,20);(2,CALL);(3,CALL);(4,CALL);(5,CALL);(0,RAISE,500)
 
 TURN
 New Cards: [Qs]

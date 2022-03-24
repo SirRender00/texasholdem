@@ -22,7 +22,6 @@ from typing import Iterable, Callable
 
 import pytest
 
-from texasholdem.game.history import HistoryImportError
 from texasholdem.game.game import TexasHoldEm
 from texasholdem.game.hand_phase import HandPhase
 from texasholdem.game.player_state import PlayerState
@@ -253,7 +252,7 @@ def test_until_stop(random_player, texas_game, predicates: Iterable[Callable[[Te
     texas_game = texas_game(buyin=150, big_blind=5, small_blind=2)
 
     while True:
-        assert sum(player.chips for player in texas_game.players) + texas_game.starting_pot \
+        assert sum(player.chips for player in texas_game.players) \
                == texas_game.max_players * texas_game.buyin
         prehand_checks(texas_game)
 
@@ -301,6 +300,6 @@ def test_bad_game_history(pgn):
     """
     Runs the given history and ensures it errors.
     """
-    with pytest.raises((ValueError, HistoryImportError)):
+    with pytest.raises(ValueError):
         for _ in TexasHoldEm.import_history(pgn):
             pass

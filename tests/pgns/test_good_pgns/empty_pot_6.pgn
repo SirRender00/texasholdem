@@ -4,15 +4,14 @@
 PREHAND
 Big Blind: 5
 Small Blind: 2
-Starting Pot: 0
 Player Chips: 20,145,145,128,150,150,150,128,334
 Player Cards: [Td 4h],[3d 2d],[Tc 7d],[Jc Kc],[6d 8d],[6s 8c],[5c 9s],[Jh Kd],[7s Ks]
 
 PREFLOP
 New Cards: []
-1. (3,RAISE,117);(4,CALL);(5,RAISE,146);(6,FOLD);(7,CALL);(8,RAISE,245);(0,CALL);(1,FOLD);(2,CALL)
+1. (3,RAISE,50);(4,CALL);(5,RAISE,146);(6,FOLD);(7,CALL);(8,RAISE,292);(0,CALL);(1,FOLD);(2,CALL)
 2. (3,FOLD);(4,CALL);(5,CALL)
 
 SETTLE
 New Cards: [7h,3s,Js,4c,Qh]
-Winners: (Pot 0,142,4044,[7]);(Pot 1,637,4044,[7]);(Pot 2,68,4921,[8]);(Pot 3,15,4921,[8]);(Pot 4,95,-1,[8])
+Winners: (Pot 0,142,4044,[7]);(Pot 1,570,4044,[7]);(Pot 2,68,4921,[8]);(Pot 3,15,4921,[8]);(Pot 4,142,-1,[8])

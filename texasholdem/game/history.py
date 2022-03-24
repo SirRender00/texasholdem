@@ -52,10 +52,6 @@ class PrehandHistory:
     """
     The id of the player with the small blind
     """
-    starting_pot: int
-    """
-    How many chips the hand started with in the middle
-    """
     player_chips: dict[int, int]
     """
     The number of chips for each player
@@ -77,7 +73,6 @@ class PrehandHistory:
 
         return f"Big Blind: {self.big_blind}\n" \
                f"Small Blind: {self.small_blind}\n" \
-               f"Starting Pot: {self.starting_pot}\n" \
                f"Player Chips: {','.join(str(self.player_chips[i]) for i in canon_ids)}\n" \
                f"Player Cards: " \
                f"{','.join(['[' + ' '.join(str_player_cards[i]) + ']' for i in canon_ids])}"
@@ -95,10 +90,9 @@ class PrehandHistory:
             HistoryImportError: If missing information or a mismatch between cards and chips
 
         """
-        big_blind, small_blind, starting_pot, chips_str, cards_str = string.split('\n')
+        big_blind, small_blind, chips_str, cards_str = string.split('\n')
         _, big_blind = big_blind.split(': ')
         _, small_blind = small_blind.split(': ')
-        _, starting_pot = starting_pot.split(': ')
 
         _, chips_str = chips_str.split(': ')
         player_chips = [int(chip_str) for chip_str in chips_str.split(',')]
@@ -116,7 +110,6 @@ class PrehandHistory:
         return PrehandHistory(0,
                               int(big_blind),
                               int(small_blind),
-                              int(starting_pot),
                               dict(zip(range(num_players), player_chips)),
                               dict(zip(range(num_players), player_cards)))
 
@@ -135,9 +128,13 @@ class PlayerAction:
     """
     The action type
     """
-    total: Optional[int]
+    total: Optional[int] = None
     """
     The total raise amount
+    """
+    value: Optional[int] = None
+    """
+    The amount raised
     """
 
     def to_string(self, canon_ids: dict[int, int]) -> str:
@@ -168,7 +165,7 @@ class PlayerAction:
         data = string.split(",")
         player_id, action_type = int(data[0]), ActionType[data[1]]
         total = None if len(data) <= 2 else int(data[2])
-        return PlayerAction(player_id, action_type, total)
+        return PlayerAction(player_id=player_id, action_type=action_type, total=total)
 
 
 @dataclass()

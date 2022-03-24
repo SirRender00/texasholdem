@@ -11,7 +11,7 @@ It also includes the main :class:`TexasHoldEm` class.
 """
 from __future__ import annotations
 import os
-from typing import Iterator, Callable, Dict, Tuple, Optional, Union, List
+from typing import Iterator, Callable, Dict, Tuple, Optional, Union, List, Iterable
 from enum import Enum, auto
 import random
 import warnings
@@ -229,10 +229,12 @@ class TexasHoldEm:
         sb_loc (int): The id of the player who has the small blind.
         current_player (int): The id of the player who is to act.
         pots (list[Pot]): The active :class:`Pot` objects in the game.
-        starting_pot (int): The amount of chips that are in the the middle at the start of the game
-            (This is mainly used for cases where players cannot split the last pot evenly.)
         board (list[Card]): The communal cards that are out.
         hands (dict[int, list[Card]]): Map from player id to their hand
+        last_raise (int): The amount of the last raise (that was over the previous bet)
+        raise_option (bool): If the current player has the option to raise (not taking into account
+            chip count). This is usually true and is only useful in the context of WSOP 2021 Rule 96
+            regarding when an all-in raise action does not trigger another round of betting.
         num_hands (int): The number of hands played so far.
         hand_phase (HandPhase): The current hand phase
         game_state (GameState): The current GameState
@@ -254,10 +256,11 @@ class TexasHoldEm:
         self.current_player = -1
 
         self.pots = []
-        self.starting_pot = 0
         self._deck = None
         self.board = []
         self.hands = {}
+        self.last_raise = 0
+        self.raise_option = True
 
         self.num_hands = 0
         self.hand_phase = HandPhase.PREHAND
@@ -294,7 +297,7 @@ class TexasHoldEm:
             else:
                 self.players[player_id].state = PlayerState.TO_CALL
 
-        active_players = list(self.active_iter(self.btn_loc + 1))
+        active_players = list(self.in_pot_iter(self.btn_loc + 1))
 
         # stop if only 1 player
         if len(active_players) <= 1:
@@ -309,28 +312,27 @@ class TexasHoldEm:
         if len(active_players) == 2:
             self.sb_loc = self.btn_loc
 
-        self.bb_loc = next(self.active_iter(self.sb_loc + 1))
+        self.bb_loc = next(self.in_pot_iter(self.sb_loc + 1))
 
         # reset pots
         self.pots = [Pot()]
-        self.pots[0].amount = self.starting_pot
 
         # deal cards
         self._deck = Deck()
         self.hands = {}
         self.board = []
 
-        for player_id in self.active_iter(self.btn_loc + 1):
+        for player_id in self.in_pot_iter(self.btn_loc + 1):
             self.hands[player_id] = self._deck.draw(num=2)
 
         # reset history
         self._action = None, None
+        self.raise_option = True
         self.hand_history = History(
             prehand=PrehandHistory(
                 btn_loc=self.btn_loc,
                 big_blind=self.big_blind,
                 small_blind=self.small_blind,
-                starting_pot=self.starting_pot,
                 player_chips={
                     i: self.players[i].chips
                     for i in range(self.max_players)
@@ -339,18 +341,20 @@ class TexasHoldEm:
             )
         )
 
-        # reset left over
-        self.starting_pot = 0
-
         # post blinds
         self._player_post(self.sb_loc, self.small_blind)
         self._player_post(self.bb_loc, self.big_blind)
+        self.last_raise = 0
 
         # action to left of BB
-        self.current_player = next(self.active_iter(loc=self.bb_loc + 1))
+        self.current_player = next(self.in_pot_iter(loc=self.bb_loc + 1))
         self.num_hands += 1
 
-    def player_iter(self, loc: int = None, reverse: bool = False) -> Iterator[int]:
+    def player_iter(self,
+                    loc: int = None,
+                    reverse: bool = False,
+                    match_states: Iterable[PlayerState] = tuple(PlayerState),
+                    filter_states: Iterable[PlayerState] = ()) -> Iterator[int]:
         """
         Iterates through all players starting at player_id and rotating in order
         of increasing player id.
@@ -358,6 +362,8 @@ class TexasHoldEm:
         Arguments:
             loc (int, optional): The player_id to start at, default is :attr:`current_player`.
             reverse (bool): In reverse play order, default False
+            match_states (Iterable[PlayerState]): Only include players with the given states
+            filter_states (Iterable[PlayerState]): Exclude players with the given states
         Returns:
             Iterator[int]: An iterator over all player ids.
 
@@ -370,11 +376,13 @@ class TexasHoldEm:
             start, stop, step = stop, start, -step
 
         for i in range(start, stop, step):
-            yield i % self.max_players
+            if self.players[i % self.max_players].state not in filter_states \
+                    and self.players[i % self.max_players].state in match_states:
+                yield i % self.max_players
 
-    def active_iter(self, loc: int = None, reverse: bool = False) -> Iterator[int]:
+    def in_pot_iter(self, loc: int = None, reverse: bool = False) -> Iterator[int]:
         """
-        Iterates through all "active" players (i.e. all players without
+        Iterates through all players with a stake in the pot (i.e. all players without
         states :obj:`~texasholdem.game.player_state.PlayerState.OUT` or
         :obj:`~texasholdem.game.player_state.PlayerState.SKIP`
 
@@ -387,13 +395,14 @@ class TexasHoldEm:
         """
         if loc is None:
             loc = self.current_player
-        for player_id in self.player_iter(loc=loc, reverse=reverse):
-            if self.players[player_id].state not in (PlayerState.OUT, PlayerState.SKIP):
-                yield player_id
+        yield from self.player_iter(loc=loc,
+                                    reverse=reverse,
+                                    filter_states=(PlayerState.OUT,
+                                                   PlayerState.SKIP))
 
-    def in_pot_iter(self, loc: int = None, reverse: bool = False) -> Iterator[int]:
+    def active_iter(self, loc: int = None, reverse: bool = False) -> Iterator[int]:
         """
-        Iterates through all active players that can take an action.
+        Iterates through all players that can take an action.
         i.e. players with states :obj:`~texasholdem.game.player_state.PlayerState.IN`
         or :obj:`~texasholdem.game.player_state.PlayerState.TO_CALL` (not including
         :obj:`~texasholdem.game.player_state.PlayerState.ALL_IN`).
@@ -407,9 +416,10 @@ class TexasHoldEm:
         """
         if loc is None:
             loc = self.current_player
-        for player_id in self.active_iter(loc=loc, reverse=reverse):
-            if self.players[player_id].state in (PlayerState.IN, PlayerState.TO_CALL):
-                yield player_id
+        yield from self.player_iter(loc=loc,
+                                    reverse=reverse,
+                                    match_states=(PlayerState.TO_CALL,
+                                                  PlayerState.IN))
 
     def _split_pot(self, pot_id: int, raised_level: int):
         """
@@ -429,7 +439,7 @@ class TexasHoldEm:
 
         self.pots.insert(pot_id + 1, split_pot)
 
-        for player_id in self.in_pot_iter():
+        for player_id in self.active_iter():
             if self.players[player_id].chips > self.chips_to_call(player_id):
                 self.players[player_id].last_pot += 1
 
@@ -464,6 +474,7 @@ class TexasHoldEm:
 
         # players previously in pot need to call in event of a raise
         if amount > chips_to_call:
+            self.last_raise = max(amount - self.last_raise, self.last_raise)
             for pot_player_id in self._get_pot(last_pot).players_in_pot():
                 if self._get_pot(last_pot).chips_to_call(pot_player_id) > 0 and \
                    self.players[pot_player_id].state == PlayerState.IN:
@@ -517,7 +528,7 @@ class TexasHoldEm:
 
         """
         count = 0
-        for i in self.in_pot_iter():
+        for i in self.active_iter():
             if self.players[i].state == PlayerState.TO_CALL:
                 return False
 
@@ -543,7 +554,7 @@ class TexasHoldEm:
         )
         self.hand_history[HandPhase.SETTLE] = settle_history
 
-        self.current_player = next(self.active_iter(loc=self.btn_loc + 1))
+        self.current_player = next(self.in_pot_iter(loc=self.btn_loc + 1))
 
         for i, pot in enumerate(self.pots, 0):
             players_in_pot = list(pot.players_in_pot())
@@ -571,9 +582,16 @@ class TexasHoldEm:
             settle_history.pot_winners[i] = (pot.get_total_amount(), best_rank, winners)
 
             win_amount = int((pot.get_total_amount()) / len(winners))
-            self.starting_pot += pot.get_total_amount() - (win_amount * len(winners))
             for player_id in winners:
                 self.players[player_id].chips += win_amount
+
+            # leftover chip goes to player left of the button WSOP Rule 73
+            leftover = pot.get_total_amount() - (win_amount * len(winners))
+            if leftover:
+                for j in self.in_pot_iter(loc=self.btn_loc):
+                    if j in winners:
+                        self.players[j].chips += leftover
+                        break
 
     def chips_to_call(self, player_id: int) -> int:
         """
@@ -607,6 +625,43 @@ class TexasHoldEm:
         return sum(self._get_pot(i).get_total_amount()
                    for i in range(len(self.pots))
                    if player_id in self._get_pot(i).players_in_pot())
+
+    def total_to_value(self, total: Optional[int], player_id: int) -> Optional[int]:
+        """
+        Translates a raise phrase "raise *to* total" to the phrase
+        "raise value".
+
+        Arguments:
+            total (int, optional): A total amount to raise
+            player_id (int): The player who's doing the raising
+        Returns:
+            Optional[int]: A translation to an amount the player is raising *to*
+        """
+        if not total:
+            return None
+        return total - self.chips_to_call(player_id) - self.player_bet_amount(player_id)
+
+    def value_to_total(self, value: Optional[int], player_id: int) -> Optional[int]:
+        """
+        Translates a raise phrase "raise value" to the phrase
+        "raise *to* total".
+
+        Arguments:
+            value (int, optional): An amount to raise past the any other bet
+            player_id (int): The player who's doing the raising
+        Returns:
+            Optional[int]: A translation to an amount the player is raising *by*
+        """
+        if not value:
+            return None
+        return value + self.chips_to_call(player_id) + self.player_bet_amount(player_id)
+
+    def min_raise(self):
+        """
+        Returns:
+            The minimum amount a player can raise by.
+        """
+        return max(self.big_blind, self.last_raise)
 
     @check_raise(ValueError)
     def validate_move(self,
@@ -661,7 +716,6 @@ class TexasHoldEm:
 
         player_amount = self.player_bet_amount(player_id)
         chips_to_call = self.chips_to_call(player_id)
-        raised_level = self._get_pot(self.players[player_id].last_pot).raised
 
         if not action:
             return False, "Action is None."
@@ -683,15 +737,21 @@ class TexasHoldEm:
         if new_action == ActionType.RAISE:
             if new_total is None:
                 return False, "Expected value to not be None for action RAISE."
-            if (new_total < raised_level + self.big_blind
-               and new_total < player_amount + self.players[player_id].chips):
-                return False, "Cannot RAISE less than a big blind (only when going ALL_IN)"
-            if player_amount + self.players[player_id].chips < new_total:
-                return False, "Cannot RAISE more than the number of chips available"
-            if new_total < chips_to_call:
-                return False, f"Expected RAISE value {new_total} to be more " \
-                              f"than the chips to call {chips_to_call}"
 
+            if not self.raise_option:
+                return False, "Betting round is over at this point, can only CALL or FOLD."
+
+            if (self.total_to_value(new_total, player_id) < self.min_raise()
+               and new_total < player_amount + self.players[player_id].chips):
+                return False, f"Cannot raise {self.total_to_value(new_total, player_id)}, " \
+                              f"less than the min raise {self.min_raise()} and player " \
+                              f"{player_id} is not going all-in."
+            if player_amount + self.players[player_id].chips < new_total:
+                return False, f"Cannot raise {new_total}, more than the number of chips " \
+                              f"available {player_amount + self.players[player_id].chips}"
+            if new_total < chips_to_call:
+                return False, f"Expected raise value {new_total} to be more " \
+                              f"than the chips to call {chips_to_call}"
         return True, ""
 
     def _take_action(self,
@@ -741,6 +801,26 @@ class TexasHoldEm:
         return ActionType.RAISE, \
             self.player_bet_amount(self.current_player) + self.players[self.current_player].chips
 
+    def _previous_all_in_sum(self, history_len: int) -> int:
+        """
+        Used for WSOP Rule 96
+
+        Arguments:
+            history_len (int): How far back to go
+        Returns:
+            int: The sum of the raise values of the most recent all-in raise players.
+        """
+        raised_sum = 0
+
+        for action in reversed(self.hand_history[self.hand_phase].actions[-history_len:]):
+            if self.players[action.player_id].state == PlayerState.ALL_IN \
+                    and action.action_type == ActionType.RAISE:
+                raised_sum += action.value
+            elif self.players[action.player_id].state == PlayerState.IN:
+                break
+
+        return raised_sum
+
     def _betting_round(self, hand_phase: HandPhase) -> Iterator[TexasHoldEm]:
         """
         Core round of the poker game. Executes actions from each active player
@@ -752,7 +832,6 @@ class TexasHoldEm:
             ValueError: If self.hand_state is not a valid betting round
 
         """
-
         if hand_phase not in (HandPhase.PREFLOP, HandPhase.FLOP, HandPhase.TURN, HandPhase.RIVER):
             raise ValueError("Not valid betting round!")
 
@@ -767,40 +846,75 @@ class TexasHoldEm:
         )
         self.board.extend(new_cards)
 
-        # player to the left of the button starts
-        if hand_phase != HandPhase.PREFLOP:
-            self.current_player = next(self.active_iter(loc=self.btn_loc + 1))
-
+        # reset last raise
         first_pot = self._last_pot_id()
-        player_iter = self.in_pot_iter(self.current_player)
+        self.last_raise = 0
+        self.raise_option = True
+
+        # player to the left of the button starts
+        self.current_player = self.btn_loc + 1
+        if hand_phase == HandPhase.PREFLOP:
+            self.current_player = self.bb_loc + 1
+
+        i, player_list = 0, list(self.active_iter(self.current_player))
 
         while not self._is_hand_over():
-            try:
-                self.current_player = next(player_iter)
-            except StopIteration:
-                break
+            # WSOP 2021 Rule 96
+            # if no more active players that can raise continue with the players to call
+            # while disabling the raise availability.
+            if i >= len(player_list):
+                i, player_list = 0, list(self.player_iter(loc=self.current_player + 1,
+                                                          match_states=(PlayerState.TO_CALL,)))
+                if not player_list:
+                    break
 
+                self.raise_option = False
+
+            # book keeping
+            prev_raised = self.last_raise
+
+            # set the current player and yield
+            self.current_player = player_list[i]
             yield self
 
             action, total = self._translate_allin(*self._action)
+            value = self.total_to_value(total=total,
+                                        player_id=self.current_player)
             self.validate_move(action=action, total=total, throws=True)
-            self._take_action(action, total=total)
 
             betting_history = self.hand_history[self.hand_phase]
             betting_history.actions.append(PlayerAction(
                 player_id=self.current_player,
                 action_type=action,
-                total=total)
+                total=total,
+                value=value)
             )
+
+            self._take_action(action, total=total)
 
             # On raise, everyone eligible gets to take another action
             if action == ActionType.RAISE:
-                player_iter = self.in_pot_iter(self.current_player)
+                # WSOP 2021 Rule 96
+                # An all-in raise less than the previous raise shall not reopen
+                # the bidding unless two or more such all-in raises total greater
+                # than or equal to the previous raise.
+                raise_sum = self._previous_all_in_sum(len(player_list))
+                if value < prev_raised:
+                    if raise_sum < prev_raised:
+                        i += 1
+                        continue
+                    # Exception for rule 96, set this
+                    self.last_raise = raise_sum
+
+                # reset the round (i.e. as if the betting round started here)
+                i, player_list = 0, list(self.active_iter(self.current_player))
 
                 # Throwaway current player
-                # Edge case: _in_pot_iter already excludes ALL_IN
+                # Edge case: active_iter already excludes ALL_IN
                 if self.players[self.current_player].state != PlayerState.ALL_IN:
-                    next(player_iter)
+                    player_list.pop(0)
+            else:
+                i += 1
 
         # consolidate betting to all pots in this betting round
         for i in range(first_pot, len(self.pots)):
@@ -982,7 +1096,6 @@ class TexasHoldEm:
         # read chips
         for i in game.player_iter(0):
             game.players[i].chips = history.prehand.player_chips[i]
-        game.starting_pot = history.prehand.starting_pot
 
         # stack deck
         deck = Deck()
