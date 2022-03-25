@@ -1,4 +1,8 @@
 # texasholdem
+![Pytest Status](https://github.com/SirRender00/texasholdem/actions/workflows/pytest.yml/badge.svg)
+[![Documentation Status](https://readthedocs.org/projects/texasholdem/badge/?version=stable)](https://texasholdem.readthedocs.io/en/stable/?badge=stable)
+![Pylint Status](https://github.com/SirRender00/texasholdem/actions/workflows/pylint.yml/badge.svg)
+
 A python package for Texas Hold 'Em Poker.
 
 Latest Stable Release Version: v0.6.0 \
