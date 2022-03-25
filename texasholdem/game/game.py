@@ -635,7 +635,7 @@ class TexasHoldEm:
             total (int, optional): A total amount to raise
             player_id (int): The player who's doing the raising
         Returns:
-            Optional[int]: A translation to an amount the player is raising *to*
+            Optional[int]: A translation to an amount the player is raising *by*
         """
         if not total:
             return None
@@ -647,10 +647,10 @@ class TexasHoldEm:
         "raise *to* total".
 
         Arguments:
-            value (int, optional): An amount to raise past the any other bet
+            value (int, optional): An amount to raise past the previous bet
             player_id (int): The player who's doing the raising
         Returns:
-            Optional[int]: A translation to an amount the player is raising *by*
+            Optional[int]: A translation to an amount the player is raising *to*
         """
         if not value:
             return None
