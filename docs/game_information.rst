@@ -47,6 +47,9 @@ Available actions include :obj:`~texasholdem.game.action_type.ActionType.CALL`,
 .. note::
     The :meth:`~texasholdem.game.game.TexasHoldEm.take_action()` takes two optional arguments
     :code:`value` and :code:`total` that are mutually exclusive (both mean how much to raise *to*).
+    To facilitate translation between the two based on preference there are the
+    :meth:`~texasholdem.game.game.TexasHoldEm.total_to_value` and
+    :meth:`~texasholdem.game.game.TexasHoldEm.value_to_total` methods.
 
 .. warning::
     As of version 0.6, the :code:`value` argument has been renamed to :code:`total`. The
@@ -109,6 +112,13 @@ To get the current :class:`~texasholdem.game.hand_phase.HandPhase`, there is the
 There is the :attr:`~texasholdem.game.game.TexasHoldEm.hand_history` attribute which is a
 :obj:`~texasholdem.game.history.History` object and details the entire history of the current hand so far and includes
 methods to export / import to files. See :ref:`Hand History`.
+
+Valid Actions
+**************
+In a very specific scenario (made by WSOP Rule 96) which says that an all-in raise action does *not* reopen the
+betting round, there is the :attr:`~texasholdem.game.game.TexasHoldEm.raise_option` attribute which
+tells when the current player has the option to raise (which will almost always be true, unless this rule is
+triggered, then it would be false.)
 
 
 .. _hand phases:
@@ -190,6 +200,11 @@ Additionally, the :class:`~texasholdem.game.game.TexasHoldEm` provides a few met
       betting round across all pots.
     - :meth:`~texasholdem.game.game.TexasHoldEm.chips_at_stake` returns how many chips the player can win so far
       (including the chips they've posted as well).
+    - :meth:`~texasholdem.game.game.TexasHoldEm.min_raise` returns the minimum value a player can raise.
+    - :meth:`~texasholdem.game.game.TexasHoldEm.value_to_total` translates a raise action phrase "raise amount" to the
+      phrase "raise *to* total".
+    - :meth:`~texasholdem.game.game.TexasHoldEm.total_to_value` translates a raise action phrase "raise *to* total" to
+      the phrase "raise value".
 
 .. _hand history:
 
