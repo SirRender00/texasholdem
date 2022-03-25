@@ -33,7 +33,7 @@ Play a game from the command line and take turns for every player out of the box
 
             action, total = gui.accept_input()
             while not game.validate_move(game.current_player, action, total):
-                print(f"{action} {val} is not valid for player {game.current_player}")
+                print(f"{action} {total} is not valid for player {game.current_player}")
                 action, val = gui.accept_input()
 
             gui.print_action(game.current_player, action, total)
