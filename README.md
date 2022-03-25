@@ -51,7 +51,7 @@ while game.is_game_running():
 
         action, total = gui.accept_input()
         while not game.validate_move(game.current_player, action, total=total):
-            print(f"{action} {val} is not valid for player {game.current_player}")
+            print(f"{action} {total} is not valid for player {game.current_player}")
             action, total = gui.accept_input()
 
         gui.print_action(game.current_player, action, total)
