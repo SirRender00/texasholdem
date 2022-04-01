@@ -8,12 +8,16 @@ readme = "README.md"
 license = "MIT"
 homepage = "https://github.com/SirRender00/texasholdem"
 repository = "https://github.com/SirRender00/texasholdem"
-
+documentation = "https://texasholdem.readthedocs.io/en/stable/"
 include = [
     "texasholdem",
     "LICENSE",
     "README.md",
 ]
+
+[tool.poetry.urls]
+"Bug Tracker" = "https://github.com/SirRender00/texasholdem/issues"
+"Wiki" = "https://github.com/SirRender00/texasholdem/wiki"
 
 [tool.poetry.dependencies]
 python = "^3.7"
