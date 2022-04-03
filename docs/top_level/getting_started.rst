@@ -17,27 +17,23 @@ Quickstart
 -----------------
 Play a game from the command line and take turns for every player out of the box::
 
-    from texasholdem import TexasHoldEm
-    from texasholdem.gui import TextGUI
+    from texasholdem.game.game import TexasHoldEm
+    from texasholdem.gui.text_gui import TextGUI
 
-    game = TexasHoldEm(buyin=500,
-                       big_blind=5,
-                       small_blind=2,
-                       max_players=6)
-    gui = TextGUI()
-    gui.set_player_ids(list(range(6)))      # see all cards
+    game = TexasHoldEm(buyin=500, big_blind=5, small_blind=2, max_players=6)
+    gui = TextGUI(game=game)
+
     while game.is_game_running():
         game.start_hand()
+
         while game.is_hand_running():
-            gui.print_state(game)
+            gui.run_step()
 
-            action, total = gui.accept_input()
-            while not game.validate_move(game.current_player, action, total):
-                print(f"{action} {total} is not valid for player {game.current_player}")
-                action, val = gui.accept_input()
+        path = game.export_history('./pgns')     # save history
+        gui.replay_history(path)                    # replay history
 
-            gui.print_action(game.current_player, action, total)
-            game.take_action(action, total=total)
+
+.. image:: /_static/text_gui_example.gif
 
 Overview
 ----------
@@ -149,7 +145,7 @@ See :ref:`evaluator` for more
 
 GUIs
 ^^^^^^^^^
-The GUI package currently comes with a text-based GUI to play games from the command line. Coming later
-will be web-app based GUIs.
+The GUI package currently comes with a text-based GUI to play & display games from the command line as shown
+above, in addition to viewing game history, and playing against agents. Coming later will be web-app based GUIs.
 
 See :ref:`guis` for more

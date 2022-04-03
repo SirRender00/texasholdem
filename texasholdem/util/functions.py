@@ -1,4 +1,11 @@
+from typing import Callable, Any, TypeVar
+
 from functools import wraps
+
+_F = TypeVar("_F", bound=Callable)
+_T = TypeVar("_T")
+_R = TypeVar("_R")
+_E = TypeVar("_E")
 
 
 def check_raise(exc_type: type(Exception)):
@@ -22,7 +29,7 @@ def check_raise(exc_type: type(Exception)):
         exc_type (type(Exception)): The Exception type to throw.
     """
 
-    def decorator(func):
+    def decorator(func: Callable[[_T], tuple[bool, str]]) -> Callable[[_T], bool]:
 
         @wraps(func)
         def inner(*args, throws=False, **kwargs):
@@ -34,3 +41,64 @@ def check_raise(exc_type: type(Exception)):
         return inner
 
     return decorator
+
+
+def handle(handler: Callable[[_E], Any],
+           exc_type: _E = Exception):
+    """
+    Decorator that wraps the entire function in a try-except statement
+    that catches the given exc_type and handles it with the given handler.
+
+    Arguments:
+        exc_type (type(Exception)): The exception type to handle
+        handler: Function that handles the exc_type exception
+
+    """
+
+    def decorator(func: _F) -> _F:
+
+        @wraps(func)
+        def inner(*args, **kwargs):
+            try:
+                return func(*args, **kwargs)
+            except exc_type as exc:             # # pylint: disable=broad-except
+                return handler(exc)
+
+        return inner
+
+    return decorator
+
+
+def preflight(prerun: Callable[[_T], Any]):
+    """
+    Decorator that runs the given function with the same parameters of the
+    decorated function beforehand.
+
+    Arguments:
+        prerun: Function that runs before the decorated function, takes the same arguments.
+    """
+
+    def decorator(func: Callable[[_T], _R]) -> Callable[[_T], _R]:
+
+        @wraps(func)
+        def inner(*args, **kwargs):
+            prerun(*args, **kwargs)
+            return func(*args, **kwargs)
+
+        return inner
+
+    return decorator
+
+
+def raise_if(exc: Exception, condition: bool):
+    """
+    Throws the given exception if condition is True. Useful to throw errors
+    in lambda statements.
+
+    Arguments:
+        exc (Exception): The exception instance to throw
+        condition (bool): If true, will raise the given error
+
+    """
+    if condition:
+        raise exc
