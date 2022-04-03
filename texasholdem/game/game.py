@@ -12,6 +12,7 @@ It also includes the main :class:`TexasHoldEm` class.
 from __future__ import annotations
 import os
 from typing import Iterator, Callable, Dict, Tuple, Optional, Union, List, Iterable
+from collections import deque
 from enum import Enum, auto
 import random
 import warnings
@@ -828,6 +829,9 @@ class TexasHoldEm:
 
         Arguments:
             hand_phase (HandPhase): Which betting round phase to execute
+        Returns:
+            Iterator[TexasHoldEm]: An iterator over the intermediary game states right when
+                a player is expected to take a turn.
         Raises:
             ValueError: If self.hand_state is not a valid betting round
 
@@ -856,16 +860,16 @@ class TexasHoldEm:
         if hand_phase == HandPhase.PREFLOP:
             self.current_player = self.bb_loc + 1
 
-        i, player_list = 0, list(self.active_iter(self.current_player))
+        player_queue = deque(self.active_iter(self.current_player))
 
         while not self._is_hand_over():
             # WSOP 2021 Rule 96
             # if no more active players that can raise continue with the players to call
             # while disabling the raise availability.
-            if i >= len(player_list):
-                i, player_list = 0, list(self.player_iter(loc=self.current_player + 1,
-                                                          match_states=(PlayerState.TO_CALL,)))
-                if not player_list:
+            if not player_queue:
+                player_queue = deque(self.player_iter(loc=self.current_player + 1,
+                                                      match_states=(PlayerState.TO_CALL,)))
+                if not player_queue:
                     break
 
                 self.raise_option = False
@@ -874,7 +878,7 @@ class TexasHoldEm:
             prev_raised = self.last_raise
 
             # set the current player and yield
-            self.current_player = player_list[i]
+            self.current_player = player_queue.popleft()
             yield self
 
             action, total = self._translate_allin(*self._action)
@@ -898,23 +902,20 @@ class TexasHoldEm:
                 # An all-in raise less than the previous raise shall not reopen
                 # the bidding unless two or more such all-in raises total greater
                 # than or equal to the previous raise.
-                raise_sum = self._previous_all_in_sum(len(player_list))
+                raise_sum = self._previous_all_in_sum(len(player_queue))
                 if value < prev_raised:
                     if raise_sum < prev_raised:
-                        i += 1
                         continue
                     # Exception for rule 96, set this
                     self.last_raise = raise_sum
 
                 # reset the round (i.e. as if the betting round started here)
-                i, player_list = 0, list(self.active_iter(self.current_player))
+                player_queue = deque(self.active_iter(self.current_player))
 
                 # Throwaway current player
                 # Edge case: active_iter already excludes ALL_IN
                 if self.players[self.current_player].state != PlayerState.ALL_IN:
-                    player_list.pop(0)
-            else:
-                i += 1
+                    player_queue.popleft()
 
         # consolidate betting to all pots in this betting round
         for i in range(first_pot, len(self.pots)):
