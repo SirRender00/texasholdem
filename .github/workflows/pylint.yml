@@ -10,6 +10,10 @@ on:
       - "main"
       - "[0-9]+.[0-9]+"
 
+concurrency:
+  group: environment-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
 
