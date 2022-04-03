@@ -7,9 +7,13 @@
 !tests/pgns/*/*.pgn
 !docs/*.pgn
 
+# Misc
+.DS_Store
+
 # lock files
 *.lock
 
+# IDE
 .idea/*
 
 # Byte-compiled / optimized / DLL files
