@@ -38,6 +38,9 @@ extensions = [
     'sphinx.ext.napoleon'
 ]
 
+# Autodoc
+autodoc_typehints = "none"
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
@@ -58,17 +61,6 @@ html_theme = 'sphinx_rtd_theme'
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
-
-
-# link-code
-def linkcode_resolve(domain, info):
-    if domain != 'py':
-        return None
-    if not info['module']:
-        return None
-    filename = info['module'].replace('.', '/')
-    return f"https://github.com/SirRender00/texasholdem/blob/{release}/{filename}.py"
-
 
 # ext-links
 extlinks = {'source_code': (f'https://github.com/SirRender00/texasholdem/tree/{release}/%s', '%s')}

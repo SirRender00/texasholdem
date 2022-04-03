@@ -4,13 +4,13 @@ texasholdem |release|
 .. toctree::
    :hidden:
 
-   getting_started
-   game_information
-   agents
-   cards
-   guis
-   evaluator
-   reference
+   top_level/getting_started
+   top_level/game_information
+   top_level/agents
+   top_level/cards
+   top_level/guis
+   top_level/evaluator
+   top_level/reference
 
 A python package for Texas Hold 'Em Poker, providing
 
@@ -20,7 +20,7 @@ A python package for Texas Hold 'Em Poker, providing
     - Simple & complex agents
     - And more!
 
-See the source code :source_code:`on github <.>`
+See the source code for this version :source_code:`on github <.>`
 
 Getting Started
 -----------------
