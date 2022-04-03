@@ -92,8 +92,26 @@ and :attr:`~texasholdem.game.game.TexasHoldEm.current_player` for the id of the 
 
 Players
 **********
-There is also :attr:`~texasholdem.game.game.TexasHoldEm.players` for a list of :attr:`~texasholdem.game.game.Player`
-objects indexed by id. More player information can be found under :ref:`Player Information`.
+There is a :attr:`~texasholdem.game.game.TexasHoldEm.players` attribute for a list of
+:attr:`~texasholdem.game.game.Player` objects indexed by id. For a more curated list of players based on
+:class:`~texasholdem.game.player_state.PlayerState` and other criteria there is:
+
+    - :meth:`~texasholdem.game.game.TexasHoldEm.active_iter` which is an iterator over player ids who can take an
+      action (i.e. with a state of :obj:`~texasholdem.game.player_state.PlayerState.IN` or
+      :obj:`~texasholdem.game.player_state.PlayerState.TO_CALL`).
+    - :meth:`~texasholdem.game.game.TexasHoldEm.in_pot_iter` which is an iterator over player ids who have a stake
+      in the pot (i.e. with a state of :obj:`~texasholdem.game.player_state.PlayerState.IN`,
+      :obj:`~texasholdem.game.player_state.PlayerState.TO_CALL`, or
+      :obj:`~texasholdem.game.player_state.PlayerState.ALL_IN`).
+    - :meth:`~texasholdem.game.game.TexasHoldEm.player_iter` which is a general iterator over ALL seats at the table
+      and which allows you to exclude states with the :code:`filter_states` argument or match states with the
+      :code:`match_states` argument.
+
+All three of these methods also include arguments :code:`loc` which is the player id to start at (defaults to
+:attr:`~texasholdem.game.game.TexasHoldEm.current_player`) and :code:`reverse` which will return the player ids in
+reverse play order.
+
+More player information can be found under :ref:`Player Information`.
 
 Board & Pots
 ***************
@@ -221,7 +239,7 @@ This will export the history in a human-readable format to a file.
 
 Example PGN File
 ^^^^^^^^^^^^^^^^^^
-.. literalinclude:: ./example_pgn.pgn
+.. literalinclude:: /pgn/example_pgn.pgn
     :language: python
 
 .. note::

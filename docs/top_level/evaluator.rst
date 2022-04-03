@@ -9,7 +9,7 @@ and -- in the future -- to quickly determine the probabilities of winning an inc
 
 Usage
 ------
-The main function of this module is the :func:`~texasholdem.game.evaluator.evaluator.evaluate` function, which
+The main function of this module is the :func:`~texasholdem.evaluator.evaluator.evaluate` function, which
 takes two arguments: the two-card hand to evaluate and the communal board (of three, four, or five cards),
 and returns a number 1 (strongest) thru 7462 (weakest) which is the hand rank.
 
