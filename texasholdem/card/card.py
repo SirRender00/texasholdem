@@ -218,7 +218,7 @@ class Card(int):
         A human-readable pretty string with ascii suits.
 
         """
-        return f" [ {Card.STR_RANKS[self.rank]} {Card.PRETTY_SUITS[self.suit]} ] "
+        return f"[ {Card.STR_RANKS[self.rank]} {Card.PRETTY_SUITS[self.suit]} ]"
 
     @property
     def binary_string(self) -> str:
@@ -309,11 +309,4 @@ def card_list_to_pretty_str(cards: list[Card]) -> str:
         string: A human-readable pretty string with ascii suits.
 
     """
-    output = " "
-    for i, card in enumerate(cards, 0):
-        if i != len(cards) - 1:
-            output += card.pretty_string + ","
-        else:
-            output += card.pretty_string + " "
-
-    return output
+    return " ".join(card.pretty_string for card in cards)

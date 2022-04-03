@@ -21,6 +21,7 @@ include = [
 
 [tool.poetry.dependencies]
 python = "^3.7"
+Deprecated = "^1.2.13"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"
@@ -29,7 +30,6 @@ pylint = "^2.11.1"
 sphinx-rtd-theme = "^1.0.0"
 
 [tool.pylint.master]
-ignore = ["keyboard.py", "text_gui.py"]
 disable = ["import-error", "missing-module-docstring"]
 
 [build-system]

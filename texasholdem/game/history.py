@@ -18,6 +18,7 @@ import os
 from texasholdem.game.action_type import ActionType
 from texasholdem.card.card import Card
 from texasholdem.game.hand_phase import HandPhase
+from texasholdem.evaluator import evaluator
 
 
 FILE_EXTENSION = 'pgn'
@@ -167,6 +168,10 @@ class PlayerAction:
         total = None if len(data) <= 2 else int(data[2])
         return PlayerAction(player_id=player_id, action_type=action_type, total=total)
 
+    def __str__(self) -> str:
+        return f"Player {self.player_id} {self.action_type.name}" \
+               f"{f' to {self.total}' if self.action_type == ActionType.RAISE else ''}"
+
 
 @dataclass()
 class BettingRoundHistory:
@@ -304,6 +309,18 @@ class SettleHistory:
                        (int(amount), int(best_rank), [int(winner) for winner in winners_list])
                        for pot_name, amount, best_rank, winners_list in pot_winners_data}
         return SettleHistory(new_cards, pot_winners)
+
+    def __str__(self) -> str:
+        pot_lists = []
+        for pot_id, (amount, best_rank, winners_list) in self.pot_winners.items():
+            winners_list = [str(winner) for winner in winners_list]
+            single = len(winners_list) > 0
+            rank_str = f" with a {evaluator.rank_to_string(best_rank)}" if best_rank != -1 else ""
+
+            pot_lists.append(f"Player{'s' if not single else ''} "
+                             f"{', '.join(winners_list)} {'wins' if single else 'splits'} "
+                             f"Pot {pot_id} (Chips {amount}){rank_str}")
+        return "\n".join(pot_lists)
 
 
 @dataclass()
@@ -569,3 +586,24 @@ class History:
     def __getitem__(self, hand_phase: HandPhase) -> \
             Union[PrehandHistory, BettingRoundHistory, SettleHistory]:
         return getattr(self, hand_phase.name.lower())
+
+    def __contains__(self, hand_phase: HandPhase) -> bool:
+        if self.__getitem__(hand_phase):
+            return True
+        return False
+
+    def combined_actions(self) -> list[PlayerAction]:
+        """
+        A list of :class:`PlayerAction` objects that was taken.
+
+        Returns:
+            list[PlayerAction]: The cumulative actions of all players in the game
+        """
+        history = []
+        for history_item in (self.preflop,
+                             self.flop,
+                             self.turn,
+                             self.river):
+            if history_item:
+                history.extend(history_item.actions)
+        return history

@@ -17,6 +17,8 @@ from enum import Enum, auto
 import random
 import warnings
 
+from deprecated.sphinx import versionadded, versionchanged
+
 from texasholdem.card.card import Card
 from texasholdem.card.deck import Deck
 from texasholdem.game.history import (History, PrehandHistory,
@@ -391,7 +393,7 @@ class TexasHoldEm:
             loc (int, optional): The location to start at, defaults to current_player
             reverse (bool): In reverse play order, default False
         Returns:
-            Iterator[int]: An iterator over all active player ids starting at loc
+            Iterator[int]: An iterator over players with a stake in the pot
 
         """
         if loc is None:
@@ -629,6 +631,7 @@ class TexasHoldEm:
                    for i in range(len(self.pots))
                    if player_id in self._get_pot(i).players_in_pot())
 
+    @versionadded(version="0.6.0")
     def total_to_value(self, total: Optional[int], player_id: int) -> Optional[int]:
         """
         Translates a raise phrase "raise *to* total" to the phrase
@@ -644,6 +647,7 @@ class TexasHoldEm:
             return None
         return total - self.chips_to_call(player_id) - self.player_bet_amount(player_id)
 
+    @versionadded(version="0.6.0")
     def value_to_total(self, value: Optional[int], player_id: int) -> Optional[int]:
         """
         Translates a raise phrase "raise value" to the phrase
@@ -659,6 +663,7 @@ class TexasHoldEm:
             return None
         return value + self.chips_to_call(player_id) + self.player_bet_amount(player_id)
 
+    @versionadded(version="0.6.0")
     def min_raise(self):
         """
         Returns:
@@ -667,6 +672,12 @@ class TexasHoldEm:
         return max(self.big_blind, self.last_raise)
 
     @check_raise(ValueError)
+    @versionchanged(reason=
+                    "The :code:`value` has been renamed to :code:`total` and will "
+                    "be redefined in 1.0.0. Currently, :code:`value` and :code:`total` "
+                    "mean to raise *to* the amount given. In 1.0.0, :code:`value` will "
+                    "mean to raise an amount more than the current bet amount.",
+                    version="0.6.0")
     def validate_move(self,
                       player_id: Optional[int] = None,
                       action: Optional[ActionType] = None,
@@ -680,11 +691,6 @@ class TexasHoldEm:
 
         .. note::
             :code:`value` and :code:`total` are mutually exclusive.
-
-        .. deprecated:: 0.6
-            The :code:`value` argument will be redefined in 1.0. Currently, :code:`value`
-            and :code:`total` mean to raise *to* the amount given. In 1.0, :code:`value`
-            will mean to raise an amount more than the current bet amount.
 
         Arguments:
             player_id (int, optional): The player to take action. Default current_player.
@@ -706,10 +712,12 @@ class TexasHoldEm:
             raise ValueError("Got arguments for both total and value. Expected only one.")
 
         if value:
-            warnings.warn("The value argument will be redefined in 1.0. Currently, value "
-                          "and total mean to raise *to* the amount given. In 1.0, value will "
-                          "mean to raise an amount more than the current bet amount.",
-                          DeprecationWarning)
+            warnings.warn(
+                "The :code:`value` has been renamed to :code:`total` and will "
+                "be redefined in 1.0.0. Currently, :code:`value` and :code:`total` "
+                "mean to raise *to* the amount given. In 1.0.0, :code:`value` will "
+                "mean to raise an amount more than the current bet amount.",
+                DeprecationWarning)
             total = value
 
         # ALL_IN should be translated
@@ -730,12 +738,12 @@ class TexasHoldEm:
         if new_action == ActionType.CALL and \
                 self.players[player_id].state != PlayerState.TO_CALL:
             return False, f"Player {player_id} has state " \
-                          f"{self.players[player_id].state} cannot CALL"
+                          f"{self.players[player_id].state.name} cannot CALL"
 
         if new_action == ActionType.CHECK and \
                 self.players[player_id].state != PlayerState.IN:
             return False, \
-                   f"Player {player_id} has state {self.players[player_id].state} cannot CHECK"
+                   f"Player {player_id} has state {self.players[player_id].state.name} cannot CHECK"
 
         if new_action == ActionType.RAISE:
             if new_total is None or new_total == 0:
@@ -863,7 +871,6 @@ class TexasHoldEm:
         player_queue = deque(self.active_iter(self.current_player))
 
         while not self._is_hand_over():
-            print(player_queue)
             # WSOP 2021 Rule 96
             # if no more active players that can raise continue with the players to call
             # while disabling the raise availability.
@@ -875,8 +882,6 @@ class TexasHoldEm:
 
                 self.raise_option = False
 
-            print(player_queue)
-            print()
             # book keeping
             prev_raised = self.last_raise
 
@@ -961,6 +966,12 @@ class TexasHoldEm:
         except StopIteration:
             pass
 
+    @versionchanged(reason=
+                    "The :code:`value` has been renamed to :code:`total` and will "
+                    "be redefined in 1.0.0. Currently, :code:`value` and :code:`total` "
+                    "mean to raise *to* the amount given. In 1.0.0, :code:`value` will "
+                    "mean to raise an amount more than the current bet amount.",
+                    version="0.6.0")
     def take_action(self,
                     action_type: ActionType,
                     value: Optional[int] = None,
@@ -970,11 +981,6 @@ class TexasHoldEm:
 
         .. note::
             :code:`value` and :code:`total` are mutually exclusive.
-
-        .. deprecated:: 0.6
-            The :code:`value` argument will be redefined in 1.0. Currently, :code:`value`
-            and :code:`total` mean to raise *to* the amount given. In 1.0, :code:`value`
-            will mean to raise an amount more than the current bet amount.
 
         Arguments:
             action_type (ActionType): The action type
@@ -991,10 +997,12 @@ class TexasHoldEm:
             raise ValueError("Got arguments for both total and value. Expected only one.")
 
         if value:
-            warnings.warn("The value argument will be redefined in 1.0. Currently, value "
-                          "and total mean to raise *to* the amount given. In 1.0, value will "
-                          "mean to raise an amount more than the current bet amount.",
-                          DeprecationWarning)
+            warnings.warn(
+                "The :code:`value` has been renamed to :code:`total` and will "
+                "be redefined in 1.0.0. Currently, :code:`value` and :code:`total` "
+                "mean to raise *to* the amount given. In 1.0.0, :code:`value` will "
+                "mean to raise an amount more than the current bet amount.",
+                DeprecationWarning)
             total = value
 
         self.validate_move(action=action_type, total=total, throws=True)
