@@ -239,7 +239,7 @@ This will export the history in a human-readable format to a file.
 
 Example PGN File
 ^^^^^^^^^^^^^^^^^^
-.. literalinclude:: /pgn/example_pgn.pgn
+.. literalinclude:: /pgns/example_pgn.pgn
     :language: python
 
 .. note::
