@@ -5,7 +5,7 @@
 *.pgn
 !tests/pgns/*.pgn
 !tests/pgns/*/*.pgn
-!docs/*.pgn
+!docs/pgn/*.pgn
 
 # Misc
 .DS_Store
