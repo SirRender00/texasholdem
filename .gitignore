@@ -7,6 +7,9 @@
 !tests/pgns/*/*.pgn
 !docs/*.pgn
 
+# Misc
+.DS_Store
+
 # lock files
 *.lock
 
