@@ -10,6 +10,9 @@
 # Misc
 .DS_Store
 
+# Misc
+.DS_Store
+
 # lock files
 *.lock
 
