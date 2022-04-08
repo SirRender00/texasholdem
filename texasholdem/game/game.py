@@ -732,7 +732,7 @@ class TexasHoldEm:
         if new_action == ActionType.CHECK and \
                 self.players[player_id].state != PlayerState.IN:
             return False, \
-                   f"Player {player_id} has state {self.players[player_id]} cannot CHECK"
+                   f"Player {player_id} has state {self.players[player_id].state} cannot CHECK"
 
         if new_action == ActionType.RAISE:
             if new_total is None:
