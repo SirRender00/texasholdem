@@ -457,7 +457,6 @@ class TexasHoldEm:
         amount = min(self.players[player_id].chips, amount)
         original_amount = amount
         last_pot = self.players[player_id].last_pot
-        chips_to_call = self._get_pot(last_pot).chips_to_call(player_id)
 
         # if a player posts, they are in the pot
         if amount == self.players[player_id].chips:
@@ -470,10 +469,12 @@ class TexasHoldEm:
             amount = amount - self._get_pot(i).chips_to_call(player_id)
             self.pots[i].player_post(player_id, self.pots[i].chips_to_call(player_id))
 
+        last_to_call = self._get_pot(last_pot).chips_to_call(player_id)
         self._get_pot(last_pot).player_post(player_id, amount)
+        amount = amount - last_to_call
 
         # players previously in pot need to call in event of a raise
-        if amount > chips_to_call:
+        if amount > 0:
             self.last_raise = max(amount - self.last_raise, self.last_raise)
             for pot_player_id in self._get_pot(last_pot).players_in_pot():
                 if self._get_pot(last_pot).chips_to_call(pot_player_id) > 0 and \
