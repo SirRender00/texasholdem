@@ -469,13 +469,14 @@ class TexasHoldEm:
             amount = amount - self._get_pot(i).chips_to_call(player_id)
             self.pots[i].player_post(player_id, self.pots[i].chips_to_call(player_id))
 
-        last_to_call = self._get_pot(last_pot).chips_to_call(player_id)
+        prev_raise_level = self.pots[last_pot].raised
         self._get_pot(last_pot).player_post(player_id, amount)
-        amount = amount - last_to_call
+
+        last_raise = self.pots[last_pot].raised - prev_raise_level
+        self.last_raise = max(last_raise, self.last_raise)
 
         # players previously in pot need to call in event of a raise
-        if amount > 0:
-            self.last_raise = max(amount - self.last_raise, self.last_raise)
+        if last_raise > 0:
             for pot_player_id in self._get_pot(last_pot).players_in_pot():
                 if self._get_pot(last_pot).chips_to_call(pot_player_id) > 0 and \
                    self.players[pot_player_id].state == PlayerState.IN:
