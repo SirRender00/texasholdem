@@ -737,8 +737,8 @@ class TexasHoldEm:
                    f"Player {player_id} has state {self.players[player_id].state} cannot CHECK"
 
         if new_action == ActionType.RAISE:
-            if new_total is None:
-                return False, "Expected value to not be None for action RAISE."
+            if new_total is None or new_total == 0:
+                return False, "Expected value to not be None or 0 for action RAISE."
 
             if not self.raise_option:
                 return False, "Betting round is over at this point, can only CALL or FOLD."
