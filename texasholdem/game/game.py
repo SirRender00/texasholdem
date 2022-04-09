@@ -804,21 +804,16 @@ class TexasHoldEm:
         return ActionType.RAISE, \
             self.player_bet_amount(self.current_player) + self.players[self.current_player].chips
 
-    def _previous_all_in_sum(self, history_len: int) -> int:
+    def _previous_all_in_sum(self) -> int:
         """
         Used for WSOP Rule 96
 
-        Arguments:
-            history_len (int): How far back to go
         Returns:
             int: The sum of the raise values of the most recent all-in raise players.
         """
         raised_sum = 0
 
-        if not history_len:
-            return raised_sum
-
-        for action in reversed(self.hand_history[self.hand_phase].actions[-history_len:]):
+        for action in reversed(self.hand_history[self.hand_phase].actions):
             if self.players[action.player_id].state == PlayerState.ALL_IN \
                     and action.action_type == ActionType.RAISE:
                 raised_sum += action.value
@@ -910,8 +905,7 @@ class TexasHoldEm:
                 # An all-in raise less than the previous raise shall not reopen
                 # the bidding unless two or more such all-in raises total greater
                 # than or equal to the previous raise.
-                raise_sum = self._previous_all_in_sum(len(list(self.in_pot_iter())))
-                print(self.last_raise, raise_sum, value, prev_raised)
+                raise_sum = self._previous_all_in_sum()
                 if value < prev_raised:
                     if raise_sum < prev_raised:
                         continue
