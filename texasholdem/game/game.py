@@ -458,7 +458,6 @@ class TexasHoldEm:
         amount = min(self.players[player_id].chips, amount)
         original_amount = amount
         last_pot = self.players[player_id].last_pot
-        chips_to_call = self._get_pot(last_pot).chips_to_call(player_id)
 
         # if a player posts, they are in the pot
         if amount == self.players[player_id].chips:
@@ -471,10 +470,12 @@ class TexasHoldEm:
             amount = amount - self._get_pot(i).chips_to_call(player_id)
             self.pots[i].player_post(player_id, self.pots[i].chips_to_call(player_id))
 
+        last_to_call = self._get_pot(last_pot).chips_to_call(player_id)
         self._get_pot(last_pot).player_post(player_id, amount)
+        amount = amount - last_to_call
 
         # players previously in pot need to call in event of a raise
-        if amount > chips_to_call:
+        if amount > 0:
             self.last_raise = max(amount - self.last_raise, self.last_raise)
             for pot_player_id in self._get_pot(last_pot).players_in_pot():
                 if self._get_pot(last_pot).chips_to_call(pot_player_id) > 0 and \
@@ -813,6 +814,9 @@ class TexasHoldEm:
         """
         raised_sum = 0
 
+        if not history_len:
+            return raised_sum
+
         for action in reversed(self.hand_history[self.hand_phase].actions[-history_len:]):
             if self.players[action.player_id].state == PlayerState.ALL_IN \
                     and action.action_type == ActionType.RAISE:
@@ -863,6 +867,7 @@ class TexasHoldEm:
         player_queue = deque(self.active_iter(self.current_player))
 
         while not self._is_hand_over():
+            print(player_queue)
             # WSOP 2021 Rule 96
             # if no more active players that can raise continue with the players to call
             # while disabling the raise availability.
@@ -874,6 +879,8 @@ class TexasHoldEm:
 
                 self.raise_option = False
 
+            print(player_queue)
+            print()
             # book keeping
             prev_raised = self.last_raise
 
@@ -903,6 +910,7 @@ class TexasHoldEm:
                 # the bidding unless two or more such all-in raises total greater
                 # than or equal to the previous raise.
                 raise_sum = self._previous_all_in_sum(len(player_queue))
+                print(self.last_raise, raise_sum, value, prev_raised)
                 if value < prev_raised:
                     if raise_sum < prev_raised:
                         continue
