@@ -910,7 +910,7 @@ class TexasHoldEm:
                 # An all-in raise less than the previous raise shall not reopen
                 # the bidding unless two or more such all-in raises total greater
                 # than or equal to the previous raise.
-                raise_sum = self._previous_all_in_sum(len(player_queue))
+                raise_sum = self._previous_all_in_sum(len(list(self.in_pot_iter())))
                 print(self.last_raise, raise_sum, value, prev_raised)
                 if value < prev_raised:
                     if raise_sum < prev_raised:
