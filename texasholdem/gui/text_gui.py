@@ -3,13 +3,14 @@ from __future__ import annotations
 import enum
 import logging
 import math
+import platform
 import shutil
 import re
 import sys
 from typing import Iterable, Optional, Union
 import curses
 from collections import namedtuple, deque
-from signal import signal, SIGWINCH, SIGINT
+import signal
 from importlib.metadata import version
 
 from deprecated.sphinx import deprecated
@@ -24,6 +25,14 @@ from texasholdem.game.hand_phase import HandPhase
 from texasholdem.game.player_state import PlayerState
 
 from texasholdem.gui.abstract_gui import AbstractGUI
+
+
+# Windows Compatibility
+_OS = platform.system()
+_IS_WINDOWS = _OS == 'Windows'
+
+if _IS_WINDOWS:
+    curses.resizeterm = curses.resize_term
 
 
 logger = logging.getLogger(__name__)
@@ -390,13 +399,13 @@ _PLAYER_BET_ELLIPSE_SIZE_FACTOR = 0.35
 _TABLE_STEPS_RESOLUTION = 400
 
 # KEY STROKES
-_BACKSPACE = 127
+_BACKSPACE = 127 if not _IS_WINDOWS else 8
 _NEWLINE = 10
 _RESIZE = -1
 
 # ANIMATION TIMING
 _ACTION_STEPS = 10
-_ACTION_SLEEP_MS = 20
+_ACTION_SLEEP_MS = 20 if not _IS_WINDOWS else 10
 
 
 class TextGUI(AbstractGUI):
@@ -444,10 +453,12 @@ class TextGUI(AbstractGUI):
                                  window=curses.initscr())
 
         # handle resize gracefully
-        signal(SIGWINCH, lambda sig, frame: (self.refresh(), self.main_block.window.getch()))
+        if not _IS_WINDOWS:
+            signal.signal(signal.SIGWINCH,
+                          lambda sig, frame: (self.refresh(), self.main_block.window.getch()))
 
         # cleanup before exit
-        signal(SIGINT, lambda sig, frame: (self.hide(), sys.exit(2)))
+        signal.signal(signal.SIGINT, lambda sig, frame: (self.hide(), sys.exit(2)))
 
         # hide screen until called
         if self.game:
