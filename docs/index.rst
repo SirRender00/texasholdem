@@ -14,11 +14,12 @@ texasholdem |release|
 
 A python package for Texas Hold 'Em Poker, providing
 
-    - Easy-to-use intuitive functions
     - Fast evaluation of hand strengths
-    - Game history importing/exporting to/from files
+    - Export & import human-readable game history
+    - GUIs to view games and game history
     - Simple & complex agents
-    - And more!
+    - Compliance with World Series of Poker Official Rules
+    - And more
 
 See the source code for this version :source_code:`on github <.>`
 

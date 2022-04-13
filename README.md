@@ -4,8 +4,13 @@
 [![Documentation Status](https://readthedocs.org/projects/texasholdem/badge/?version=stable)](https://texasholdem.readthedocs.io/en/stable/?badge=stable)
 ![Pylint Status](https://github.com/SirRender00/texasholdem/actions/workflows/pylint.yml/badge.svg)
 
-A python package for Texas Hold 'Em Poker.
-
+A python package for Texas Hold 'Em Poker, providing
+- Fast evaluation of hand strengths 
+- Export & import human-readable game history
+- GUIs to view games and game history
+- Simple & complex agents 
+- Compliance with World Series of Poker Official Rules
+- And more
 
 | Version Name | Latest Tag | Release Notes | Patch Notes | Documentation | Release Date | End Support Date |
 | ------------ | ---------- | ------------- | ----------- | ------------- | ------------ | ---------------- |
