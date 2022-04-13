@@ -18,7 +18,7 @@ from tests.conftest import GOOD_GAME_HISTORY_DIRECTORY
 
 
 BASIC_GAME_RUNS = 100
-UNTIL_STOP_RUNS = 800
+UNTIL_STOP_RUNS = 1500
 
 
 @pytest.fixture()
@@ -247,3 +247,95 @@ def prehand_checks(texas: TexasHoldEm):
 
     # board does not have cards
     assert not texas.board, "Expected the board to be empty"
+
+
+class GamePredicate:
+    """
+    Predicate to run for the automated fuzz checker that runs
+    a complete tournament. The before method will run before every action
+    and the after method will run after every action.
+
+    They will return True if there is an error.
+
+    """
+
+    settle: bool = False
+    """
+    If this predicate should run in the SETTLE phase.
+    """
+
+    def before(self, game: TexasHoldEm) -> bool:
+        # pylint: disable=unused-argument,no-self-use
+        """
+        This method will run before every action. Predicates can use this
+        to set variables they will check in the after method or to validate moves.
+
+        Returns:
+            bool: True if there was an error, false o/w
+
+        """
+        return False
+
+    def after(self, game: TexasHoldEm) -> bool:
+        # pylint: disable=unused-argument,no-self-use
+        """
+        This method will run after every action.
+
+        Returns:
+            bool: True if there was an error, false o/w
+
+        """
+        return False
+
+
+class EmptyPots(GamePredicate):
+    """
+    Checks if any pot has a total amount of 0.
+    """
+
+    def after(self, game: TexasHoldEm) -> bool:
+        return any(pot.get_total_amount() == 0 for pot in game.pots)
+
+
+class LastRaiseChecker(GamePredicate):
+    """
+    Checks if the last raise attribute is correct.
+    """
+    before_last_raise = None
+
+    def before(self, game: TexasHoldEm):
+        self.before_last_raise = game.last_raise
+
+    def after(self, game: TexasHoldEm) -> bool:
+        actions = game.hand_history[game.hand_phase].actions
+        if not actions:
+            return False
+
+        value = actions[-1].value or 0
+        return game.last_raise == (game.last_raise - value)
+
+
+class MinRaiseChecker(GamePredicate):
+    """
+    Checks if the min raise method is correct.
+    """
+    def after(self, game: TexasHoldEm) -> bool:
+        return game.min_raise() == max(game.big_blind, game.last_raise)
+
+
+class RaiseOptionChecker(GamePredicate):
+    """
+    Checks that if the raise option is unset, then raise should be invalid
+    """
+    def before(self, game: TexasHoldEm) -> bool:
+        return not game.raise_option \
+               and game.validate_move(action=ActionType.RAISE,
+                                      total=game.value_to_total(game.min_raise))
+
+
+GAME_PREDICATES = (
+    EmptyPots(),
+    LastRaiseChecker(),
+    MinRaiseChecker(),
+    RaiseOptionChecker()
+)

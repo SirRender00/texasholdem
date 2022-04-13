@@ -18,7 +18,7 @@ Includes:
 """
 import glob
 import random
-from typing import Iterable, Callable
+from typing import Iterable
 
 import pytest
 
@@ -31,7 +31,11 @@ from tests.conftest import (strip_comments,
                             GOOD_GAME_HISTORY_DIRECTORY,
                             BAD_GAME_HISTORY_DIRECTORY)
 
-from tests.game.conftest import prehand_checks, BASIC_GAME_RUNS, UNTIL_STOP_RUNS
+from tests.game.conftest import (prehand_checks,
+                                 BASIC_GAME_RUNS,
+                                 UNTIL_STOP_RUNS,
+                                 GamePredicate,
+                                 GAME_PREDICATES)
 
 
 def test_new_game(texas_game):
@@ -234,16 +238,11 @@ def test_basic_continuity(texas_game, random_player):
     prehand_checks(texas)
 
 
-def empty_pots(game):
-    """
-    Predicate. Returns true if any pot has a total amount of 0.
-    """
-    return any(pot.get_total_amount() == 0 for pot in game.pots)
-
-
 @pytest.mark.repeat(UNTIL_STOP_RUNS)
-@pytest.mark.parametrize('predicates', [[empty_pots]])
-def test_until_stop(random_player, texas_game, predicates: Iterable[Callable[[TexasHoldEm], bool]]):
+@pytest.mark.parametrize('predicates', [GAME_PREDICATES])
+def test_until_stop(random_player,
+                    texas_game,
+                    predicates: Iterable[GamePredicate]):
     """
     Runs prehand checks and given predicates at each hand and within each action. Runs until
     only one winner.
@@ -264,11 +263,20 @@ def test_until_stop(random_player, texas_game, predicates: Iterable[Callable[[Te
 
         failed_pred = set()
         while texas_game.is_hand_running():
+            for pred in predicates:
+                pred_name = f"{pred.__class__.__name__}:before"
+                if (pred_name not in failed_pred
+                        and pred.before(texas_game)):
+                    failed_pred.add(pred_name)
+
             texas_game.take_action(*random_player(texas_game))
 
             for pred in predicates:
-                if pred.__name__ not in failed_pred and pred(texas_game):
-                    failed_pred.add(pred.__name__)
+                pred_name = f"{pred.__class__.__name__}:after"
+                if (pred_name not in failed_pred
+                        and (not texas_game.is_hand_running() and pred.settle)
+                        and pred.after(texas_game)):
+                    failed_pred.add(pred_name)
 
         if failed_pred:
             raise pytest.fail(f"Predicates {failed_pred} failed.")
