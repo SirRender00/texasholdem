@@ -40,6 +40,12 @@ dependencies by using the `curses <https://docs.python.org/3/library/curses.html
 Below, we'll discuss the different usages of GUIs in general using the Text GUI which can be applied
 to any future GUI.
 
+.. warning::
+    The curses standard library module is only fully supported for Unix / Linux / MacOS. For Windows users,
+    the package will install an extra 3rd party dependency
+    `windows-curses <https://pypi.org/project/windows-curses/>`_ to make it compatible. Some features may not
+    be fully supported due to OS restrictions (e.g. resizing during the game).
+
 Example Usage
 ^^^^^^^^^^^^^^^
 To play with default settings where you can see every players' cards and take turns for each one::
