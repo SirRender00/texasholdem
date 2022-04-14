@@ -17,13 +17,11 @@ from deprecated.sphinx import deprecated
 
 from texasholdem.util.errors import Ignore
 from texasholdem.util.functions import preflight, handle, raise_if
-
 from texasholdem.card import card
 from texasholdem.game.game import TexasHoldEm
 from texasholdem.game.action_type import ActionType
 from texasholdem.game.hand_phase import HandPhase
 from texasholdem.game.player_state import PlayerState
-
 from texasholdem.gui.abstract_gui import AbstractGUI
 
 
@@ -402,6 +400,7 @@ _TABLE_STEPS_RESOLUTION = 400
 _BACKSPACE = 127 if not _IS_WINDOWS else 8
 _NEWLINE = 10
 _RESIZE = -1
+_CTRL_C = 3         # Windows Only
 
 # ANIMATION TIMING
 _ACTION_STEPS = 10
@@ -445,7 +444,7 @@ class TextGUI(AbstractGUI):
         super().__init__(*args, **kwargs)
 
         self._command_patterns = (
-            (r'^exit|quit$', lambda: (self.hide(), sys.exit(2))),
+            (r'^exit|quit$', self._exit_handler),
         )
 
         # init curses
@@ -455,15 +454,22 @@ class TextGUI(AbstractGUI):
         # handle resize gracefully
         if not _IS_WINDOWS:
             signal.signal(signal.SIGWINCH,
-                          lambda sig, frame: (self.refresh(), self.main_block.window.getch()))
+                          lambda signals, frame: (self.refresh(), self.main_block.window.getch()))
 
         # cleanup before exit
-        signal.signal(signal.SIGINT, lambda sig, frame: (self.hide(), sys.exit(2)))
+        signal.signal(signal.SIGINT, lambda signals, frame: self._exit_handler())
 
         # hide screen until called
         if self.game:
             self.refresh()
         self.hide()
+
+    def _exit_handler(self):
+        """
+        Exit handler snippet
+        """
+        self.hide()
+        sys.exit(2)
 
     @deprecated(version="0.7.0",
                 reason="Use the :meth:`set_visible_players` method instead. "
@@ -515,6 +521,7 @@ class TextGUI(AbstractGUI):
         i = len(_PROMPT)
         while True:
             ord_ = self.main_block.window.getch(rows - 1, i)
+
             if ord_ == _BACKSPACE:
                 # Delete the backspace char
                 self.main_block.window.delch(rows - 1, i + 1)
@@ -528,8 +535,17 @@ class TextGUI(AbstractGUI):
                 self.main_block.window.delch(rows - 1, i - 1)
                 i -= 1
                 string = string[:-1]
+
+            # stop string collection on newline
             elif ord_ == _NEWLINE:
                 break
+
+            # Windows Compatibility, need a workaround for SIGINT
+            # For now, allow users to ctrl+c in the input phase
+            elif _IS_WINDOWS and ord_ == _CTRL_C:
+                self._exit_handler()
+
+            # add to the string
             else:
                 i += 1
 
