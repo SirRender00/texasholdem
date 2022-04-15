@@ -141,8 +141,7 @@ game.export_history("./pgns/my_game.pgn")
 
 # import and replay
 gui = TextGUI()
-for state in TexasHoldEm.import_history("./pgns/my_game.pgn"):
-    gui.print_state(state)
+gui.replay_history("./pgns/my_game.pgn")
 ```
 PGN files also support single line and end of line comments starting with "#".
 
