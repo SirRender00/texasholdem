@@ -35,3 +35,24 @@ Want a new feature, found a bug, or have questions? Feel free to add to our issu
 We welcome any developer who enjoys the package enough to contribute! Please message me at evyn.machi@gmail.com
 if you want to be added as a contributor and check out the
 `Developer's Guide <https://github.com/SirRender00/texasholdem/wiki/Developer's-Guide>`_.
+
+What's New in |release|
+------------------------
+This release features an overhaul to the GUI system and specifically the :class:`~texasholdem.gui.text_gui.TextGUI`
+had a massive overhaul. See more at :ref:`guis`.
+
+Features
+^^^^^^^^^
+
+    - Added an :class:`~texasholdem.gui.abstract_gui.AbstractGUI` class for common functionality for all GUIs.
+    - The new :class:`~texasholdem.gui.text_gui.TextGUI`
+        - A new history panel
+        - Support any number of players 2 thru 9
+        - Chip animations
+        - Improved UX
+
+Other Changes
+^^^^^^^^^^^^^^^
+
+    - Simplification of a few steps in a betting round
+    - Uncaps the python dependency
