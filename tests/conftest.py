@@ -118,7 +118,7 @@ def texas_game(request):
 
     yield game_maker
 
-    if request.node.rep_call.failed and game:
+    if request.node.rep_call.failed and game and game.hand_history:
         print(game.hand_history.to_string())
 
 
