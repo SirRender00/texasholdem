@@ -46,7 +46,16 @@ def input_stdin(mock_curses):
 
 
 @pytest.fixture()
-def text_gui(mock_curses, texas_game):
+def mock_signal():
+    """
+    Mock of the signal library for testing purposes
+    """
+    with patch('texasholdem.gui.text_gui.signal') as signal:
+        yield signal
+
+
+@pytest.fixture()
+def text_gui(mock_curses, mock_signal, texas_game):
     # pylint: disable=unused-argument
     """
     Text GUI maker fixture, injects a texas game if not mentioned

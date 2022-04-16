@@ -1,8 +1,4 @@
 # pylint: disable=protected-access
-import os
-import signal
-import threading
-import time
 from importlib.metadata import version
 import itertools
 from unittest.mock import patch
@@ -170,26 +166,6 @@ def test_visible_players_settle(text_gui, random_agent):
             assert_content_not_in_block(gui,
                                         f'PLAYER_INFO_{player_id}',
                                         card.card_list_to_pretty_str(gui.game.get_hand(player_id)))
-
-
-@pytest.mark.skipif(_IS_WINDOWS, reason="Unix / MacOS only test")
-def test_exit_signal(text_gui):
-    """
-    Test the exit signal handling
-    """
-    pid = os.getpid()
-
-    def trigger_signal():
-        time.sleep(1)
-        os.kill(pid, signal.SIGINT)
-
-    thread = threading.Thread(target=trigger_signal)
-    thread.daemon = True
-    thread.start()
-
-    with pytest.raises(SystemExit):
-        gui = text_gui()
-        gui.accept_input()
 
 
 @pytest.mark.skipif(not _IS_WINDOWS, reason="Windows only test")
