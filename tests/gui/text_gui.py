@@ -166,16 +166,3 @@ def test_visible_players_settle(text_gui, random_agent):
             assert_content_not_in_block(gui,
                                         f'PLAYER_INFO_{player_id}',
                                         card.card_list_to_pretty_str(gui.game.get_hand(player_id)))
-
-
-@pytest.mark.skipif(not _IS_WINDOWS, reason="Windows only test")
-def test_exit_signal_windows(text_gui, input_stdin):
-    """
-    Test the exit signal handling on windows
-    """
-    gui = text_gui()
-    input_stdin(chr(_CTRL_C))
-
-    with patch('sys.exit') as sys_exit:
-        gui.accept_input()
-        assert sys_exit.assert_called_with(2)
