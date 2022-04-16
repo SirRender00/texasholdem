@@ -1,0 +1,34 @@
+name: Windows GUI Tests
+
+on:
+  push:
+    branches:
+      - "main"
+      - "[0-9]+.[0-9]+"
+  pull_request:
+    branches:
+      - "main"
+      - "[0-9]+.[0-9]+"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
+    - name: Install dependencies
+      run: |
+        curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
+        $HOME/.poetry/bin/poetry install
+    - name: Run tests with pytest
+      run: poetry run pytest ./tests/gui/text_gui.py --workers auto
