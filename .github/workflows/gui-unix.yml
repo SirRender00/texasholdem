@@ -1,4 +1,4 @@
-name: Pylint
+name: Unix GUI
 
 on:
   push:
@@ -37,7 +37,5 @@ jobs:
     - name: Install dependencies
       run: poetry install
       if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-    - name: Analysing the code with pylint
-      run: |
-        pylint texasholdem
-        pylint tests
+    - name: Run tests with pytest
+      run: $HOME/.poetry/bin/poetry run pytest ./tests/gui --workers auto

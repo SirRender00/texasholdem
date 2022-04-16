@@ -58,7 +58,7 @@ def test_basic_prehand(texas_game):
     prehand_checks(texas_game())
 
 
-def test_skip_prehand(random_player, texas_game):
+def test_skip_prehand(random_agent, texas_game):
     """
     Players with 0 chips will have SKIP statuses, blinds should skip
     players with SKIP statuses
@@ -85,7 +85,7 @@ def test_skip_prehand(random_player, texas_game):
 
     while texas.is_hand_running():
         assert texas.current_player not in skip_players
-        texas.take_action(*random_player(texas))
+        texas.take_action(*random_agent(texas))
 
 
 def test_heads_up_edge_case(texas_game):
@@ -148,7 +148,7 @@ def test_game_stop_prehand(texas_game):
     (HandPhase.TURN, 3, 4),
     (HandPhase.RIVER, 4, 5)
 ])
-def test_basic_betting_rounds(hand_phase, round_num, board_len, texas_game, call_player):
+def test_basic_betting_rounds(hand_phase, round_num, board_len, texas_game, call_agent):
     """
     Tests basic state after running the 4 betting rounds.
     """
@@ -165,7 +165,7 @@ def test_basic_betting_rounds(hand_phase, round_num, board_len, texas_game, call
             break
 
         seen_players.append(texas.current_player)
-        texas.take_action(*call_player(texas))
+        texas.take_action(*call_agent(texas))
 
     if hand_phase != HandPhase.RIVER:
         assert texas.is_hand_running()
@@ -193,7 +193,7 @@ def test_basic_betting_rounds(hand_phase, round_num, board_len, texas_game, call
 
 
 @pytest.mark.repeat(BASIC_GAME_RUNS)
-def test_basic_settle(texas_game, call_player):
+def test_basic_settle(texas_game, call_agent):
     """
     Test basic state after running a complete hand: only one winner
 
@@ -203,7 +203,7 @@ def test_basic_settle(texas_game, call_player):
     texas = texas_game()
     texas.start_hand()
     while texas.is_hand_running():
-        texas.take_action(*call_player(texas))
+        texas.take_action(*call_agent(texas))
 
     assert texas.is_game_running()
     assert not texas.is_hand_running()
@@ -220,7 +220,7 @@ def test_basic_settle(texas_game, call_player):
 
 
 @pytest.mark.repeat(BASIC_GAME_RUNS)
-def test_basic_continuity(texas_game, random_player):
+def test_basic_continuity(texas_game, random_agent):
     """
     Checks basic state continuity between hands
 
@@ -232,7 +232,7 @@ def test_basic_continuity(texas_game, random_player):
 
     # run the rest of the hand
     while texas.is_hand_running():
-        texas.take_action(*random_player(texas))
+        texas.take_action(*random_agent(texas))
 
     # run 2nd prehand
     prehand_checks(texas)
@@ -240,7 +240,7 @@ def test_basic_continuity(texas_game, random_player):
 
 @pytest.mark.repeat(UNTIL_STOP_RUNS)
 @pytest.mark.parametrize('predicates', [GAME_PREDICATES])
-def test_until_stop(random_player,
+def test_until_stop(random_agent,
                     texas_game,
                     predicates: Iterable[GamePredicate]):
     """
@@ -269,7 +269,7 @@ def test_until_stop(random_player,
                         and pred.before(texas_game)):
                     failed_pred.add(pred_name)
 
-            texas_game.take_action(*random_player(texas_game))
+            texas_game.take_action(*random_agent(texas_game))
 
             for pred in predicates:
                 pred_name = f"{pred.__class__.__name__}:after"

@@ -556,7 +556,7 @@ class TextGUI(AbstractGUI):
                     # stack trace
                     raise Ignore() from err
 
-        return string
+        return string.strip()
 
     @preflight(prerun=lambda self: self.refresh())
     def accept_input(self) -> tuple[ActionType, Optional[int]]:
@@ -701,7 +701,11 @@ class TextGUI(AbstractGUI):
                 break
 
         if self.game.players[player_id].state != PlayerState.SKIP:
-            if player_id in self.visible_players:
+            in_pot = list(self.game.in_pot_iter())
+            if (player_id in self.visible_players
+                    or (self.game.hand_phase == HandPhase.SETTLE
+                        and len(in_pot) > 1
+                        and player_id in in_pot)):
                 block.append(
                     card.card_list_to_pretty_str(self.game.get_hand(player_id))
                 )
@@ -925,9 +929,9 @@ class TextGUI(AbstractGUI):
         old_visible_players = self.visible_players
 
         # in the settle phase, players going to showdown show cards
-        extras = list(self.game.in_pot_iter())
+        extras = set(self.game.in_pot_iter())
         extras = extras if len(extras) > 1 else []  # don't out players win without contest
-        self.set_visible_players(self.visible_players + extras)
+        self.set_visible_players(set(self.visible_players).union(extras))
 
         self.display_state()
         self.main_block.refresh()

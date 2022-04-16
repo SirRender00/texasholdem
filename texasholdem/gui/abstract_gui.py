@@ -64,8 +64,11 @@ class AbstractGUI(abc.ABC):
             ValueError: If any of the player ids given are invalid.
 
         """
-        visible_players = list(visible_players)
-        sorted_players = sorted(visible_players)
+        if not visible_players:
+            self.visible_players = visible_players
+            return
+
+        sorted_players = sorted(list(visible_players))
         if len(sorted_players) > self.game.max_players:
             raise ValueError("Expected length of visible players to be <= number of players. "
                              f"Expected <= {self.game.max_players}, Got {len(sorted_players)}.")
@@ -75,7 +78,7 @@ class AbstractGUI(abc.ABC):
             if criteria(player_id):
                 raise ValueError(f"Unexpected player id {player_id}")
 
-        self.visible_players = visible_players
+        self.visible_players = sorted_players
 
     @versionadded(version="0.7.0")
     def prompt_input(self):

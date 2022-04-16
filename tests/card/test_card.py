@@ -15,10 +15,10 @@ import pytest
 
 from texasholdem.card import card
 from texasholdem.card.card import Card
-from tests.card.conftest import get_sample_cards
+from tests.card.conftest import CARDS
 
 
-@pytest.mark.parametrize("card_tuple", get_sample_cards())
+@pytest.mark.parametrize("card_tuple", CARDS)
 def test_new_card(card_tuple):
     """
     Test the construction of new cards from a string and from an int.
@@ -28,7 +28,7 @@ def test_new_card(card_tuple):
         "Expected equivalent constructions to be equal"
 
 
-@pytest.mark.parametrize("card_tuple", get_sample_cards())
+@pytest.mark.parametrize("card_tuple", CARDS)
 def test_card_rank(card_tuple):
     """
     Rank is the numerical value of the card 0-12, 0 is 2, 12 is A.
@@ -37,21 +37,21 @@ def test_card_rank(card_tuple):
     assert Card.CHAR_RANK_TO_INT_RANK[card_str[0]] == Card.CHAR_RANK_TO_INT_RANK[card_str[0]]
 
 
-@pytest.mark.parametrize("card_tuple", get_sample_cards())
+@pytest.mark.parametrize("card_tuple", CARDS)
 def test_card_suit(card_tuple):
     """Test suit getter."""
     card_str, _ = card_tuple
     assert Card(card_str).suit == Card.CHAR_SUIT_TO_INT_SUIT[card_str[1]]
 
 
-@pytest.mark.parametrize("card_tuple", get_sample_cards())
+@pytest.mark.parametrize("card_tuple", CARDS)
 def test_card_bitrank(card_tuple):
     """Test bitrank getter (bitrank := 2^rank)."""
     card_str, _ = card_tuple
     assert Card(card_str).bitrank == 2 ** Card(card_str).rank
 
 
-@pytest.mark.parametrize("card_tuple", get_sample_cards())
+@pytest.mark.parametrize("card_tuple", CARDS)
 def test_card_prime(card_tuple):
     """Test prime getter (rank -> prime: 0 -> 2, 1 -> 3, 2 -> 5, ...)"""
     card_str, _ = card_tuple
