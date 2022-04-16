@@ -1,13 +1,12 @@
 # pylint: disable=protected-access
 from importlib.metadata import version
 import itertools
-from unittest.mock import patch
 
 import pytest
 
 from texasholdem.card import card
 from texasholdem.game.action_type import ActionType
-from texasholdem.gui.text_gui import TextGUI, _IS_WINDOWS, _CTRL_C
+from texasholdem.gui.text_gui import TextGUI
 
 from tests.gui.conftest import BASIC_GUI_RUNS, COMPLETE_GUI_RUNS
 
