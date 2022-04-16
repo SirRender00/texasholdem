@@ -20,7 +20,7 @@ from texasholdem.game.game import TexasHoldEm
 from tests.conftest import strip_comments, BAD_FORMAT_HISTORY_DIRECTORY
 
 
-def test_basic_export(tmpdir, texas_game, call_player):
+def test_basic_export(tmpdir, texas_game, call_agent):
     """
     Checks if history exists and matches the generated history.
 
@@ -36,7 +36,7 @@ def test_basic_export(tmpdir, texas_game, call_player):
     while texas.is_hand_running():
         if texas.current_player == 8 and texas.hand_phase == HandPhase.PREFLOP:
             texas.take_action(ActionType.RAISE, total=texas.big_blind + 5)
-        texas.take_action(*call_player(texas))
+        texas.take_action(*call_agent(texas))
 
     assert all((texas.hand_history.prehand,
                texas.hand_history.preflop,
@@ -57,7 +57,7 @@ def test_basic_export(tmpdir, texas_game, call_player):
         assert file.read() == texas.hand_history.to_string()
 
 
-def test_basic_import(tmpdir, texas_game, call_player):
+def test_basic_import(tmpdir, texas_game, call_agent):
     """
     Checks if exporting, then importing returns same history
 
@@ -67,7 +67,7 @@ def test_basic_import(tmpdir, texas_game, call_player):
     while texas.is_hand_running():
         if texas.current_player == 8 and texas.hand_phase == HandPhase.PREFLOP:
             texas.take_action(ActionType.RAISE, total=texas.big_blind + 5)
-        texas.take_action(*call_player(texas))
+        texas.take_action(*call_agent(texas))
 
     history = tmpdir / "texas.pgn"
     history = texas.export_history(history)
@@ -89,7 +89,7 @@ def test_import_comments(history_file_with_comments):
         assert history_string.strip().startswith(state.hand_history.to_string().strip())
 
 
-def test_file_naming(tmpdir, texas_game, call_player):
+def test_file_naming(tmpdir, texas_game, call_agent):
     """
     Checks naming conventions of exporting:
         - specifying files and dirs
@@ -100,7 +100,7 @@ def test_file_naming(tmpdir, texas_game, call_player):
     texas = texas_game()
     texas.start_hand()
     while texas.is_hand_running():
-        texas.take_action(*call_player(texas))
+        texas.take_action(*call_agent(texas))
 
     # specify file, writes to it
     history = tmpdir / "my_game.pgn"
@@ -123,7 +123,7 @@ def test_file_naming(tmpdir, texas_game, call_player):
     # different game
     texas.start_hand()
     while texas.is_hand_running():
-        texas.take_action(*call_player(texas))
+        texas.take_action(*call_agent(texas))
 
     # overwrite
     new_path = history / "texas.pgn"

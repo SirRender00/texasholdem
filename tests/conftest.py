@@ -6,10 +6,15 @@ Config for all tests. Includes:
 import os
 from typing import Union
 from pathlib import Path
+import random
 
 import pytest
 
 import tests
+
+from texasholdem.game.game import TexasHoldEm
+from texasholdem.game.action_type import ActionType
+from texasholdem.game.player_state import PlayerState
 
 
 GOOD_GAME_HISTORY_DIRECTORY = Path(tests.__file__).parent / "pgns/test_good_pgns"
@@ -93,3 +98,83 @@ def strip_comments(history_path: Union[str, os.PathLike]) -> str:
                 new_lines.append(line[:comment_index].strip())
 
         return '\n'.join(new_lines)
+
+
+@pytest.fixture()
+def texas_game(request):
+    """
+    Returns:
+        Callable[[...], TexasHoldEm]: Create a TexasHoldEm gain. Fills in default
+            values if not given buyin=500, big_blind=5, small_blind=2.
+    """
+    game = None
+
+    def game_maker(*args, **kwargs):
+        nonlocal game
+        default_kwargs = {'buyin': 500, 'big_blind': 5, 'small_blind': 2}
+        default_kwargs.update(kwargs)
+        game = TexasHoldEm(*args, **default_kwargs)
+        return game
+
+    yield game_maker
+
+    if request.node.rep_call.failed and game and game.hand_history:
+        print(game.hand_history.to_string())
+
+
+@pytest.fixture()
+def call_agent():
+    """
+    A player that calls if another player raised or checks.
+
+    """
+
+    def get_action(game: TexasHoldEm) -> tuple[ActionType, None]:
+        player = game.players[game.current_player]
+        if player.state == PlayerState.TO_CALL:
+            return ActionType.CALL, None
+        return ActionType.CHECK, None
+
+    return get_action
+
+
+@pytest.fixture()
+def random_agent():
+    """
+    A uniformly random player:
+        - If someone raised, CALL, FOLD, or RAISE with uniform probability
+        - Else, CHECK, (FOLD if no_fold=False), RAISE with uniform probability
+        - If RAISE, the value will be uniformly random in [min_raise, # of chips]
+
+    """
+
+    def get_action(game: TexasHoldEm, no_fold: bool = False) -> tuple[ActionType, int]:
+        bet_amount = game.player_bet_amount(game.current_player)
+        chips = game.players[game.current_player].chips
+        min_raise = game.value_to_total(game.min_raise(), game.current_player)
+        max_raise = bet_amount + chips
+
+        possible = list(ActionType)
+        possible.remove(ActionType.ALL_IN)
+
+        # A player did not raise
+        if game.players[game.current_player].state == PlayerState.IN:
+            possible.remove(ActionType.CALL)
+            if no_fold:
+                possible.remove(ActionType.FOLD)
+
+        # A player raised
+        if game.players[game.current_player].state == PlayerState.TO_CALL:
+            possible.remove(ActionType.CHECK)
+
+        # not enough chips to raise
+        if max_raise < min_raise:
+            possible.remove(ActionType.RAISE)
+
+        action_type, value = random.choice(possible), None
+        if action_type == ActionType.RAISE:
+            value = random.randint(min_raise, max_raise)
+
+        return action_type, value
+
+    return get_action

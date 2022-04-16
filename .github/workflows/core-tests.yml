@@ -1,4 +1,4 @@
-name: Pylint
+name: Core Tests
 
 on:
   push:
@@ -37,7 +37,5 @@ jobs:
     - name: Install dependencies
       run: poetry install --no-interaction --no-root
       if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-    - name: Analysing the code with pylint
-      run: |
-        poetry run pylint texasholdem
-        poetry run pylint tests
+    - name: Run tests with pytest
+      run: poetry run pytest --workers auto
