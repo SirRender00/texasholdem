@@ -11,7 +11,7 @@ on:
       - "[0-9]+.[0-9]+"
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-${{ runner.os }}
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-${{ github.workspace }}
   cancel-in-progress: true
 
 jobs:
