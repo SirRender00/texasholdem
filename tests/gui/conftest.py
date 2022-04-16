@@ -56,4 +56,4 @@ def text_gui(mock_curses, texas_game):
         kwargs['game'] = kwargs.get('game', '') or texas_game()
         return TextGUI(*args, **kwargs)
 
-    return maker
+    yield maker
