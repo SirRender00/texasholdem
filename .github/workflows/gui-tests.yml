@@ -44,4 +44,4 @@ jobs:
         run: poetry install --no-interaction --no-root
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
       - name: Run tests with pytest
-        run: poetry run pytest ./tests/gui --workers auto
+        run: poetry run pytest ./tests/gui/text_gui.py --workers auto
