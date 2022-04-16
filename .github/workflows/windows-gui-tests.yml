@@ -31,4 +31,4 @@ jobs:
         curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
         $HOME/.poetry/bin/poetry install
     - name: Run tests with pytest
-      run: poetry run pytest ./tests/gui/text_gui.py --workers auto
+      run: $HOME/.poetry/bin/poetry run pytest ./tests/gui/text_gui.py --workers auto
