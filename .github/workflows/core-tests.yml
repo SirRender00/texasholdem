@@ -35,7 +35,7 @@ jobs:
         path: .venv
         key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
     - name: Install dependencies
-      run: poetry install
+      run: poetry install --no-interaction --no-root
       if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
     - name: Run tests with pytest
       run: poetry run pytest ./tests/card ./tests/evaluator ./tests/game --workers auto
