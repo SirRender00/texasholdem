@@ -36,6 +36,7 @@ jobs:
         with:
           path: .venv
           key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+        if: ${{ matrix.os }} != 'windows-latest'
       - name: Install dependencies
         run: poetry install --no-interaction --no-root
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
