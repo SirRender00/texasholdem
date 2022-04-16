@@ -39,5 +39,5 @@ jobs:
       if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
     - name: Analysing the code with pylint
       run: |
-        pylint texasholdem
-        pylint tests
+        $HOME/.poetry/bin/poetry pylint texasholdem
+        $HOME/.poetry/bin/poetry pylint tests

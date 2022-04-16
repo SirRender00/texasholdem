@@ -38,7 +38,7 @@ jobs:
       run: poetry install
       if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
     - name: Build package
-      run: $HOME/.poetry/bin/poetry build
+      run: poetry build
     - name: Publish distribution to PyPI
       uses: pypa/gh-action-pypi-publish@27b31702a0e7fc50959f5ad993c78deac1bdfc29
       with:

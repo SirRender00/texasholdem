@@ -38,4 +38,4 @@ jobs:
       run: poetry install
       if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
     - name: Run tests with pytest
-      run: $HOME/.poetry/bin/poetry run pytest ./tests/card ./tests/evaluator ./tests/game --workers auto
+      run: poetry run pytest ./tests/card ./tests/evaluator ./tests/game --workers auto
