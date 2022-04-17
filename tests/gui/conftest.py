@@ -9,8 +9,8 @@ from texasholdem.gui.text_gui import TextGUI
 _SCREEN_SIZE = (100, 300)
 
 
-BASIC_GUI_RUNS = 25
-COMPLETE_GUI_RUNS = 10
+BASIC_GUI_RUNS = 10
+COMPLETE_GUI_RUNS = 5
 
 
 @pytest.fixture(scope='session')
