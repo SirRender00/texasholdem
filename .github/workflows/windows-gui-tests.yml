@@ -1,4 +1,4 @@
-name: Core Tests
+name: Windows GUI Tests
 
 on:
   push:
@@ -14,9 +14,13 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python 3.9
@@ -24,18 +28,15 @@ jobs:
       with:
         python-version: 3.9
     - name: Install poetry
-      uses: snok/install-poetry@v1.0.0
-      with:
-        virtualenvs-create: true
-        virtualenvs-in-project: true
+      run: |
+        curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
     - name: Load cached venv
-      id: cached-poetry-dependencies
+      id: cached-pip-wheels
       uses: actions/cache@v2
       with:
-        path: .venv
+        path: ~/.cache
         key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
     - name: Install dependencies
-      run: poetry install --no-interaction --no-root
-      if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+      run: $HOME/.poetry/bin/poetry install --no-interaction
     - name: Run tests with pytest
-      run: poetry run pytest --workers auto
+      run: $HOME/.poetry/bin/poetry run pytest ./tests/gui/text_gui.py
