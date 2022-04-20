@@ -1,12 +1,12 @@
 # texasholdem
 A python package for Texas Hold 'Em Poker.
 
-Latest Stable Release Version: v0.6.3 \
-[Changelog](https://github.com/SirRender00/texasholdem/releases/tag/v0.6.3) \
+Latest Stable Release Version: v0.6.4 \
+[Changelog](https://github.com/SirRender00/texasholdem/releases/tag/v0.6.4) \
 [Documentation](https://texasholdem.readthedocs.io/en/stable/)
 
-Latest Experimental Release Version v0.6.3 \
-[Changelog](https://github.com/SirRender00/texasholdem/releases/tag/v0.6.3) \
+Latest Experimental Release Version v0.6.4 \
+[Changelog](https://github.com/SirRender00/texasholdem/releases/tag/v0.6.4) \
 [Documentation](https://texasholdem.readthedocs.io/en/latest/)
 
 Roadmap \
