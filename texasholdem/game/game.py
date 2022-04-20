@@ -583,14 +583,14 @@ class TexasHoldEm:
 
             settle_history.pot_winners[i] = (pot.get_total_amount(), best_rank, winners)
 
-            win_amount = int((pot.get_total_amount()) / len(winners))
+            win_amount = pot.get_total_amount() // len(winners)
             for player_id in winners:
                 self.players[player_id].chips += win_amount
 
             # leftover chip goes to player left of the button WSOP Rule 73
             leftover = pot.get_total_amount() - (win_amount * len(winners))
             if leftover:
-                for j in self.in_pot_iter(loc=self.btn_loc):
+                for j in self.in_pot_iter(loc=self.btn_loc + 1):
                     if j in winners:
                         self.players[j].chips += leftover
                         break
