@@ -254,7 +254,11 @@ We can also import a PGN file with :meth:`~texasholdem.game.game.TexasHoldEm.imp
 over the intermediate states of the game::
 
     for state in TexasHoldEm.import_history('./texas.pgn'):
-        gui.print_state(state)
+        gui.display_state(state)
+
+If you're using a GUI, the GUIs come with a special method to view history and wait until prompted with one line::
+
+    gui.replay_history('./texas.pgn')
 
 .. _pot information:
 
@@ -267,6 +271,8 @@ should *not* touch these objects, but can glean some information off of it:
     - :attr:`~texasholdem.game.game.Pot.amount` is the amount in the pot *not* including the current betting round
       (but including any player who folded this betting round).
     - :meth:`~texasholdem.game.game.Pot.get_player_amount` returns the amount the given player has in the pot.
+    - :meth:`~texasholdem.game.game.Pot.get_total_amount` returns the :attr:`~texasholdem.game.game.Pot.amount`
+      plus the sum of all player amounts for this betting round.
 
 The main pot always has id 0. The :attr:`~texasholdem.game.game.Player.last_pot` attribute on the
 :class:`~texasholdem.game.game.Player` object returns the id of the last pot the player is eligible for.
