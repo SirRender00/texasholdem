@@ -1,4 +1,6 @@
 import random
+from typing import List
+
 from texasholdem.card import card
 from texasholdem.card.card import Card
 
@@ -10,7 +12,7 @@ class Deck:
     makes a copy of this object and shuffles it.
 
     """
-    _FULL_DECK: list[Card] = []
+    _FULL_DECK: List[Card] = []
 
     def __init__(self):
         self.cards = Deck._get_full_deck()
@@ -23,14 +25,14 @@ class Deck:
         """
         random.shuffle(self.cards)
 
-    def draw(self, num=1) -> list[Card]:
+    def draw(self, num=1) -> List[Card]:
         """
         Draw card(s) from the deck. These cards leave the deck and are not saved.
 
         Args:
             num (int): How many cards to draw. Defaults to 1.
         Returns:
-           list[Card]: A list of length n of cards (See :class:`~texasholdem.card.card.Card`).
+           List[Card]: A list of length n of cards (See :class:`~texasholdem.card.card.Card`).
         Raises:
             ValueError: If the deck size is less than the given n.
 
@@ -46,7 +48,7 @@ class Deck:
         return card.card_list_to_pretty_str(self.cards)
 
     @staticmethod
-    def _get_full_deck() -> list[Card]:
+    def _get_full_deck() -> List[Card]:
         if Deck._FULL_DECK:
             return list(Deck._FULL_DECK)
 

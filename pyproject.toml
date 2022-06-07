@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "texasholdem"
-version = "0.6.4"
+version = "0.6.5"
 description = "A texasholdem python package"
 authors = ["Evyn Machi <evyn.machi@gmail.com>"]
 keywords = ['texasholdem', 'holdem', 'poker']
@@ -16,7 +16,7 @@ include = [
 ]
 
 [tool.poetry.dependencies]
-python = ">=3.7, <3.11"
+python = ">=3.8, <3.11"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"
