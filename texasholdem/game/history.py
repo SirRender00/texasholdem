@@ -10,7 +10,7 @@ Texas Hold Em Notation Conventions:
 
 """
 from __future__ import annotations
-from typing import Optional, Union, Tuple
+from typing import Optional, Union, Tuple, List, Dict
 from dataclasses import dataclass
 from pathlib import Path
 import os
@@ -56,19 +56,19 @@ class PrehandHistory:
     """
     How many chips the hand started with in the middle
     """
-    player_chips: dict[int, int]
+    player_chips: Dict[int, int]
     """
     The number of chips for each player
     """
-    player_cards: dict[int, list[Card]]
+    player_cards: Dict[int, List[Card]]
     """
     The cards for each player
     """
 
-    def to_string(self, canon_ids: dict[int, int]) -> str:
+    def to_string(self, canon_ids: Dict[int, int]) -> str:
         """
         Arguments:
-            canon_ids (dict[int, int]): Map of old_id -> new_id where the new btn_loc is 0
+            canon_ids (Dict[int, int]): Map of old_id -> new_id where the new btn_loc is 0
         Returns:
             str: The string representation of the prehand history: blind sizes, chips, and cards
 
@@ -140,10 +140,10 @@ class PlayerAction:
     The value if action is RAISE
     """
 
-    def to_string(self, canon_ids: dict[int, int]) -> str:
+    def to_string(self, canon_ids: Dict[int, int]) -> str:
         """
         Arguments:
-            canon_ids (dict[int, int]): Map of old_id -> new_id where the new btn_loc is 0
+            canon_ids (Dict[int, int]): Map of old_id -> new_id where the new btn_loc is 0
         Returns:
             str: The string representation of a player action: id, action, amount
         """
@@ -177,19 +177,19 @@ class BettingRoundHistory:
     History of a Betting Round
 
     """
-    new_cards: list[Card]
+    new_cards: List[Card]
     """
     The new cards that were added this round
     """
-    actions: list[PlayerAction]
+    actions: List[PlayerAction]
     """
     A list of PlayerActions
     """
 
-    def to_string(self, canon_ids: dict[int, int]) -> str:
+    def to_string(self, canon_ids: Dict[int, int]) -> str:
         """
         Arguments:
-            canon_ids (dict[int, int]): Map of old_id -> new_id where the new btn_loc is 0
+            canon_ids (Dict[int, int]): Map of old_id -> new_id where the new btn_loc is 0
         Returns:
             str: The string representation of the betting round history:
                 new cards revealed, ordered list of actions
@@ -249,19 +249,19 @@ class SettleHistory:
     History of the Settle Phase
 
     """
-    new_cards: list[Card]
+    new_cards: List[Card]
     """
     The new cards that were added this round
     """
-    pot_winners: dict[int, Tuple[int, int, list[int]]]
+    pot_winners: Dict[int, Tuple[int, int, List[int]]]
     """
     A map from pot_id to a tuple of winner data :code:`amount, best rank, list of winners`
     """
 
-    def to_string(self, canon_ids: dict[int, int]) -> str:
+    def to_string(self, canon_ids: Dict[int, int]) -> str:
         """
         Arguments:
-            canon_ids (dict[int, int]): Map of old_id -> new_id where the new btn_loc is 0
+            canon_ids (Dict[int, int]): Map of old_id -> new_id where the new btn_loc is 0
         Returns:
             str: The string representation of the settle history: new cards revealed,
                 and the winners per pot: (pot_id, total_amount, best_rank, winners list)
