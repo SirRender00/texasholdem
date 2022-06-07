@@ -1,6 +1,8 @@
 """Config for card module tests. Includes:
     - Sample cards
 """
+from typing import List
+
 import pytest
 
 from texasholdem.card.deck import Deck

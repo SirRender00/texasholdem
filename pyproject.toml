@@ -20,7 +20,7 @@ include = [
 "Wiki" = "https://github.com/SirRender00/texasholdem/wiki"
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "^3.8"
 Deprecated = "^1.2.13"
 windows-curses = { version = "^2.3.0", markers = "sys_platform == 'win32'" }
 

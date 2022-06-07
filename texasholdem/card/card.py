@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import math
-from typing import Union, Iterable
+from typing import Union, Iterable, List
 
 
 class Card(int):
@@ -238,12 +238,12 @@ class Card(int):
         return "".join(output)
 
 
-def card_strings_to_int(card_strs: Iterable[str]) -> list[Card]:
+def card_strings_to_int(card_strs: Iterable[str]) -> List[Card]:
     """
     Args:
         card_strs (Iterable[str]): An iterable of card strings.
     Returns:
-        list[Card]: The cards in the corresponding int format.
+        List[Card]: The cards in the corresponding int format.
 
     """
     bhand = []
@@ -298,13 +298,13 @@ def prime_product_from_rankbits(rankbits: int) -> int:
     return product
 
 
-def card_list_to_pretty_str(cards: list[Card]) -> str:
+def card_list_to_pretty_str(cards: List[Card]) -> str:
     """
     Prints the given card in a human-readable pretty string with
     ascii suit.
 
     Args:
-        cards (list[Card]): A list of card ints in the proper form.
+        cards (List[Card]): A list of card ints in the proper form.
     Returns:
         string: A human-readable pretty string with ascii suits.
 
