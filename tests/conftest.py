@@ -4,7 +4,7 @@ Config for all tests. Includes:
     - Method for stripping comments from a history string.
 """
 import os
-from typing import Union
+from typing import Union, Tuple
 from pathlib import Path
 import random
 
@@ -129,7 +129,7 @@ def call_agent():
 
     """
 
-    def get_action(game: TexasHoldEm) -> tuple[ActionType, None]:
+    def get_action(game: TexasHoldEm) -> Tuple[ActionType, None]:
         player = game.players[game.current_player]
         if player.state == PlayerState.TO_CALL:
             return ActionType.CALL, None
@@ -148,7 +148,7 @@ def random_agent():
 
     """
 
-    def get_action(game: TexasHoldEm, no_fold: bool = False) -> tuple[ActionType, int]:
+    def get_action(game: TexasHoldEm, no_fold: bool = False) -> Tuple[ActionType, int]:
         bet_amount = game.player_bet_amount(game.current_player)
         chips = game.players[game.current_player].chips
         min_raise = game.value_to_total(game.min_raise(), game.current_player)

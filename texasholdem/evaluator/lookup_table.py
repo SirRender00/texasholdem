@@ -37,8 +37,8 @@ class LookupTable:
     # pylint: disable=too-few-public-methods
     """
     Attributes:
-        flush_lookup (dict[int, int]): map from prime-product to rank for suited cards
-        unsuited_lookup (dict[int, int]): map from prime-product to rank for unsuited cards
+        flush_lookup (Dict[int, int]): map from prime-product to rank for suited cards
+        unsuited_lookup (Dict[int, int]): map from prime-product to rank for unsuited cards
 
     """
 

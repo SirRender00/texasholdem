@@ -7,7 +7,7 @@ import platform
 import shutil
 import re
 import sys
-from typing import Iterable, Optional, Union
+from typing import Iterable, Optional, Union, Tuple
 import curses
 from collections import namedtuple, deque
 import signal
@@ -49,24 +49,24 @@ class _Ellipse:
     Arguments:
         major (float): The semi-major axis length
         minor (float): The semi-minor axis length
-        center (tuple[float, float]): The center of the ellipse
+        center (Tuple[float, float]): The center of the ellipse
 
     """
 
     def __init__(self,
                  major: float = None,
                  minor: float = None,
-                 center: tuple[float, float] = (0, 0)):
+                 center: Tuple[float, float] = (0, 0)):
         self.major = major
         self.minor = minor
         self.center = center
 
-    def point_yx(self, rads: float) -> tuple[float, float]:
+    def point_yx(self, rads: float) -> Tuple[float, float]:
         """
         Arguments:
             rads (float): The radians
         Returns:
-            tuple[float, float]: The point y, x
+            Tuple[float, float]: The point y, x
 
         """
         return (self.minor * math.sin(rads) + self.center[1],
@@ -356,7 +356,7 @@ class _Block:
         for block in self.blocks.values():
             block.refresh()
 
-    def bound_coords(self, y: int, x: int) -> tuple[int, int]:
+    def bound_coords(self, y: int, x: int) -> Tuple[int, int]:
         """
         Ensures the given y, x will lay in the window.
 
@@ -364,7 +364,7 @@ class _Block:
             y (int): The y coordinate
             x (int): The x coordinate
         Returns:
-            tuple[int, int]: The safe bounded coordinates
+            Tuple[int, int]: The safe bounded coordinates
 
         """
         max_y, max_x = self.window.getmaxyx()
@@ -559,7 +559,7 @@ class TextGUI(AbstractGUI):
         return string.strip()
 
     @preflight(prerun=lambda self: self.refresh())
-    def accept_input(self) -> tuple[ActionType, Optional[int]]:
+    def accept_input(self) -> Tuple[ActionType, Optional[int]]:
         curses.echo(True)
         curses.curs_set(1)
 

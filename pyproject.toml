@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "texasholdem"
-version = "0.7.1"
+version = "0.7.2"
 description = "A texasholdem python package"
 authors = ["Evyn Machi <evyn.machi@gmail.com>"]
 keywords = ['texasholdem', 'holdem', 'poker']
@@ -20,7 +20,7 @@ include = [
 "Wiki" = "https://github.com/SirRender00/texasholdem/wiki"
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "^3.8"
 Deprecated = "^1.2.13"
 windows-curses = { version = "^2.3.0", markers = "sys_platform == 'win32'" }
 
@@ -31,7 +31,7 @@ pylint = "^2.11.1"
 sphinx-rtd-theme = "^1.0.0"
 
 [tool.pylint.master]
-disable = ["import-error", "missing-module-docstring"]
+disable = ["import-error", "missing-module-docstring", "unknown-option-value"]
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

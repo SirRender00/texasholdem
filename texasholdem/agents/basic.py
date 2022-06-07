@@ -21,7 +21,7 @@ def call_agent(game: TexasHoldEm) -> Tuple[ActionType, None]:
     Arguments:
         game (TexasHoldEm): The TexasHoldEm game
     Returns:
-        tuple[ActionType, None]: CALL if someone raised, else CHECK
+        Tuple[ActionType, None]: CALL if someone raised, else CHECK
 
     """
     player = game.players[game.current_player]
@@ -42,7 +42,7 @@ def random_agent(game: TexasHoldEm, no_fold: bool = False) -> Tuple[ActionType, 
         game (TexasHoldEm): The TexasHoldEm game
         no_fold (bool): Removes the possibility of folding if no one raised, default False.
     Returns:
-        tuple[ActionType, int]: Returns a uniformly random action from the
+        Tuple[ActionType, int]: Returns a uniformly random action from the
             available moves.
 
     """
