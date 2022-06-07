@@ -1,4 +1,4 @@
-from typing import Callable, Any, TypeVar
+from typing import Callable, Any, TypeVar, Type
 
 from functools import wraps
 
@@ -8,7 +8,7 @@ _R = TypeVar("_R")
 _E = TypeVar("_E")
 
 
-def check_raise(exc_type: type(Exception)):
+def check_raise(exc_type: Type[Exception]):
     """
     Decorator that turns a function that returns a bool and message into
     a function that returns a bool and optionally throws an error.
@@ -26,7 +26,7 @@ def check_raise(exc_type: type(Exception)):
             validate("arg1", throws=True)   # will raise ValueError("test")
 
     Arguments:
-        exc_type (type(Exception)): The Exception type to throw.
+        exc_type (Type[Exception]): The Exception type to throw.
     """
 
     def decorator(func: Callable[[_T], tuple[bool, str]]) -> Callable[[_T], bool]:
@@ -44,13 +44,13 @@ def check_raise(exc_type: type(Exception)):
 
 
 def handle(handler: Callable[[_E], Any],
-           exc_type: _E = Exception):
+           exc_type: _E = Type[Exception]):
     """
     Decorator that wraps the entire function in a try-except statement
     that catches the given exc_type and handles it with the given handler.
 
     Arguments:
-        exc_type (type(Exception)): The exception type to handle
+        exc_type (Type[Exception]): The exception type to handle
         handler: Function that handles the exc_type exception
 
     """
