@@ -1,4 +1,4 @@
-from typing import Callable, Any, TypeVar, Type
+from typing import Callable, Any, TypeVar, Type, Tuple
 
 from functools import wraps
 
@@ -29,7 +29,7 @@ def check_raise(exc_type: Type[Exception]):
         exc_type (Type[Exception]): The Exception type to throw.
     """
 
-    def decorator(func: Callable[[_T], tuple[bool, str]]) -> Callable[[_T], bool]:
+    def decorator(func: Callable[[_T], Tuple[bool, str]]) -> Callable[[_T], bool]:
 
         @wraps(func)
         def inner(*args, throws=False, **kwargs):
