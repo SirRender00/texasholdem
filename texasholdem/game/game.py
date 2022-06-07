@@ -61,7 +61,7 @@ class Pot:
     Attributes:
         amount (int): The amount of chips in the pot NOT including the current betting round
         raised (int): The highest bet amount in the current betting round
-        player_amounts (dict[int, int]): A map from player id to # chips each player has posted
+        player_amounts (Dict[int, int]): A map from player id to # chips each player has posted
                                          this round
 
     """
@@ -223,7 +223,7 @@ class TexasHoldEm:
         big_blind (int): Big blind
         small_blind (int): Small blind
         max_players (int): how many players can sit at the table, defaults to 9.
-        players (list[Player]): A list of all players in the game.
+        players (List[Player]): A list of all players in the game.
         btn_loc (int): The id of the player who has the button.
         bb_loc (int): The id of the player who has the big blind.
         sb_loc (int): The id of the player who has the small blind.
@@ -248,7 +248,7 @@ class TexasHoldEm:
         self.small_blind = small_blind
         self.max_players = max_players
 
-        self.players: list[Player] = list(Player(i, self.buyin) for i in range(max_players))
+        self.players: List[Player] = list(Player(i, self.buyin) for i in range(max_players))
 
         self.btn_loc = random.choice(self.players).player_id
         self.bb_loc = -1
@@ -922,12 +922,12 @@ class TexasHoldEm:
         for i in range(first_pot, len(self.pots)):
             self._get_pot(i).collect_bets()
 
-    def get_hand(self, player_id) -> list[Card]:
+    def get_hand(self, player_id) -> List[Card]:
         """
         Arguments:
             player_id (int): The player id
         Returns:
-            list[Card]: A two element list of the hand of the given player,
+            List[Card]: A two element list of the hand of the given player,
                 if the player has not been dealt a hand, returns an empty list
 
         """
