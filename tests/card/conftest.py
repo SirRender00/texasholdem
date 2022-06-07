@@ -1,7 +1,7 @@
 """Config for card module tests. Includes:
     - Sample cards
 """
-from typing import Tuple
+from typing import Tuple, List
 
 import pytest
 
@@ -24,7 +24,7 @@ def sample_cards():
     return list(_CARDS)
 
 
-def get_sample_cards() -> list[Tuple[str, int]]:
+def get_sample_cards() -> List[Tuple[str, int]]:
     """
     Returns:
         List[Tuple[str, int]]: Sample card strings with their corresponding Card ints.

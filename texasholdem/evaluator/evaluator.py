@@ -4,12 +4,14 @@ Evaluates hand strengths with optimizations in terms of speed and memory usage.
 """
 
 import itertools
+from typing import List
+
 from texasholdem.card import card
 from texasholdem.card.card import Card
 from texasholdem.evaluator.lookup_table import LOOKUP_TABLE
 
 
-def _five(cards: list[Card]) -> int:
+def _five(cards: List[Card]) -> int:
     """
     Performs an evaluation given card in integer form, mapping them to
     a rank in the range [1, 7462], with lower ranks being more powerful.
@@ -17,7 +19,7 @@ def _five(cards: list[Card]) -> int:
     Variant of Cactus Kev's 5 card evaluator.
 
     Args:
-        cards (list[Card]): A list of 5 card ints.
+        cards (List[Card]): A list of 5 card ints.
     Returns:
         int: The rank of the hand.
 
@@ -33,21 +35,21 @@ def _five(cards: list[Card]) -> int:
     return LOOKUP_TABLE.unsuited_lookup[prime]
 
 
-def evaluate(cards: list[Card], board: list[Card]) -> int:
+def evaluate(cards: List[Card], board: List[Card]) -> int:
     """
     Evaluates the best five-card hand from the given cards and board. Returns
     the corresponding rank.
 
     Args:
-        cards (list[int]): A list of length two of card ints that a player holds.
-        board (list[int]): A list of length 3, 4, or 5 of card ints.
+        cards (List[int]): A list of length two of card ints that a player holds.
+        board (List[int]): A list of length 3, 4, or 5 of card ints.
     Returns:
         int: A number between 1 (highest) and 7462 (lowest) representing the relative
             hand rank of the given card.
 
     """
     all_cards = cards + board
-    return min([_five(hand) for hand in itertools.combinations(all_cards, 5)])
+    return min(_five(hand) for hand in itertools.combinations(all_cards, 5))
 
 
 def get_rank_class(hand_rank: int) -> int:
