@@ -31,7 +31,7 @@ pylint = "^2.11.1"
 sphinx-rtd-theme = "^1.0.0"
 
 [tool.pylint.master]
-disable = ["import-error", "missing-module-docstring"]
+disable = ["import-error", "missing-module-docstring", "unknown-option-value"]
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
