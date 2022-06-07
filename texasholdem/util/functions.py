@@ -5,7 +5,7 @@ from functools import wraps
 _F = TypeVar("_F", bound=Callable)
 _T = TypeVar("_T")
 _R = TypeVar("_R")
-_E = TypeVar("_E")
+_E = TypeVar("_E", bound=Type[Exception])
 
 
 def check_raise(exc_type: Type[Exception]):
@@ -44,7 +44,7 @@ def check_raise(exc_type: Type[Exception]):
 
 
 def handle(handler: Callable[[_E], Any],
-           exc_type: _E = Type[Exception]):
+           exc_type: _E = Exception):
     """
     Decorator that wraps the entire function in a try-except statement
     that catches the given exc_type and handles it with the given handler.
