@@ -4,7 +4,7 @@ Config for all tests. Includes:
     - Method for stripping comments from a history string.
 """
 import os
-from typing import Union
+from typing import Union, Tuple
 from pathlib import Path
 import random
 
