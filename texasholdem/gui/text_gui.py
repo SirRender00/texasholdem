@@ -7,7 +7,7 @@ import platform
 import shutil
 import re
 import sys
-from typing import Iterable, Optional, Union
+from typing import Iterable, Optional, Union, Tuple
 import curses
 from collections import namedtuple, deque
 import signal
