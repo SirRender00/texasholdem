@@ -6,7 +6,7 @@ Config module for the evaluator tests includes:
         a certain board.
 """
 import itertools
-from typing import Optional
+from typing import Optional, List, Dict
 import random
 
 from texasholdem.card.card import Card
@@ -18,10 +18,10 @@ GETTER_CONVENIENCE_RUNS = 100
 ALL_SUITS = tuple(Card.CHAR_SUIT_TO_INT_SUIT.keys())
 
 
-def is_flush(cards: list[Card]) -> bool:
+def is_flush(cards: List[Card]) -> bool:
     """
     Arguments:
-        cards (list[Card]): The hand to use
+        cards (List[Card]): The hand to use
     Returns:
         bool: True if there exists a five-card hand combo in the given cards
             that results in a flush, False o/w
@@ -33,10 +33,10 @@ def is_flush(cards: list[Card]) -> bool:
                for hand in itertools.combinations(cards, 5))
 
 
-def find_nonflush_suit(suits: Optional[list[str]] = None) -> str:
+def find_nonflush_suit(suits: Optional[List[str]] = None) -> str:
     """
     Arguments:
-        suits (Optional[list[str]]): The suits to use, default None
+        suits (Optional[List[str]]): The suits to use, default None
     Returns:
         str: A suit such that suits + [suit] is not a flush
     Raises:
@@ -58,7 +58,7 @@ def find_nonflush_suit(suits: Optional[list[str]] = None) -> str:
     return suit_candidate
 
 
-def generate_nonflush_suits(board: Optional[list[Card]] = None) -> list[str]:
+def generate_nonflush_suits(board: Optional[List[Card]] = None) -> List[str]:
     """
     Arguments:
         board (Optional[List[Card]]): The board to use of length 3, 4, or 5 (default None).
@@ -79,7 +79,7 @@ def generate_nonflush_suits(board: Optional[list[Card]] = None) -> list[str]:
     return suits
 
 
-def is_straight(ranks: list[int]) -> bool:
+def is_straight(ranks: List[int]) -> bool:
     """
     Arguments:
         ranks (List[int]): The ranks to use
@@ -98,7 +98,7 @@ def is_straight(ranks: list[int]) -> bool:
                for hand in itertools.combinations(ranks, 5))
 
 
-def find_nonstraight_rank(ranks: list[int]) -> int:
+def find_nonstraight_rank(ranks: List[int]) -> int:
     """
     Arguments:
         ranks (List[int]): a list of ranks
@@ -122,7 +122,7 @@ def find_nonstraight_rank(ranks: list[int]) -> int:
     return rank_cand
 
 
-def get_rank_counts(rank_list: list[int]) -> dict[int, int]:
+def get_rank_counts(rank_list: List[int]) -> Dict[int, int]:
     """
     Arguments:
         rank_list (List[int]): A list of ranks
@@ -139,7 +139,7 @@ def get_rank_counts(rank_list: list[int]) -> dict[int, int]:
     return counts
 
 
-def less_hands_same_class(rank_class: int, hand1: list[Card], hand2: list[Card]) -> bool:
+def less_hands_same_class(rank_class: int, hand1: List[Card], hand2: List[Card]) -> bool:
     """
     Compares two hands from the same rank_class against each other, returning True if
     hand1 loses against hand2, False otherwise.
@@ -165,7 +165,7 @@ def less_hands_same_class(rank_class: int, hand1: list[Card], hand2: list[Card])
     return list(counts1.keys()) < list(counts2.keys())
 
 
-def generate_nonstraight_noncombo(board: Optional[list[Card]] = None) -> list[str]:
+def generate_nonstraight_noncombo(board: Optional[List[Card]] = None) -> List[str]:
     """
     Arguments:
         board (Optional[List[Card]]): The board to use of length 3, 4, or 5 (default None).
@@ -189,7 +189,7 @@ def generate_nonstraight_noncombo(board: Optional[list[Card]] = None) -> list[st
     return [Card.STR_RANKS[rank] for rank in ranks]
 
 
-def generate_straight(board: Optional[list[Card]] = None) -> list[str]:
+def generate_straight(board: Optional[List[Card]] = None) -> List[str]:
     """
     Arguments:
         board (Optional[List[Card]]): The board to use of length 3, 4, or 5 (default None).
@@ -218,7 +218,7 @@ def generate_straight(board: Optional[list[Card]] = None) -> list[str]:
     raise ValueError("Could not generate a straight.")
 
 
-def generate_flush(board: Optional[list[Card]] = None) -> list[str]:
+def generate_flush(board: Optional[List[Card]] = None) -> List[str]:
     """
     Arguments:
         board (Optional[List[Card]]): The board to use of length 3, 4, or 5 (default None).
@@ -242,7 +242,7 @@ def generate_flush(board: Optional[list[Card]] = None) -> list[str]:
     return 2 * [Card.INT_SUIT_TO_CHAR_SUIT[suit_choices[0]]]
 
 
-def generate_combo(*combos: int, board: Optional[list[Card]] = None) -> list[Card]:
+def generate_combo(*combos: int, board: Optional[List[Card]] = None) -> List[Card]:
     """
     Easy generation of combos, examples below give a clearer picture:
 
@@ -337,14 +337,14 @@ def generate_combo(*combos: int, board: Optional[list[Card]] = None) -> list[Car
     return cards
 
 
-def generate_sample_hand(rank_class: int, board: Optional[list[Card]] = None) -> list[Card]:
+def generate_sample_hand(rank_class: int, board: Optional[List[Card]] = None) -> List[Card]:
     """
     Given a rank_class this function will generate a random list of cards from that rank
     class with uniform probability.
 
     Arguments:
         rank_class (int): The class rank to generate a hand from
-        board (Optional[list[Card]]): The board to use
+        board (Optional[List[Card]]): The board to use
     Returns:
         List[Card]: A uniformly random five-card hand of the given class (two if board is given)
             that forms the given rank class when combined with the board
