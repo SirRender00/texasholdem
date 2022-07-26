@@ -7,7 +7,7 @@ import platform
 import shutil
 import re
 import sys
-from typing import Iterable, Optional, Union, Tuple
+from typing import Iterable, Optional, Union, Tuple, Dict, List
 import curses
 from collections import namedtuple, deque
 import signal
@@ -141,7 +141,7 @@ class _Block:
         window (curses._CursesWindow): The window object for this block (usually given
             from another :class:`_Block` or :class:`_CursesHelper` with the :meth:`new_block`
             call (which calls :code:`curses.newwin`).
-        blocks (dict[str, _Block]): a dictionary of child blocks.
+        blocks (Dict[str, _Block]): a dictionary of child blocks.
         content (list, dict): The last *args, and **kwargs passed in to the :meth:`add_content`
             method. Used to refresh and save state.
         content_stack (deque): A stack of the previous contents saved with :meth:`stash_state`
@@ -153,7 +153,7 @@ class _Block:
                  window: curses._CursesWindow = None):
         # pylint: disable=no-member
         self.name: str = name
-        self.blocks: dict[str, _Block] = {}
+        self.blocks: Dict[str, _Block] = {}
         self.window = window
         self.content_stack = deque(maxlen=10)
         self.content = None
@@ -162,11 +162,11 @@ class _Block:
         self.content = (args, kwargs)
 
     @staticmethod
-    def _pad(obj: Union[list[str], str],
-             pad_obj: Union[list[str], str],
+    def _pad(obj: Union[List[str], str],
+             pad_obj: Union[List[str], str],
              padding_len: int,
              min_padding: int,
-             align: _Align) -> Union[list[str], str]:
+             align: _Align) -> Union[List[str], str]:
         # pylint: disable=too-many-arguments
         """
         Helper function to pad a list or string
@@ -187,7 +187,7 @@ class _Block:
             exc_type=curses.error)
     @preflight(prerun=lambda self, *args, **kwargs: self._set_content_call(*args, **kwargs))
     def add_content(self,
-                    content: list[str],
+                    content: List[str],
                     align: _Align = _Align.MIDDLE,
                     justify: _Justify = _Justify.CENTER,
                     border: bool = False,
@@ -198,7 +198,7 @@ class _Block:
         Pass in parameters to modify the alignment, justification, border, etc.
 
         Arguments:
-            content (list[str]): The content to add to the block, each element is a
+            content (List[str]): The content to add to the block, each element is a
                 new line.
             align (_Align): The alignment (top to bottom) for the content.
             justify (_Justify): The justification (left to right) for the content.
@@ -679,12 +679,12 @@ class TextGUI(AbstractGUI):
             cols - _VERSION_BLOCK_SIZE[1]
         )
 
-    def _player_block(self, player_id: int) -> list[str]:
+    def _player_block(self, player_id: int) -> List[str]:
         """
         Arguments:
             player_id (int): The player id
         Returns:
-            list[str]: The content for the given player
+            List[str]: The content for the given player
 
         """
         block = []
@@ -714,32 +714,32 @@ class TextGUI(AbstractGUI):
 
         return block
 
-    def _player_bet_block(self, player_id: int) -> list[str]:
+    def _player_bet_block(self, player_id: int) -> List[str]:
         """
         Arguments:
             player_id (int): The player id
         Returns:
-            list[str]: The player bet amount content
+            List[str]: The player bet amount content
 
         """
         return [f"Bet: {self.game.player_bet_amount(player_id)}"]
 
     @staticmethod
-    def _version_block() -> list[str]:
+    def _version_block() -> List[str]:
         """
         Returns:
-            list[str]: The version block content
+            List[str]: The version block content
 
         """
         return [f"texaholdem: v{version('texasholdem')}"]
 
-    def _history_block(self) -> list[str]:
+    def _history_block(self) -> List[str]:
         """
         The history block includes headers for each hand phase, action callouts
         for each player during their turn, and how many chips for winners.
 
         Returns:
-            list[str]: The content for the history
+            List[str]: The content for the history
 
         """
         history_rows, history_cols = self.main_block.get_block('HISTORY').window.getmaxyx()
@@ -767,12 +767,12 @@ class TextGUI(AbstractGUI):
 
         return list(block)
 
-    def _board_block(self) -> list[str]:
+    def _board_block(self) -> List[str]:
         """
         The board block includes the board cards and the pots.
 
         Returns:
-            list[str]: The content for the board and for the pots
+            List[str]: The content for the board and for the pots
 
         """
         return [f"Board: {card.card_list_to_pretty_str(self.game.board)}",
@@ -852,7 +852,7 @@ class TextGUI(AbstractGUI):
         )
         self.main_block.refresh()
 
-    def prompt_input(self, preamble: Optional[list[str]] = None):
+    def prompt_input(self, preamble: Optional[List[str]] = None):
         if preamble is None:
             preamble = [f"Player {self.game.current_player}\'s turn"]
 
