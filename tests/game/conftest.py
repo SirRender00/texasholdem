@@ -180,7 +180,7 @@ class GamePredicate:
     """
 
     def before(self, game: TexasHoldEm) -> bool:
-        # pylint: disable=unused-argument,no-self-use
+        # pylint: disable=unused-argument
         """
         This method will run before every action. Predicates can use this
         to set variables they will check in the after method or to validate moves.
@@ -192,7 +192,7 @@ class GamePredicate:
         return False
 
     def after(self, game: TexasHoldEm) -> bool:
-        # pylint: disable=unused-argument,no-self-use
+        # pylint: disable=unused-argument
         """
         This method will run after every action.
 
