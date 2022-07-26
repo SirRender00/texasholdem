@@ -10,9 +10,6 @@
 # Misc
 .DS_Store
 
-# lock files
-*.lock
-
 # IDE
 .idea/*
 
