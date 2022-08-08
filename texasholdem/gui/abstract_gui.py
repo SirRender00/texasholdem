@@ -38,11 +38,13 @@ class AbstractGUI(abc.ABC):
 
     """
 
-    def __init__(self,
-                 game: Optional[TexasHoldEm] = None,
-                 visible_players: Optional[Iterable[int]] = None,
-                 enable_animation: bool = True,
-                 no_wait: bool = False):
+    def __init__(
+        self,
+        game: Optional[TexasHoldEm] = None,
+        visible_players: Optional[Iterable[int]] = None,
+        enable_animation: bool = True,
+        no_wait: bool = False,
+    ):
         self.game = game
         self.visible_players = visible_players
         self.no_wait = no_wait
@@ -70,11 +72,15 @@ class AbstractGUI(abc.ABC):
 
         sorted_players = sorted(list(visible_players))
         if len(sorted_players) > self.game.max_players:
-            raise ValueError("Expected length of visible players to be <= number of players. "
-                             f"Expected <= {self.game.max_players}, Got {len(sorted_players)}.")
+            raise ValueError(
+                "Expected length of visible players to be <= number of players. "
+                f"Expected <= {self.game.max_players}, Got {len(sorted_players)}."
+            )
 
-        for player_id, criteria in ((sorted_players[0], lambda i: i < 0),
-                                    (sorted_players[-1], lambda i: i > self.game.max_players - 1)):
+        for player_id, criteria in (
+            (sorted_players[0], lambda i: i < 0),
+            (sorted_players[-1], lambda i: i > self.game.max_players - 1),
+        ):
             if criteria(player_id):
                 raise ValueError(f"Unexpected player id {player_id}")
 
@@ -184,9 +190,7 @@ class AbstractGUI(abc.ABC):
             try:
                 self.prompt_input()
                 action, total = self.accept_input()
-                self.game.validate_move(action=action,
-                                        total=total,
-                                        throws=True)
+                self.game.validate_move(action=action, total=total, throws=True)
                 break
             except ValueError as err:
                 logger.warning("Caught error: %s.", str(err), exc_info=err)

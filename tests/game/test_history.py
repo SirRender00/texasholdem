@@ -38,22 +38,28 @@ def test_basic_export(tmpdir, texas_game, call_agent):
             texas.take_action(ActionType.RAISE, total=texas.big_blind + 5)
         texas.take_action(*call_agent(texas))
 
-    assert all((texas.hand_history.prehand,
-               texas.hand_history.preflop,
-               texas.hand_history.flop,
-               texas.hand_history.turn,
-               texas.hand_history.river,
-               texas.hand_history.settle))
+    assert all(
+        (
+            texas.hand_history.prehand,
+            texas.hand_history.preflop,
+            texas.hand_history.flop,
+            texas.hand_history.turn,
+            texas.hand_history.river,
+            texas.hand_history.settle,
+        )
+    )
 
     assert texas.hand_history.prehand.btn_loc == texas.btn_loc
     assert texas.hand_history.prehand.small_blind == texas.small_blind
     assert texas.hand_history.prehand.big_blind == texas.big_blind
-    assert all(old_chips[i] == texas.hand_history.prehand.player_chips[i]
-               for i in range(len(texas.players)))
+    assert all(
+        old_chips[i] == texas.hand_history.prehand.player_chips[i]
+        for i in range(len(texas.players))
+    )
 
     history = tmpdir / "texas.pgn"
     history = texas.export_history(history)
-    with open(history, 'r', encoding="ascii") as file:
+    with open(history, "r", encoding="ascii") as file:
         assert file.read() == texas.hand_history.to_string()
 
 
@@ -72,7 +78,7 @@ def test_basic_import(tmpdir, texas_game, call_agent):
     history = tmpdir / "texas.pgn"
     history = texas.export_history(history)
 
-    with open(history, 'r', encoding="ascii") as file:
+    with open(history, "r", encoding="ascii") as file:
         history_string = file.read()
 
     for state in TexasHoldEm.import_history(history):
@@ -130,7 +136,7 @@ def test_file_naming(tmpdir, texas_game, call_agent):
     new_history = texas.export_history(new_path)
 
     # overwrite works
-    with open(new_history, 'r', encoding="ascii") as file:
+    with open(new_history, "r", encoding="ascii") as file:
         history_string = file.read()
 
     last_history = ""
@@ -140,8 +146,9 @@ def test_file_naming(tmpdir, texas_game, call_agent):
     assert last_history.strip() == history_string.strip()
 
 
-@pytest.mark.parametrize("pgn", glob.glob(str(BAD_FORMAT_HISTORY_DIRECTORY / '*'),
-                                          recursive=True))
+@pytest.mark.parametrize(
+    "pgn", glob.glob(str(BAD_FORMAT_HISTORY_DIRECTORY / "*"), recursive=True)
+)
 def test_bad_format_history(pgn):
     """
     Tries to import the given bad format files and ensures it errors.

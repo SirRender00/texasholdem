@@ -27,15 +27,19 @@ from texasholdem.game.hand_phase import HandPhase
 from texasholdem.game.player_state import PlayerState
 from texasholdem.evaluator.evaluator import evaluate
 
-from tests.conftest import (strip_comments,
-                            GOOD_GAME_HISTORY_DIRECTORY,
-                            BAD_GAME_HISTORY_DIRECTORY)
+from tests.conftest import (
+    strip_comments,
+    GOOD_GAME_HISTORY_DIRECTORY,
+    BAD_GAME_HISTORY_DIRECTORY,
+)
 
-from tests.game.conftest import (prehand_checks,
-                                 BASIC_GAME_RUNS,
-                                 UNTIL_STOP_RUNS,
-                                 GamePredicate,
-                                 GAME_PREDICATES)
+from tests.game.conftest import (
+    prehand_checks,
+    BASIC_GAME_RUNS,
+    UNTIL_STOP_RUNS,
+    GamePredicate,
+    GAME_PREDICATES,
+)
 
 
 def test_new_game(texas_game):
@@ -76,8 +80,7 @@ def test_skip_prehand(random_agent, texas_game):
     texas.start_hand()
 
     # players with 0 chips are skipped
-    assert all(player.state == PlayerState.SKIP
-               for player in skip_players)
+    assert all(player.state == PlayerState.SKIP for player in skip_players)
 
     assert 0 <= texas.btn_loc < texas.max_players
     assert texas.sb_loc == (texas.btn_loc + 2) % texas.max_players
@@ -142,12 +145,15 @@ def test_game_stop_prehand(texas_game):
     assert texas.hand_phase == HandPhase.PREHAND
 
 
-@pytest.mark.parametrize('hand_phase,round_num,board_len', [
-    (HandPhase.PREFLOP, 1, 0),
-    (HandPhase.FLOP, 2, 3),
-    (HandPhase.TURN, 3, 4),
-    (HandPhase.RIVER, 4, 5)
-])
+@pytest.mark.parametrize(
+    "hand_phase,round_num,board_len",
+    [
+        (HandPhase.PREFLOP, 1, 0),
+        (HandPhase.FLOP, 2, 3),
+        (HandPhase.TURN, 3, 4),
+        (HandPhase.RIVER, 4, 5),
+    ],
+)
 def test_basic_betting_rounds(hand_phase, round_num, board_len, texas_game, call_agent):
     """
     Tests basic state after running the 4 betting rounds.
@@ -173,23 +179,26 @@ def test_basic_betting_rounds(hand_phase, round_num, board_len, texas_game, call
     assert texas.is_game_running()
 
     # all players took expected number of actions
-    assert all(len([i for i in seen_players if i == player_id]) == round_num
-               for player_id in range(texas.max_players))
+    assert all(
+        len([i for i in seen_players if i == player_id]) == round_num
+        for player_id in range(texas.max_players)
+    )
 
     # all players in pot
-    assert all(player.state == PlayerState.IN
-               for player in texas.players)
+    assert all(player.state == PlayerState.IN for player in texas.players)
 
     # next player should be sb
     assert texas.current_player == texas.sb_loc
 
     # should be 30 chips in pot
-    assert texas._get_last_pot().get_total_amount() \
-           == texas.max_players * texas.big_blind
+    assert (
+        texas._get_last_pot().get_total_amount() == texas.max_players * texas.big_blind
+    )
 
     if hand_phase != HandPhase.RIVER:  # check chips if not SETTLE phase
-        assert all(player.chips == texas.buyin - texas.big_blind
-                   for player in texas.players)
+        assert all(
+            player.chips == texas.buyin - texas.big_blind for player in texas.players
+        )
 
 
 @pytest.mark.repeat(BASIC_GAME_RUNS)
@@ -209,14 +218,17 @@ def test_basic_settle(texas_game, call_agent):
     assert not texas.is_hand_running()
 
     # find winner
-    winner = min(texas.players,
-                 key=lambda player:
-                     evaluate(texas.get_hand(player.player_id), texas.board))
+    winner = min(
+        texas.players,
+        key=lambda player: evaluate(texas.get_hand(player.player_id), texas.board),
+    )
 
     assert winner.chips == texas.buyin + (texas.max_players - 1) * texas.big_blind
-    assert all(player.chips == texas.buyin - texas.big_blind
-               for player in texas.players
-               if player != winner)
+    assert all(
+        player.chips == texas.buyin - texas.big_blind
+        for player in texas.players
+        if player != winner
+    )
 
 
 @pytest.mark.repeat(BASIC_GAME_RUNS)
@@ -239,10 +251,8 @@ def test_basic_continuity(texas_game, random_agent):
 
 
 @pytest.mark.repeat(UNTIL_STOP_RUNS)
-@pytest.mark.parametrize('predicates', [GAME_PREDICATES])
-def test_until_stop(random_agent,
-                    texas_game,
-                    predicates: Iterable[GamePredicate]):
+@pytest.mark.parametrize("predicates", [GAME_PREDICATES])
+def test_until_stop(random_agent, texas_game, predicates: Iterable[GamePredicate]):
     """
     Runs prehand checks and given predicates at each hand and within each action. Runs until
     only one winner.
@@ -251,45 +261,55 @@ def test_until_stop(random_agent,
     texas_game = texas_game(buyin=150, big_blind=5, small_blind=2)
 
     while True:
-        assert sum(player.chips for player in texas_game.players) \
-               == texas_game.max_players * texas_game.buyin
+        assert (
+            sum(player.chips for player in texas_game.players)
+            == texas_game.max_players * texas_game.buyin
+        )
         prehand_checks(texas_game)
 
         if not texas_game.is_game_running():
             break
 
-        assert len([player for player in texas_game.players
-                    if player.state == PlayerState.SKIP]) < (texas_game.max_players - 1)
+        assert len(
+            [
+                player
+                for player in texas_game.players
+                if player.state == PlayerState.SKIP
+            ]
+        ) < (texas_game.max_players - 1)
 
         failed_pred = set()
         while texas_game.is_hand_running():
             for pred in predicates:
                 pred_name = f"{pred.__class__.__name__}:before"
-                if (pred_name not in failed_pred
-                        and pred.before(texas_game)):
+                if pred_name not in failed_pred and pred.before(texas_game):
                     failed_pred.add(pred_name)
 
             texas_game.take_action(*random_agent(texas_game))
 
             for pred in predicates:
                 pred_name = f"{pred.__class__.__name__}:after"
-                if (pred_name not in failed_pred
-                        and (not texas_game.is_hand_running() and pred.settle)
-                        and pred.after(texas_game)):
+                if (
+                    pred_name not in failed_pred
+                    and (not texas_game.is_hand_running() and pred.settle)
+                    and pred.after(texas_game)
+                ):
                     failed_pred.add(pred_name)
 
         if failed_pred:
             raise pytest.fail(f"Predicates {failed_pred} failed.")
 
-    assert len([player for player in texas_game.players
-                if player.state == PlayerState.SKIP]) == (texas_game.max_players - 1)
-    assert [player for player in texas_game.players
-            if player.state != PlayerState.SKIP][0].chips \
-           == texas_game.max_players * texas_game.buyin
+    assert len(
+        [player for player in texas_game.players if player.state == PlayerState.SKIP]
+    ) == (texas_game.max_players - 1)
+    assert [
+        player for player in texas_game.players if player.state != PlayerState.SKIP
+    ][0].chips == texas_game.max_players * texas_game.buyin
 
 
-@pytest.mark.parametrize("pgn", glob.glob(str(GOOD_GAME_HISTORY_DIRECTORY / '*.pgn'),
-                                          recursive=True))
+@pytest.mark.parametrize(
+    "pgn", glob.glob(str(GOOD_GAME_HISTORY_DIRECTORY / "*.pgn"), recursive=True)
+)
 def test_good_game_history(pgn):
     """
     Runs the given history and ensures they match the replay
@@ -302,8 +322,9 @@ def test_good_game_history(pgn):
     assert history_string.strip() == last_string.strip()
 
 
-@pytest.mark.parametrize("pgn", glob.glob(str(BAD_GAME_HISTORY_DIRECTORY / '*.pgn'),
-                                          recursive=True))
+@pytest.mark.parametrize(
+    "pgn", glob.glob(str(BAD_GAME_HISTORY_DIRECTORY / "*.pgn"), recursive=True)
+)
 def test_bad_game_history(pgn):
     """
     Runs the given history and ensures it errors.

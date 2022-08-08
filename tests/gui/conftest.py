@@ -13,7 +13,7 @@ BASIC_GUI_RUNS = 10
 COMPLETE_GUI_RUNS = 5
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def mock_curses():
     """
     Mocks the enter curses library, replaces the initscr and newwin functions
@@ -23,7 +23,7 @@ def mock_curses():
     window_mock.return_value.getmaxyx.return_value = _SCREEN_SIZE
     window_mock.return_value.getbegyx.return_value = (0, 0)
 
-    with patch('texasholdem.gui.text_gui.curses') as curses:
+    with patch("texasholdem.gui.text_gui.curses") as curses:
         curses.initscr = window_mock
         curses.newwin = window_mock
         yield curses
@@ -42,7 +42,9 @@ def input_stdin(mock_curses):
     yield inner
 
     # cleanup, unset
-    mock_curses.initscr.return_value.getch.reset_mock(return_value=True, side_effect=True)
+    mock_curses.initscr.return_value.getch.reset_mock(
+        return_value=True, side_effect=True
+    )
 
 
 @pytest.fixture()
@@ -50,7 +52,7 @@ def mock_signal():
     """
     Mock of the signal library for testing purposes
     """
-    with patch('texasholdem.gui.text_gui.signal') as signal:
+    with patch("texasholdem.gui.text_gui.signal") as signal:
         yield signal
 
 
@@ -62,7 +64,7 @@ def text_gui(mock_curses, mock_signal, texas_game):
     """
 
     def maker(*args, **kwargs):
-        kwargs['game'] = kwargs.get('game', '') or texas_game()
+        kwargs["game"] = kwargs.get("game", "") or texas_game()
         return TextGUI(*args, **kwargs)
 
     yield maker

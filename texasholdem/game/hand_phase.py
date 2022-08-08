@@ -9,6 +9,7 @@ class _HandPhase:
     """
     Hand phase
     """
+
     new_cards: int
     next_phase: str
 

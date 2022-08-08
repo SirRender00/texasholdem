@@ -19,8 +19,9 @@ def test_new_deck(deck):
     # So ensuring the set has 52 members is ensuring that the whole deck is there.
     assert len(set(deck.cards)) == 52, "Expected deck to have 52 unique cards"
     assert len(deck.cards) == 52, "Expected 52 cards in the deck"
-    assert all(isinstance(card, Card) for card in deck.cards), \
-        "Expected all cards to be of type Card"
+    assert all(
+        isinstance(card, Card) for card in deck.cards
+    ), "Expected all cards to be of type Card"
 
 
 def test_draw(deck):
@@ -29,7 +30,9 @@ def test_draw(deck):
     assert len(deck.cards) == 51, "Expected deck to have one less card after drawing."
 
     deck.draw(num=3)
-    assert len(deck.cards) == 48, "Expected deck to have three less cards after drawing."
+    assert (
+        len(deck.cards) == 48
+    ), "Expected deck to have three less cards after drawing."
 
     with pytest.raises(ValueError):
         deck.draw(num=len(deck.cards) + 1)

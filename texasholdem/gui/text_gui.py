@@ -1,4 +1,4 @@
-# pylint: disable=invalid-name
+# pylint: disable=invalid-name,too-many-lines
 from __future__ import annotations
 import enum
 import logging
@@ -27,7 +27,7 @@ from texasholdem.gui.abstract_gui import AbstractGUI
 
 # Windows Compatibility
 _OS = platform.system()
-_IS_WINDOWS = _OS == 'Windows'
+_IS_WINDOWS = _OS == "Windows"
 
 if _IS_WINDOWS:
     curses.resizeterm = curses.resize_term
@@ -36,7 +36,7 @@ if _IS_WINDOWS:
 logger = logging.getLogger(__name__)
 
 
-_BlockDim = namedtuple("_BlockDim", ['rows', 'cols'])
+_BlockDim = namedtuple("_BlockDim", ["rows", "cols"])
 
 
 class _Ellipse:
@@ -53,10 +53,12 @@ class _Ellipse:
 
     """
 
-    def __init__(self,
-                 major: float = None,
-                 minor: float = None,
-                 center: Tuple[float, float] = (0, 0)):
+    def __init__(
+        self,
+        major: float = None,
+        minor: float = None,
+        center: Tuple[float, float] = (0, 0),
+    ):
         self.major = major
         self.minor = minor
         self.center = center
@@ -69,8 +71,10 @@ class _Ellipse:
             Tuple[float, float]: The point y, x
 
         """
-        return (self.minor * math.sin(rads) + self.center[1],
-                self.major * math.cos(rads) + self.center[0])
+        return (
+            self.minor * math.sin(rads) + self.center[1],
+            self.major * math.cos(rads) + self.center[0],
+        )
 
     def derivative(self, rads: float) -> float:
         """
@@ -80,7 +84,9 @@ class _Ellipse:
             float: The derivative dy/dx
 
         """
-        return (rads * self.minor * math.cos(rads)) / (rads * self.major * -math.sin(rads))
+        return (rads * self.minor * math.cos(rads)) / (
+            rads * self.major * -math.sin(rads)
+        )
 
     def char_at(self, rads: float) -> str:
         """
@@ -109,6 +115,7 @@ class _Align(enum.Enum):
     Enum that represents the alignment in box top/middle/bottom
 
     """
+
     TOP = enum.auto()
     MIDDLE = enum.auto()
     BOTTOM = enum.auto()
@@ -120,6 +127,7 @@ class _Justify(enum.Enum):
     left, center, right.
 
     """
+
     LEFT = enum.auto()
     CENTER = enum.auto()
     RIGHT = enum.auto()
@@ -148,9 +156,7 @@ class _Block:
 
     """
 
-    def __init__(self,
-                 name: str,
-                 window: curses._CursesWindow = None):
+    def __init__(self, name: str, window: curses._CursesWindow = None):
         # pylint: disable=no-member
         self.name: str = name
         self.blocks: Dict[str, _Block] = {}
@@ -162,11 +168,13 @@ class _Block:
         self.content = (args, kwargs)
 
     @staticmethod
-    def _pad(obj: Union[List[str], str],
-             pad_obj: Union[List[str], str],
-             padding_len: int,
-             min_padding: int,
-             align: _Align) -> Union[List[str], str]:
+    def _pad(
+        obj: Union[List[str], str],
+        pad_obj: Union[List[str], str],
+        padding_len: int,
+        min_padding: int,
+        align: _Align,
+    ) -> Union[List[str], str]:
         # pylint: disable=too-many-arguments
         """
         Helper function to pad a list or string
@@ -176,22 +184,29 @@ class _Block:
             before_padding = pad_obj * max(padding_len, min_padding)
             after_padding = pad_obj * min_padding
         elif align == _Align.MIDDLE:
-            before_padding = after_padding = pad_obj * max(padding_len // 2, min_padding)
+            before_padding = after_padding = pad_obj * max(
+                padding_len // 2, min_padding
+            )
         else:
             after_padding = pad_obj * max(padding_len, min_padding)
             before_padding = pad_obj * min_padding
 
         return before_padding + obj + after_padding
 
-    @handle(handler=lambda exc: logger.debug(str(exc), exc_info=exc),
-            exc_type=curses.error)
-    @preflight(prerun=lambda self, *args, **kwargs: self._set_content_call(*args, **kwargs))
-    def add_content(self,
-                    content: List[str],
-                    align: _Align = _Align.MIDDLE,
-                    justify: _Justify = _Justify.CENTER,
-                    border: bool = False,
-                    wrap_line: bool = False):
+    @handle(
+        handler=lambda exc: logger.debug(str(exc), exc_info=exc), exc_type=curses.error
+    )
+    @preflight(
+        prerun=lambda self, *args, **kwargs: self._set_content_call(*args, **kwargs)
+    )
+    def add_content(
+        self,
+        content: List[str],
+        align: _Align = _Align.MIDDLE,
+        justify: _Justify = _Justify.CENTER,
+        border: bool = False,
+        wrap_line: bool = False,
+    ):
         # pylint: disable=too-many-arguments
         """
         Add the given string list to the block. Each element is placed on a new line.
@@ -214,16 +229,18 @@ class _Block:
         if wrap_line:
             for i, text in enumerate(content):
                 if len(text) >= cols:
-                    end = cols-len(_DOTS)-1
+                    end = cols - len(_DOTS) - 1
                     content[i] = text[:end]
-                    content.insert(i+1, text[end:])
+                    content.insert(i + 1, text[end:])
 
         # align top/middle/bottom
-        content = self._pad(obj=content,
-                            pad_obj=[""],
-                            padding_len=rows - len(content) - 1,
-                            min_padding=border_int,
-                            align=align)
+        content = self._pad(
+            obj=content,
+            pad_obj=[""],
+            padding_len=rows - len(content) - 1,
+            min_padding=border_int,
+            align=align,
+        )
 
         # align left/center/right
         for i, text in enumerate(content):
@@ -237,17 +254,19 @@ class _Block:
             else:
                 align = _Align.TOP
 
-            content[i] = self._pad(obj=content[i],
-                                   pad_obj=" ",
-                                   padding_len=cols - len(text) - 1,
-                                   min_padding=border_int,
-                                   align=align)
+            content[i] = self._pad(
+                obj=content[i],
+                pad_obj=" ",
+                padding_len=cols - len(text) - 1,
+                min_padding=border_int,
+                align=align,
+            )
 
         # right out, masking with dots if too long
         for i, text in enumerate(content):
             if len(text) >= cols:
-                text = text[:(cols-1-len(_DOTS))] + _DOTS
-            text += '\n' if i != rows - 1 else ''
+                text = text[: (cols - 1 - len(_DOTS))] + _DOTS
+            text += "\n" if i != rows - 1 else ""
             self.window.addstr(text)
 
         # add border
@@ -280,14 +299,12 @@ class _Block:
         for block in self.blocks.values():
             block.pop_state()
 
-    @handle(handler=lambda exc: logger.debug(str(exc), exc_info=exc),
-            exc_type=curses.error)
-    def new_block(self,
-                  name: str,
-                  nlines: int,
-                  ncols: int,
-                  begin_y: int = 0,
-                  begin_x: int = 0) -> _Block:
+    @handle(
+        handler=lambda exc: logger.debug(str(exc), exc_info=exc), exc_type=curses.error
+    )
+    def new_block(
+        self, name: str, nlines: int, ncols: int, begin_y: int = 0, begin_x: int = 0
+    ) -> _Block:
         # pylint: disable=too-many-arguments
         """
         Creates and returns a new block (that wraps around curses._CursesWindow). Note
@@ -310,9 +327,10 @@ class _Block:
             self.blocks[name].window.mvwin(*self.bound_coords(begin_y, begin_x))
             return self.blocks[name]
 
-        block = _Block(name=name,
-                       window=curses.newwin(nlines, ncols,
-                                            *self.bound_coords(begin_y, begin_x)))
+        block = _Block(
+            name=name,
+            window=curses.newwin(nlines, ncols, *self.bound_coords(begin_y, begin_x)),
+        )
         self.blocks[name] = block
         return block
 
@@ -369,14 +387,16 @@ class _Block:
         """
         max_y, max_x = self.window.getmaxyx()
         y_start, x_start = self.window.getbegyx()
-        return (min(max(y_start, y), y_start + max_y),
-                min(max(x_start, x), x_start + max_x))
+        return (
+            min(max(y_start, y), y_start + max_y),
+            min(max(x_start, x), x_start + max_x),
+        )
 
 
 # STRING CONSTANTS
-_PROMPT = '$ '
-_BLOCK_BORDER = ('|', '|', '-', '-', '+', '+', '+', '+')
-_DOTS = '...'
+_PROMPT = "$ "
+_BLOCK_BORDER = ("|", "|", "-", "-", "+", "+", "+", "+")
+_DOTS = "..."
 
 # BLOCK DIMENSIONS
 _PLAYER_BLOCK_SIZE = _BlockDim(rows=7, cols=20)
@@ -400,7 +420,7 @@ _TABLE_STEPS_RESOLUTION = 400
 _BACKSPACE = 127 if not _IS_WINDOWS else 8
 _NEWLINE = 10
 _RESIZE = -1
-_CTRL_C = 3         # Windows Only
+_CTRL_C = 3  # Windows Only
 
 # ANIMATION TIMING
 _ACTION_STEPS = 10
@@ -435,26 +455,23 @@ class TextGUI(AbstractGUI):
         (r"^call$", ActionType.CALL),
         (r"^check$", ActionType.CHECK),
         (r"^fold$", ActionType.FOLD),
-        (r"^raise (to )?([0-9]+)$", ActionType.RAISE)
+        (r"^raise (to )?([0-9]+)$", ActionType.RAISE),
     )
 
-    def __init__(self,
-                 *args,
-                 **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self._command_patterns = (
-            (r'^exit|quit$', self._exit_handler),
-        )
+        self._command_patterns = ((r"^exit|quit$", self._exit_handler),)
 
         # init curses
-        self.main_block = _Block(name="Main Window",
-                                 window=curses.initscr())
+        self.main_block = _Block(name="Main Window", window=curses.initscr())
 
         # handle resize gracefully
         if not _IS_WINDOWS:
-            signal.signal(signal.SIGWINCH,
-                          lambda signals, frame: (self.refresh(), self.main_block.window.getch()))
+            signal.signal(
+                signal.SIGWINCH,
+                lambda signals, frame: (self.refresh(), self.main_block.window.getch()),
+            )
 
         # cleanup before exit
         signal.signal(signal.SIGINT, lambda signals, frame: self._exit_handler())
@@ -471,9 +488,11 @@ class TextGUI(AbstractGUI):
         self.hide()
         sys.exit(2)
 
-    @deprecated(version="0.7.0",
-                reason="Use the :meth:`set_visible_players` method instead. "
-                       "This function will be removed in version 1.0.0.")
+    @deprecated(
+        version="0.7.0",
+        reason="Use the :meth:`set_visible_players` method instead. "
+        "This function will be removed in version 1.0.0.",
+    )
     def set_player_ids(self, ids: Iterable[int]):
         """
         Make the given players' cards visible.
@@ -485,9 +504,11 @@ class TextGUI(AbstractGUI):
         """
         self.visible_players = list(ids)
 
-    @deprecated(version="0.7.0",
-                reason="Use the :meth:`display_action` method instead. "
-                       "This function will be removed in version 1.0.0.")
+    @deprecated(
+        version="0.7.0",
+        reason="Use the :meth:`display_action` method instead. "
+        "This function will be removed in version 1.0.0.",
+    )
     def print_action(self, id: int, action: ActionType, val: Optional[int] = None):
         # pylint: disable=redefined-builtin,unused-argument
         """
@@ -496,9 +517,11 @@ class TextGUI(AbstractGUI):
         """
         self._display_action(player_id=id, action=action)
 
-    @deprecated(version="0.7.0",
-                reason="Use the :meth:`display_state` method instead. "
-                       "This function will be removed in version 1.0.0.")
+    @deprecated(
+        version="0.7.0",
+        reason="Use the :meth:`display_state` method instead. "
+        "This function will be removed in version 1.0.0.",
+    )
     def print_state(self, poker_game: TexasHoldEm):
         """
         Display the state of the game.
@@ -568,7 +591,7 @@ class TextGUI(AbstractGUI):
         curses.echo(False)
         curses.curs_set(0)
 
-        self.main_block.get_block('INPUT').erase()
+        self.main_block.get_block("INPUT").erase()
         self.main_block.refresh()
 
         string = string.lower().strip()
@@ -593,7 +616,7 @@ class TextGUI(AbstractGUI):
                     total = int(match.group(2))
 
                 # erase any errors
-                self.main_block.get_block('ERROR').erase()
+                self.main_block.get_block("ERROR").erase()
 
                 return action_type, total
 
@@ -609,74 +632,77 @@ class TextGUI(AbstractGUI):
 
         # Place input box on the bottom left
         self.main_block.new_block(
-            'INPUT',
-            *_PROMPT_BLOCK_SIZE,
-            (rows - _PROMPT_BLOCK_SIZE[0]),
-            0
+            "INPUT", *_PROMPT_BLOCK_SIZE, (rows - _PROMPT_BLOCK_SIZE[0]), 0
         )
-        input_size = self.main_block.get_block('INPUT').window.getmaxyx()
+        input_size = self.main_block.get_block("INPUT").window.getmaxyx()
 
         # Place error box on the bottom left right above the input
         self.main_block.new_block(
-            'ERROR',
+            "ERROR",
             *_ERROR_BLOCK_SIZE,
             (rows - input_size[0] - _ERROR_BLOCK_SIZE[0]),
-            0
+            0,
         )
 
         player_ellipse = _Ellipse(
             major=(cols / 2) * _PLAYER_ELLIPSE_SIZE_FACTOR,
             minor=(rows / 2) * _PLAYER_ELLIPSE_SIZE_FACTOR,
-            center=(cols / 2 + _TABLE_ELLIPSE_OFFSET[0], rows / 2 + _TABLE_ELLIPSE_OFFSET[1])
+            center=(
+                cols / 2 + _TABLE_ELLIPSE_OFFSET[0],
+                rows / 2 + _TABLE_ELLIPSE_OFFSET[1],
+            ),
         )
         player_bet_ellipse = _Ellipse(
             major=(cols / 2) * _PLAYER_BET_ELLIPSE_SIZE_FACTOR,
             minor=(rows / 2) * _PLAYER_BET_ELLIPSE_SIZE_FACTOR,
-            center=(cols / 2 + _TABLE_ELLIPSE_OFFSET[0], rows / 2 + _TABLE_ELLIPSE_OFFSET[1])
+            center=(
+                cols / 2 + _TABLE_ELLIPSE_OFFSET[0],
+                rows / 2 + _TABLE_ELLIPSE_OFFSET[1],
+            ),
         )
 
         # Place player windows in an ellipse with player 0 at the bottom of the screen
         # and continuing clockwise.
         start_rad = math.pi / 2
-        rad_per_player = ((2 * math.pi) / self.game.max_players)
+        rad_per_player = (2 * math.pi) / self.game.max_players
         for player_id in range(self.game.max_players):
             rad = start_rad + rad_per_player * player_id
             y, x = player_ellipse.point_yx(rad)
             self.main_block.new_block(
-                f'PLAYER_INFO_{player_id}',
+                f"PLAYER_INFO_{player_id}",
                 *_PLAYER_BLOCK_SIZE,
                 round(y) - _PLAYER_BLOCK_SIZE[0] // 2,
-                round(x) - _PLAYER_BLOCK_SIZE[1] // 2)
+                round(x) - _PLAYER_BLOCK_SIZE[1] // 2,
+            )
 
             y, x = player_bet_ellipse.point_yx(rad)
             self.main_block.new_block(
-                f'PLAYER_CHIPS_{player_id}',
+                f"PLAYER_CHIPS_{player_id}",
                 *_PLAYER_BET_BLOCK_SIZE,
                 round(y) - _PLAYER_BET_BLOCK_SIZE[0] // 2,
-                round(x) - _PLAYER_BET_BLOCK_SIZE[1] // 2)
+                round(x) - _PLAYER_BET_BLOCK_SIZE[1] // 2,
+            )
 
         # Place the board and pots in the center
         self.main_block.new_block(
-            'BOARD',
+            "BOARD",
             *_BOARD_BLOCK_SIZE,
             (rows - _BOARD_BLOCK_SIZE[0]) // 2 + _TABLE_ELLIPSE_OFFSET[1],
-            (cols - _BOARD_BLOCK_SIZE[1]) // 2 + _TABLE_ELLIPSE_OFFSET[0])
+            (cols - _BOARD_BLOCK_SIZE[1]) // 2 + _TABLE_ELLIPSE_OFFSET[0],
+        )
 
         # Place history on the right
         self.main_block.new_block(
-            'HISTORY',
+            "HISTORY",
             round(rows * _HISTORY_BLOCK_SIZE_FACTOR),
             _HISTORY_BLOCK_SIZE[1],
             rows - round(rows * _HISTORY_BLOCK_SIZE_FACTOR),
-            cols - _HISTORY_BLOCK_SIZE[1]
+            cols - _HISTORY_BLOCK_SIZE[1],
         )
 
         # version block above history
         self.main_block.new_block(
-            'VERSION',
-            *_VERSION_BLOCK_SIZE,
-            0,
-            cols - _VERSION_BLOCK_SIZE[1]
+            "VERSION", *_VERSION_BLOCK_SIZE, 0, cols - _VERSION_BLOCK_SIZE[1]
         )
 
     def _player_block(self, player_id: int) -> List[str]:
@@ -689,28 +715,35 @@ class TextGUI(AbstractGUI):
         """
         block = []
 
-        block.extend([f"Player {player_id}",
-                      f"{self.game.players[player_id].state.name}",
-                      f"Chips: {self.game.players[player_id].chips}"])
+        block.extend(
+            [
+                f"Player {player_id}",
+                f"{self.game.players[player_id].state.name}",
+                f"Chips: {self.game.players[player_id].chips}",
+            ]
+        )
 
-        for blind, blind_str in ((self.game.btn_loc, "Button"),
-                                 (self.game.sb_loc, "Small Blind"),
-                                 (self.game.bb_loc, "Big Blind")):
+        for blind, blind_str in (
+            (self.game.btn_loc, "Button"),
+            (self.game.sb_loc, "Small Blind"),
+            (self.game.bb_loc, "Big Blind"),
+        ):
             if player_id == blind:
                 block.append(blind_str)
                 break
 
         if self.game.players[player_id].state != PlayerState.SKIP:
             in_pot = list(self.game.in_pot_iter())
-            if (player_id in self.visible_players
-                    or (self.game.hand_phase == HandPhase.SETTLE
-                        and len(in_pot) > 1
-                        and player_id in in_pot)):
+            if player_id in self.visible_players or (
+                self.game.hand_phase == HandPhase.SETTLE
+                and len(in_pot) > 1
+                and player_id in in_pot
+            ):
                 block.append(
                     card.card_list_to_pretty_str(self.game.get_hand(player_id))
                 )
             else:
-                block.append('[ * ] [ * ]')
+                block.append("[ * ] [ * ]")
 
         return block
 
@@ -742,16 +775,23 @@ class TextGUI(AbstractGUI):
             List[str]: The content for the history
 
         """
-        history_rows, history_cols = self.main_block.get_block('HISTORY').window.getmaxyx()
-        history_rows, history_cols = history_rows - 2, history_cols - 3   # for the border / newline
-        history_border = '-' * history_cols
+        history_rows, history_cols = self.main_block.get_block(
+            "HISTORY"
+        ).window.getmaxyx()
+        history_rows, history_cols = (
+            history_rows - 2,
+            history_cols - 3,
+        )  # for the border / newline
+        history_border = "-" * history_cols
         block = deque(maxlen=history_rows)
 
-        block.append(f'Hand #{self.game.num_hands}')
-        for hand_phase in (HandPhase.PREFLOP,
-                           HandPhase.FLOP,
-                           HandPhase.TURN,
-                           HandPhase.RIVER):
+        block.append(f"Hand #{self.game.num_hands}")
+        for hand_phase in (
+            HandPhase.PREFLOP,
+            HandPhase.FLOP,
+            HandPhase.TURN,
+            HandPhase.RIVER,
+        ):
             if hand_phase in self.game.hand_history:
                 block.append(history_border)
                 block.append(hand_phase.name)
@@ -763,7 +803,7 @@ class TextGUI(AbstractGUI):
             block.append(history_border)
             block.append(HandPhase.SETTLE.name)
             block.append(history_border)
-            block.extend(str(self.game.hand_history[HandPhase.SETTLE]).split('\n'))
+            block.extend(str(self.game.hand_history[HandPhase.SETTLE]).split("\n"))
 
         return list(block)
 
@@ -775,10 +815,14 @@ class TextGUI(AbstractGUI):
             List[str]: The content for the board and for the pots
 
         """
-        return [f"Board: {card.card_list_to_pretty_str(self.game.board)}",
-                "",
-                *(f"Pot {i}: {pot.get_amount()} ({pot.get_total_amount() - pot.get_amount()})"
-                  for i, pot in enumerate(self.game.pots))]
+        return [
+            f"Board: {card.card_list_to_pretty_str(self.game.board)}",
+            "",
+            *(
+                f"Pot {i}: {pot.get_amount()} ({pot.get_total_amount() - pot.get_amount()})"
+                for i, pot in enumerate(self.game.pots)
+            ),
+        ]
 
     def _paint_table_ring(self):
         """
@@ -790,7 +834,10 @@ class TextGUI(AbstractGUI):
         table_ellipse = _Ellipse(
             major=(cols / 2) * _TABLE_ELLIPSE_SIZE_FACTOR,
             minor=(rows / 2) * _TABLE_ELLIPSE_SIZE_FACTOR,
-            center=(cols / 2 + _TABLE_ELLIPSE_OFFSET[0], rows / 2 + _TABLE_ELLIPSE_OFFSET[1])
+            center=(
+                cols / 2 + _TABLE_ELLIPSE_OFFSET[0],
+                rows / 2 + _TABLE_ELLIPSE_OFFSET[1],
+            ),
         )
 
         for step in range(1, _TABLE_STEPS_RESOLUTION):
@@ -798,7 +845,7 @@ class TextGUI(AbstractGUI):
             y, x = table_ellipse.point_yx(rad)
             self.main_block.window.addstr(
                 *self.main_block.bound_coords(round(y), round(x)),
-                table_ellipse.char_at(rad)
+                table_ellipse.char_at(rad),
             )
 
     def refresh(self):
@@ -823,60 +870,57 @@ class TextGUI(AbstractGUI):
 
     def display_state(self):
         # paint board
-        self.main_block.blocks['BOARD'].add_content(
-            content=self._board_block()
-        )
+        self.main_block.blocks["BOARD"].add_content(content=self._board_block())
 
         # paint players
         for player_id in range(self.game.max_players):
-            self.main_block.blocks[f'PLAYER_INFO_{player_id}'].add_content(
+            self.main_block.blocks[f"PLAYER_INFO_{player_id}"].add_content(
                 content=self._player_block(player_id),
-                border=player_id == self.game.current_player
+                border=player_id == self.game.current_player,
             )
 
-            self.main_block.blocks[f'PLAYER_CHIPS_{player_id}'].add_content(
+            self.main_block.blocks[f"PLAYER_CHIPS_{player_id}"].add_content(
                 content=self._player_bet_block(player_id)
             )
 
         # history
-        self.main_block.blocks['HISTORY'].add_content(
+        self.main_block.blocks["HISTORY"].add_content(
             content=self._history_block(),
             align=_Align.BOTTOM,
             border=True,
-            wrap_line=True
+            wrap_line=True,
         )
 
         # version
-        self.main_block.blocks['VERSION'].add_content(
-            content=self._version_block()
-        )
+        self.main_block.blocks["VERSION"].add_content(content=self._version_block())
         self.main_block.refresh()
 
     def prompt_input(self, preamble: Optional[List[str]] = None):
         if preamble is None:
-            preamble = [f"Player {self.game.current_player}\'s turn"]
+            preamble = [f"Player {self.game.current_player}'s turn"]
 
-        self.main_block.get_block('INPUT').erase()
-        self.main_block.get_block('INPUT').add_content(
-            [*preamble,
-             _PROMPT],
-            align=_Align.BOTTOM,
-            justify=_Justify.LEFT
+        self.main_block.get_block("INPUT").erase()
+        self.main_block.get_block("INPUT").add_content(
+            [*preamble, _PROMPT], align=_Align.BOTTOM, justify=_Justify.LEFT
         )
         self.main_block.refresh()
 
     def display_error(self, error: str):
-        self.main_block.get_block('ERROR').erase()
-        self.main_block.get_block('ERROR').add_content(
-            [error],
-            align=_Align.BOTTOM,
-            justify=_Justify.LEFT
+        self.main_block.get_block("ERROR").erase()
+        self.main_block.get_block("ERROR").add_content(
+            [error], align=_Align.BOTTOM, justify=_Justify.LEFT
         )
         self.main_block.refresh()
 
-    @handle(handler=lambda exc: logger.info("Skipping because animation is disabled"),
-            exc_type=Ignore)
-    @preflight(prerun=lambda self, *args, **kwargs: raise_if(Ignore(), not self.enable_animation))
+    @handle(
+        handler=lambda exc: logger.info("Skipping because animation is disabled"),
+        exc_type=Ignore,
+    )
+    @preflight(
+        prerun=lambda self, *args, **kwargs: raise_if(
+            Ignore(), not self.enable_animation
+        )
+    )
     def _display_action(self, player_id: int, action: ActionType):
         """
         Animates the chip movement for raise and call actions.
@@ -885,38 +929,44 @@ class TextGUI(AbstractGUI):
         curses.curs_set(0)
 
         if action in (ActionType.RAISE, ActionType.CALL):
-            player_y, player_x = \
-                self.main_block.get_block(f'PLAYER_INFO_{player_id}').window.getbegyx()
-            bet_y, bet_x = \
-                self.main_block.get_block(f'PLAYER_CHIPS_{player_id}').window.getbegyx()
+            player_y, player_x = self.main_block.get_block(
+                f"PLAYER_INFO_{player_id}"
+            ).window.getbegyx()
+            bet_y, bet_x = self.main_block.get_block(
+                f"PLAYER_CHIPS_{player_id}"
+            ).window.getbegyx()
 
-            start_y, start_x = (player_y + _PLAYER_BLOCK_SIZE[0] // 2,
-                                player_x + _PLAYER_BLOCK_SIZE[1] // 2)
-            end_y, end_x = (bet_y + _PLAYER_BET_BLOCK_SIZE[0] // 2,
-                            bet_x + _PLAYER_BET_BLOCK_SIZE[1] // 2)
+            start_y, start_x = (
+                player_y + _PLAYER_BLOCK_SIZE[0] // 2,
+                player_x + _PLAYER_BLOCK_SIZE[1] // 2,
+            )
+            end_y, end_x = (
+                bet_y + _PLAYER_BET_BLOCK_SIZE[0] // 2,
+                bet_x + _PLAYER_BET_BLOCK_SIZE[1] // 2,
+            )
 
             y, x = start_y, start_x
-            tick_y, tick_x = ((end_y - start_y) / _ACTION_STEPS,
-                              (end_x - start_x) / _ACTION_STEPS)
+            tick_y, tick_x = (
+                (end_y - start_y) / _ACTION_STEPS,
+                (end_x - start_x) / _ACTION_STEPS,
+            )
 
-            self.main_block.new_block('ACTION',
-                                      *_ACTION_BLOCK_SIZE,
-                                      round(y),
-                                      round(x)).add_content(['*'])
+            self.main_block.new_block(
+                "ACTION", *_ACTION_BLOCK_SIZE, round(y), round(x)
+            ).add_content(["*"])
 
             while (round(y), round(x)) != (end_y, end_x):
                 y += tick_y
                 x += tick_x
 
-                self.main_block.get_block('ACTION').erase()
-                self.main_block.new_block('ACTION',
-                                          *_ACTION_BLOCK_SIZE,
-                                          round(y),
-                                          round(x)).add_content(['*'])
+                self.main_block.get_block("ACTION").erase()
+                self.main_block.new_block(
+                    "ACTION", *_ACTION_BLOCK_SIZE, round(y), round(x)
+                ).add_content(["*"])
                 curses.napms(_ACTION_SLEEP_MS)
                 self.refresh()
 
-            self.main_block.blocks.pop('ACTION').window.erase()
+            self.main_block.blocks.pop("ACTION").window.erase()
 
     def display_action(self):
         if not self.game.hand_history.combined_actions():
@@ -930,7 +980,9 @@ class TextGUI(AbstractGUI):
 
         # in the settle phase, players going to showdown show cards
         extras = set(self.game.in_pot_iter())
-        extras = extras if len(extras) > 1 else []  # don't out players win without contest
+        extras = (
+            extras if len(extras) > 1 else []
+        )  # don't out players win without contest
         self.set_visible_players(set(self.visible_players).union(extras))
 
         self.display_state()
@@ -940,8 +992,10 @@ class TextGUI(AbstractGUI):
 
         self.visible_players = old_visible_players
 
-    @handle(handler=lambda exc: logger.info("Skipping because no_wait is True"),
-            exc_type=Ignore)
+    @handle(
+        handler=lambda exc: logger.info("Skipping because no_wait is True"),
+        exc_type=Ignore,
+    )
     @preflight(prerun=lambda self: raise_if(Ignore(), self.no_wait))
     def wait_until_prompted(self):
         self.prompt_input(preamble=["Press enter to continue"])

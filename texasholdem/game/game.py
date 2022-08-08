@@ -21,9 +21,14 @@ from deprecated.sphinx import versionadded, versionchanged
 
 from texasholdem.card.card import Card
 from texasholdem.card.deck import Deck
-from texasholdem.game.history import (History, PrehandHistory,
-                                      BettingRoundHistory, PlayerAction,
-                                      HistoryImportError, SettleHistory)
+from texasholdem.game.history import (
+    History,
+    PrehandHistory,
+    BettingRoundHistory,
+    PlayerAction,
+    HistoryImportError,
+    SettleHistory,
+)
 from texasholdem.game.action_type import ActionType
 from texasholdem.game.hand_phase import HandPhase
 from texasholdem.game.player_state import PlayerState
@@ -251,7 +256,9 @@ class TexasHoldEm:
         self.small_blind = small_blind
         self.max_players = max_players
 
-        self.players: List[Player] = list(Player(i, self.buyin) for i in range(max_players))
+        self.players: List[Player] = list(
+            Player(i, self.buyin) for i in range(max_players)
+        )
 
         self.btn_loc = random.choice(self.players).player_id
         self.bb_loc = -1
@@ -269,13 +276,15 @@ class TexasHoldEm:
         self.hand_phase = HandPhase.PREHAND
         self.game_state = GameState.RUNNING
 
-        self._handstate_handler: Dict[HandPhase, Callable[[], Optional[Iterator[TexasHoldEm]]]] = {
+        self._handstate_handler: Dict[
+            HandPhase, Callable[[], Optional[Iterator[TexasHoldEm]]]
+        ] = {
             HandPhase.PREHAND: self._prehand,
             HandPhase.PREFLOP: lambda: self._betting_round(HandPhase.PREFLOP),
             HandPhase.FLOP: lambda: self._betting_round(HandPhase.FLOP),
             HandPhase.TURN: lambda: self._betting_round(HandPhase.TURN),
             HandPhase.RIVER: lambda: self._betting_round(HandPhase.RIVER),
-            HandPhase.SETTLE: self._settle
+            HandPhase.SETTLE: self._settle,
         }
 
         self.hand_history: Optional[History] = None
@@ -337,10 +346,9 @@ class TexasHoldEm:
                 big_blind=self.big_blind,
                 small_blind=self.small_blind,
                 player_chips={
-                    i: self.players[i].chips
-                    for i in range(self.max_players)
+                    i: self.players[i].chips for i in range(self.max_players)
                 },
-                player_cards=self.hands
+                player_cards=self.hands,
             )
         )
 
@@ -353,11 +361,13 @@ class TexasHoldEm:
         self.current_player = next(self.in_pot_iter(loc=self.bb_loc + 1))
         self.num_hands += 1
 
-    def player_iter(self,
-                    loc: int = None,
-                    reverse: bool = False,
-                    match_states: Iterable[PlayerState] = tuple(PlayerState),
-                    filter_states: Iterable[PlayerState] = ()) -> Iterator[int]:
+    def player_iter(
+        self,
+        loc: int = None,
+        reverse: bool = False,
+        match_states: Iterable[PlayerState] = tuple(PlayerState),
+        filter_states: Iterable[PlayerState] = (),
+    ) -> Iterator[int]:
         """
         Iterates through all players starting at player_id and rotating in order
         of increasing player id.
@@ -379,8 +389,10 @@ class TexasHoldEm:
             start, stop, step = stop, start, -step
 
         for i in range(start, stop, step):
-            if self.players[i % self.max_players].state not in filter_states \
-                    and self.players[i % self.max_players].state in match_states:
+            if (
+                self.players[i % self.max_players].state not in filter_states
+                and self.players[i % self.max_players].state in match_states
+            ):
                 yield i % self.max_players
 
     def in_pot_iter(self, loc: int = None, reverse: bool = False) -> Iterator[int]:
@@ -398,10 +410,9 @@ class TexasHoldEm:
         """
         if loc is None:
             loc = self.current_player
-        yield from self.player_iter(loc=loc,
-                                    reverse=reverse,
-                                    filter_states=(PlayerState.OUT,
-                                                   PlayerState.SKIP))
+        yield from self.player_iter(
+            loc=loc, reverse=reverse, filter_states=(PlayerState.OUT, PlayerState.SKIP)
+        )
 
     def active_iter(self, loc: int = None, reverse: bool = False) -> Iterator[int]:
         """
@@ -419,10 +430,9 @@ class TexasHoldEm:
         """
         if loc is None:
             loc = self.current_player
-        yield from self.player_iter(loc=loc,
-                                    reverse=reverse,
-                                    match_states=(PlayerState.TO_CALL,
-                                                  PlayerState.IN))
+        yield from self.player_iter(
+            loc=loc, reverse=reverse, match_states=(PlayerState.TO_CALL, PlayerState.IN)
+        )
 
     def _split_pot(self, pot_id: int, raised_level: int):
         """
@@ -481,16 +491,21 @@ class TexasHoldEm:
         # players previously in pot need to call in event of a raise
         if last_raise > 0:
             for pot_player_id in self._get_pot(last_pot).players_in_pot():
-                if self._get_pot(last_pot).chips_to_call(pot_player_id) > 0 and \
-                   self.players[pot_player_id].state == PlayerState.IN:
+                if (
+                    self._get_pot(last_pot).chips_to_call(pot_player_id) > 0
+                    and self.players[pot_player_id].state == PlayerState.IN
+                ):
                     self.players[pot_player_id].state = PlayerState.TO_CALL
 
         # if a player is all_in in this pot, split a new one off
-        if PlayerState.ALL_IN in (self.players[i].state
-                                  for i in self._get_pot(last_pot).players_in_pot()):
-            raised_level = min(self._get_pot(last_pot).get_player_amount(i)
-                               for i in self._get_pot(last_pot).players_in_pot()
-                               if self.players[i].state == PlayerState.ALL_IN)
+        if PlayerState.ALL_IN in (
+            self.players[i].state for i in self._get_pot(last_pot).players_in_pot()
+        ):
+            raised_level = min(
+                self._get_pot(last_pot).get_player_amount(i)
+                for i in self._get_pot(last_pot).players_in_pot()
+                if self.players[i].state == PlayerState.ALL_IN
+            )
             self._split_pot(last_pot, raised_level)
 
         self.players[player_id].chips = self.players[player_id].chips - original_amount
@@ -553,10 +568,7 @@ class TexasHoldEm:
         if self.hand_phase != HandPhase.SETTLE:
             raise ValueError("Not time for Settle!")
 
-        settle_history = SettleHistory(
-            new_cards=[],
-            pot_winners={}
-        )
+        settle_history = SettleHistory(new_cards=[], pot_winners={})
         self.hand_history[HandPhase.SETTLE] = settle_history
 
         self.current_player = next(self.in_pot_iter(loc=self.btn_loc + 1))
@@ -566,7 +578,11 @@ class TexasHoldEm:
             # only player left in pot wins
             if len(players_in_pot) == 1:
                 self.players[players_in_pot[0]].chips += pot.get_total_amount()
-                settle_history.pot_winners[i] = (pot.get_total_amount(), -1, players_in_pot)
+                settle_history.pot_winners[i] = (
+                    pot.get_total_amount(),
+                    -1,
+                    players_in_pot,
+                )
                 continue
 
             # make sure there is 5 cards on the board
@@ -577,12 +593,16 @@ class TexasHoldEm:
 
             player_ranks = {}
             for player_id in players_in_pot:
-                player_ranks[player_id] = evaluator.evaluate(self.hands[player_id], self.board)
+                player_ranks[player_id] = evaluator.evaluate(
+                    self.hands[player_id], self.board
+                )
 
             best_rank = min(player_ranks.values())
-            winners = [player_id
-                       for player_id, player_rank in player_ranks.items()
-                       if player_rank == best_rank]
+            winners = [
+                player_id
+                for player_id, player_rank in player_ranks.items()
+                if player_rank == best_rank
+            ]
 
             settle_history.pot_winners[i] = (pot.get_total_amount(), best_rank, winners)
 
@@ -606,8 +626,10 @@ class TexasHoldEm:
             int: The amount of chips the player needs to call in all pots to play the hand.
 
         """
-        return sum(self._get_pot(i).chips_to_call(player_id)
-                   for i in range(self.players[player_id].last_pot + 1))
+        return sum(
+            self._get_pot(i).chips_to_call(player_id)
+            for i in range(self.players[player_id].last_pot + 1)
+        )
 
     def player_bet_amount(self, player_id: int) -> int:
         """
@@ -617,7 +639,9 @@ class TexasHoldEm:
             int: The amount of chips the player bet this round across all pots.
 
         """
-        return sum(self._get_pot(i).get_player_amount(player_id) for i in range(len(self.pots)))
+        return sum(
+            self._get_pot(i).get_player_amount(player_id) for i in range(len(self.pots))
+        )
 
     def chips_at_stake(self, player_id: int) -> int:
         """
@@ -627,9 +651,11 @@ class TexasHoldEm:
             int: The amount of chips the player is eligible to win
 
         """
-        return sum(self._get_pot(i).get_total_amount()
-                   for i in range(len(self.pots))
-                   if player_id in self._get_pot(i).players_in_pot())
+        return sum(
+            self._get_pot(i).get_total_amount()
+            for i in range(len(self.pots))
+            if player_id in self._get_pot(i).players_in_pot()
+        )
 
     @versionadded(version="0.6.0")
     def total_to_value(self, total: Optional[int], player_id: int) -> Optional[int]:
@@ -672,18 +698,21 @@ class TexasHoldEm:
         return max(self.big_blind, self.last_raise)
 
     @check_raise(ValueError)
-    @versionchanged(reason=
-                    "The :code:`value` has been renamed to :code:`total` and will "
-                    "be redefined in 1.0.0. Currently, :code:`value` and :code:`total` "
-                    "mean to raise *to* the amount given. In 1.0.0, :code:`value` will "
-                    "mean to raise an amount more than the current bet amount.",
-                    version="0.6.0")
-    def validate_move(self,
-                      player_id: Optional[int] = None,
-                      action: Optional[ActionType] = None,
-                      value: Optional[int] = None,
-                      total: Optional[int] = None,
-                      throws: bool = False):
+    @versionchanged(
+        reason="The :code:`value` has been renamed to :code:`total` and will "
+        "be redefined in 1.0.0. Currently, :code:`value` and :code:`total` "
+        "mean to raise *to* the amount given. In 1.0.0, :code:`value` will "
+        "mean to raise an amount more than the current bet amount.",
+        version="0.6.0",
+    )
+    def validate_move(
+        self,
+        player_id: Optional[int] = None,
+        action: Optional[ActionType] = None,
+        value: Optional[int] = None,
+        total: Optional[int] = None,
+        throws: bool = False,
+    ):
         # pylint: disable=unused-argument,too-many-arguments,
         # pylint: disable=too-many-branches,too-many-return-statements
         """
@@ -709,7 +738,9 @@ class TexasHoldEm:
             player_id = self.current_player
 
         if total and value:
-            raise ValueError("Got arguments for both total and value. Expected only one.")
+            raise ValueError(
+                "Got arguments for both total and value. Expected only one."
+            )
 
         if value:
             warnings.warn(
@@ -717,7 +748,8 @@ class TexasHoldEm:
                 "be redefined in 1.0.0. Currently, :code:`value` and :code:`total` "
                 "mean to raise *to* the amount given. In 1.0.0, :code:`value` will "
                 "mean to raise an amount more than the current bet amount.",
-                DeprecationWarning)
+                DeprecationWarning,
+            )
             total = value
 
         # ALL_IN should be translated
@@ -732,42 +764,66 @@ class TexasHoldEm:
             return False, "Action is None."
 
         if self.current_player != player_id:
-            return False, f"Player {player_id} is not the current " \
-                          f"player (Current player {self.current_player})"
+            return (
+                False,
+                f"Player {player_id} is not the current "
+                f"player (Current player {self.current_player})",
+            )
 
-        if new_action == ActionType.CALL and \
-                self.players[player_id].state != PlayerState.TO_CALL:
-            return False, f"Player {player_id} has state " \
-                          f"{self.players[player_id].state.name} cannot CALL"
+        if (
+            new_action == ActionType.CALL
+            and self.players[player_id].state != PlayerState.TO_CALL
+        ):
+            return (
+                False,
+                f"Player {player_id} has state "
+                f"{self.players[player_id].state.name} cannot CALL",
+            )
 
-        if new_action == ActionType.CHECK and \
-                self.players[player_id].state != PlayerState.IN:
-            return False, \
-                   f"Player {player_id} has state {self.players[player_id].state.name} cannot CHECK"
+        if (
+            new_action == ActionType.CHECK
+            and self.players[player_id].state != PlayerState.IN
+        ):
+            return (
+                False,
+                f"Player {player_id} has state {self.players[player_id].state.name} cannot CHECK",
+            )
 
         if new_action == ActionType.RAISE:
             if new_total is None or new_total == 0:
                 return False, "Expected value to not be None or 0 for action RAISE."
 
             if not self.raise_option:
-                return False, "Betting round is over at this point, can only CALL or FOLD."
+                return (
+                    False,
+                    "Betting round is over at this point, can only CALL or FOLD.",
+                )
 
-            if (self.total_to_value(new_total, player_id) < self.min_raise()
-               and new_total < player_amount + self.players[player_id].chips):
-                return False, f"Cannot raise {self.total_to_value(new_total, player_id)}, " \
-                              f"less than the min raise {self.min_raise()} and player " \
-                              f"{player_id} is not going all-in."
+            if (
+                self.total_to_value(new_total, player_id) < self.min_raise()
+                and new_total < player_amount + self.players[player_id].chips
+            ):
+                return (
+                    False,
+                    f"Cannot raise {self.total_to_value(new_total, player_id)}, "
+                    f"less than the min raise {self.min_raise()} and player "
+                    f"{player_id} is not going all-in.",
+                )
             if player_amount + self.players[player_id].chips < new_total:
-                return False, f"Cannot raise {new_total}, more than the number of chips " \
-                              f"available {player_amount + self.players[player_id].chips}"
+                return (
+                    False,
+                    f"Cannot raise {new_total}, more than the number of chips "
+                    f"available {player_amount + self.players[player_id].chips}",
+                )
             if new_total < chips_to_call:
-                return False, f"Expected raise value {new_total} to be more " \
-                              f"than the chips to call {chips_to_call}"
+                return (
+                    False,
+                    f"Expected raise value {new_total} to be more "
+                    f"than the chips to call {chips_to_call}",
+                )
         return True, ""
 
-    def _take_action(self,
-                     action: ActionType,
-                     total: Optional[int] = None):
+    def _take_action(self, action: ActionType, total: Optional[int] = None):
         """
         Execute the action for the current player. Assumes the move is valid.
 
@@ -795,9 +851,9 @@ class TexasHoldEm:
             for i in range(self.players[self.current_player].last_pot + 1):
                 self.pots[i].remove_player(self.current_player)
 
-    def _translate_allin(self,
-                         action: ActionType,
-                         total: int = None) -> Tuple[ActionType, Optional[int]]:
+    def _translate_allin(
+        self, action: ActionType, total: int = None
+    ) -> Tuple[ActionType, Optional[int]]:
         """
         Translates an all-in action to the appropriate action,
         either call or raise.
@@ -806,11 +862,16 @@ class TexasHoldEm:
         if action != ActionType.ALL_IN:
             return action, total
 
-        if self.players[self.current_player].chips <= self.chips_to_call(self.current_player):
+        if self.players[self.current_player].chips <= self.chips_to_call(
+            self.current_player
+        ):
             return ActionType.CALL, None
 
-        return ActionType.RAISE, \
-            self.player_bet_amount(self.current_player) + self.players[self.current_player].chips
+        return (
+            ActionType.RAISE,
+            self.player_bet_amount(self.current_player)
+            + self.players[self.current_player].chips,
+        )
 
     def _previous_all_in_sum(self) -> int:
         """
@@ -822,8 +883,10 @@ class TexasHoldEm:
         raised_sum = 0
 
         for action in reversed(self.hand_history[self.hand_phase].actions):
-            if self.players[action.player_id].state == PlayerState.ALL_IN \
-                    and action.action_type == ActionType.RAISE:
+            if (
+                self.players[action.player_id].state == PlayerState.ALL_IN
+                and action.action_type == ActionType.RAISE
+            ):
                 raised_sum += action.value
             elif self.players[action.player_id].state == PlayerState.IN:
                 break
@@ -844,17 +907,23 @@ class TexasHoldEm:
             ValueError: If self.hand_state is not a valid betting round
 
         """
-        if hand_phase not in (HandPhase.PREFLOP, HandPhase.FLOP, HandPhase.TURN, HandPhase.RIVER):
+        if hand_phase not in (
+            HandPhase.PREFLOP,
+            HandPhase.FLOP,
+            HandPhase.TURN,
+            HandPhase.RIVER,
+        ):
             raise ValueError("Not valid betting round!")
 
         if hand_phase != self.hand_phase:
-            raise ValueError(f"Hand phase mismatch: expected {self.hand_phase}, got {hand_phase}")
+            raise ValueError(
+                f"Hand phase mismatch: expected {self.hand_phase}, got {hand_phase}"
+            )
 
         # add new cards to the board
         new_cards = self._deck.draw(num=hand_phase.new_cards())
         self.hand_history[hand_phase] = BettingRoundHistory(
-            new_cards=new_cards,
-            actions=[]
+            new_cards=new_cards, actions=[]
         )
         self.board.extend(new_cards)
 
@@ -875,8 +944,11 @@ class TexasHoldEm:
             # if no more active players that can raise continue with the players to call
             # while disabling the raise availability.
             if not player_queue:
-                player_queue = deque(self.player_iter(loc=self.current_player + 1,
-                                                      match_states=(PlayerState.TO_CALL,)))
+                player_queue = deque(
+                    self.player_iter(
+                        loc=self.current_player + 1, match_states=(PlayerState.TO_CALL,)
+                    )
+                )
                 if not player_queue:
                     break
 
@@ -890,16 +962,17 @@ class TexasHoldEm:
             yield self
 
             action, total = self._translate_allin(*self._action)
-            value = self.total_to_value(total=total,
-                                        player_id=self.current_player)
+            value = self.total_to_value(total=total, player_id=self.current_player)
             self.validate_move(action=action, total=total, throws=True)
 
             betting_history = self.hand_history[self.hand_phase]
-            betting_history.actions.append(PlayerAction(
-                player_id=self.current_player,
-                action_type=action,
-                total=total,
-                value=value)
+            betting_history.actions.append(
+                PlayerAction(
+                    player_id=self.current_player,
+                    action_type=action,
+                    total=total,
+                    value=value,
+                )
             )
 
             self._take_action(action, total=total)
@@ -950,7 +1023,7 @@ class TexasHoldEm:
 
         """
         if self.is_hand_running():
-            raise ValueError('In the middle of a hand!')
+            raise ValueError("In the middle of a hand!")
 
         self.hand_phase = HandPhase.PREHAND
         self._handstate_handler[self.hand_phase]()
@@ -966,16 +1039,19 @@ class TexasHoldEm:
         except StopIteration:
             pass
 
-    @versionchanged(reason=
-                    "The :code:`value` has been renamed to :code:`total` and will "
-                    "be redefined in 1.0.0. Currently, :code:`value` and :code:`total` "
-                    "mean to raise *to* the amount given. In 1.0.0, :code:`value` will "
-                    "mean to raise an amount more than the current bet amount.",
-                    version="0.6.0")
-    def take_action(self,
-                    action_type: ActionType,
-                    value: Optional[int] = None,
-                    total: Optional[int] = None):
+    @versionchanged(
+        reason="The :code:`value` has been renamed to :code:`total` and will "
+        "be redefined in 1.0.0. Currently, :code:`value` and :code:`total` "
+        "mean to raise *to* the amount given. In 1.0.0, :code:`value` will "
+        "mean to raise an amount more than the current bet amount.",
+        version="0.6.0",
+    )
+    def take_action(
+        self,
+        action_type: ActionType,
+        value: Optional[int] = None,
+        total: Optional[int] = None,
+    ):
         """
         The current player takes the specified action.
 
@@ -994,7 +1070,9 @@ class TexasHoldEm:
             raise ValueError("No hand is running")
 
         if total and value:
-            raise ValueError("Got arguments for both total and value. Expected only one.")
+            raise ValueError(
+                "Got arguments for both total and value. Expected only one."
+            )
 
         if value:
             warnings.warn(
@@ -1002,7 +1080,8 @@ class TexasHoldEm:
                 "be redefined in 1.0.0. Currently, :code:`value` and :code:`total` "
                 "mean to raise *to* the amount given. In 1.0.0, :code:`value` will "
                 "mean to raise an amount more than the current bet amount.",
-                DeprecationWarning)
+                DeprecationWarning,
+            )
             total = value
 
         self.validate_move(action=action_type, total=total, throws=True)
@@ -1029,7 +1108,9 @@ class TexasHoldEm:
             if self._is_hand_over():
                 self.hand_phase = HandPhase.SETTLE
 
-            round_iter: Optional[Iterator[TexasHoldEm]] = self._handstate_handler[self.hand_phase]()
+            round_iter: Optional[Iterator[TexasHoldEm]] = self._handstate_handler[
+                self.hand_phase
+            ]()
             if round_iter:
                 yield from round_iter
 
@@ -1051,7 +1132,9 @@ class TexasHoldEm:
         """
         return self.game_state == GameState.RUNNING
 
-    def export_history(self, path: Union[str, os.PathLike] = "./texas.pgn") -> os.PathLike:
+    def export_history(
+        self, path: Union[str, os.PathLike] = "./texas.pgn"
+    ) -> os.PathLike:
         """
         Exports the hand history to a human-readable file. If a directory is given,
         finds a name of the form :code:`texas(n).pgn` to export to. PGN files can consequently
@@ -1097,10 +1180,12 @@ class TexasHoldEm:
         """
         # pylint: disable=protected-access
         num_players = len(history.prehand.player_chips)
-        game = TexasHoldEm(buyin=1,
-                           big_blind=history.prehand.big_blind,
-                           small_blind=history.prehand.small_blind,
-                           max_players=num_players)
+        game = TexasHoldEm(
+            buyin=1,
+            big_blind=history.prehand.big_blind,
+            small_blind=history.prehand.small_blind,
+            max_players=num_players,
+        )
 
         # button placed right before 0
         game.btn_loc = num_players - 1
@@ -1115,14 +1200,13 @@ class TexasHoldEm:
 
         # player actions in a stack
         player_actions: List[Tuple[int, ActionType, Optional[int]]] = []
-        for bet_round in (history.river,
-                          history.turn,
-                          history.flop,
-                          history.preflop):
+        for bet_round in (history.river, history.turn, history.flop, history.preflop):
             if bet_round:
                 deck.cards = bet_round.new_cards + deck.cards
                 for action in reversed(bet_round.actions):
-                    player_actions.insert(0, (action.player_id, action.action_type, action.total))
+                    player_actions.insert(
+                        0, (action.player_id, action.action_type, action.total)
+                    )
 
         # start hand (deck will deal)
         game.start_hand()
@@ -1140,12 +1224,15 @@ class TexasHoldEm:
             try:
                 player_id, action, total = player_actions.pop(0)
             except IndexError as err:
-                raise HistoryImportError("Expected more actions than "
-                                         "given in the history file.") from err
+                raise HistoryImportError(
+                    "Expected more actions than given in the history file."
+                ) from err
 
             if player_id != game.current_player:
-                raise HistoryImportError(f"Error replaying history: action player {player_id} "
-                                         f"is not current player {game.current_player}")
+                raise HistoryImportError(
+                    f"Error replaying history: action player {player_id} "
+                    f"is not current player {game.current_player}"
+                )
 
             game.take_action(action, total=total)
         yield game

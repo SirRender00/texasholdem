@@ -54,26 +54,26 @@ class Card(int):
     """
 
     # the basics
-    STR_RANKS = '23456789TJQKA'
+    STR_RANKS = "23456789TJQKA"
     INT_RANKS = tuple(range(13))
     PRIMES = (2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41)
 
     # conversion from string => int
     CHAR_RANK_TO_INT_RANK = dict(zip(list(STR_RANKS), INT_RANKS))
     CHAR_SUIT_TO_INT_SUIT = {
-        's': 1,  # spades
-        'h': 2,  # hearts
-        'd': 4,  # diamonds
-        'c': 8,  # clubs
+        "s": 1,  # spades
+        "h": 2,  # hearts
+        "d": 4,  # diamonds
+        "c": 8,  # clubs
     }
-    INT_SUIT_TO_CHAR_SUIT = 'xshxdxxxc'
+    INT_SUIT_TO_CHAR_SUIT = "xshxdxxxc"
 
     # for pretty printing
     PRETTY_SUITS = {
         1: "\u2660",  # spades
         2: "\u2665",  # hearts
         4: "\u2666",  # diamonds
-        8: "\u2663"  # clubs
+        8: "\u2663",  # clubs
     }
 
     def __new__(cls, arg: Union[str, int]) -> Card:
@@ -231,7 +231,7 @@ class Card(int):
         output = list("".join(["0000" + "\t"] * 7) + "0000")
 
         for i, b_char in enumerate(bstr, 0):
-            output[i + int(i/4)] = b_char
+            output[i + int(i / 4)] = b_char
 
         # output the string to console
         output.reverse()
