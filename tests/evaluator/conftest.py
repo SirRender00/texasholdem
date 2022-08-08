@@ -29,8 +29,10 @@ def is_flush(cards: List[Card]) -> bool:
     if len(cards) < 5:
         return False
 
-    return any(bool(hand[0] & hand[1] & hand[2] & hand[3] & hand[4] & 0xF000)
-               for hand in itertools.combinations(cards, 5))
+    return any(
+        bool(hand[0] & hand[1] & hand[2] & hand[3] & hand[4] & 0xF000)
+        for hand in itertools.combinations(cards, 5)
+    )
 
 
 def find_nonflush_suit(suits: Optional[List[str]] = None) -> str:
@@ -46,8 +48,10 @@ def find_nonflush_suit(suits: Optional[List[str]] = None) -> str:
     suit_choices = list(ALL_SUITS)
     suit_candidate = random.choice(suit_choices)
 
-    ranks = random.sample(Card.STR_RANKS, k=len(suits)+1)
-    while is_flush([Card(rank + suit) for rank, suit in zip(ranks, suits + [suit_candidate])]):
+    ranks = random.sample(Card.STR_RANKS, k=len(suits) + 1)
+    while is_flush(
+        [Card(rank + suit) for rank, suit in zip(ranks, suits + [suit_candidate])]
+    ):
         suit_choices.remove(suit_candidate)
 
         if not suit_choices:
@@ -94,8 +98,10 @@ def is_straight(ranks: List[int]) -> bool:
     if Card.INT_RANKS[-1] in ranks:
         ranks.append(Card.INT_RANKS[0] - 1)
 
-    return any(sorted(hand) == list(range(min(hand), max(hand) + 1))
-               for hand in itertools.combinations(ranks, 5))
+    return any(
+        sorted(hand) == list(range(min(hand), max(hand) + 1))
+        for hand in itertools.combinations(ranks, 5)
+    )
 
 
 def find_nonstraight_rank(ranks: List[int]) -> int:
@@ -139,7 +145,9 @@ def get_rank_counts(rank_list: List[int]) -> Dict[int, int]:
     return counts
 
 
-def less_hands_same_class(rank_class: int, hand1: List[Card], hand2: List[Card]) -> bool:
+def less_hands_same_class(
+    rank_class: int, hand1: List[Card], hand2: List[Card]
+) -> bool:
     """
     Compares two hands from the same rank_class against each other, returning True if
     hand1 loses against hand2, False otherwise.
@@ -200,9 +208,12 @@ def generate_straight(board: Optional[List[Card]] = None) -> List[str]:
         ValueError: If it's impossible to generate a straight
     """
     if not board:
-        high = random.choice(range(Card.STR_RANKS.index('5'),
-                                   Card.STR_RANKS.index('A')))
-        return [Card.STR_RANKS[i % len(Card.INT_RANKS)] for i in range(high, high - 5, -1)]
+        high = random.choice(
+            range(Card.STR_RANKS.index("5"), Card.STR_RANKS.index("A"))
+        )
+        return [
+            Card.STR_RANKS[i % len(Card.INT_RANKS)] for i in range(high, high - 5, -1)
+        ]
 
     board_ranks = [car.rank for car in board]
     if Card.INT_RANKS[-1] in board_ranks:
@@ -280,9 +291,9 @@ def generate_combo(*combos: int, board: Optional[List[Card]] = None) -> List[Car
         make it conform to the combos).
         """
         for combo_list in itertools.combinations(combos_list, len(combos_list)):
-            candidate_zipped = list(itertools.zip_longest(rank_dict.values(),
-                                                          combo_list,
-                                                          fillvalue=0))
+            candidate_zipped = list(
+                itertools.zip_longest(rank_dict.values(), combo_list, fillvalue=0)
+            )
 
             total = 0
             for board_num_, combo_num_ in candidate_zipped:
@@ -297,18 +308,22 @@ def generate_combo(*combos: int, board: Optional[List[Card]] = None) -> List[Car
     combos = list(combos)
     board_rank_dict = get_rank_counts([car.rank for car in board])
 
-    if any(combo_count < board_count
-           for combo_count, board_count in itertools.zip_longest(sorted(combos, reverse=True),
-                                                                 board_rank_dict.values(),
-                                                                 fillvalue=1)):
+    if any(
+        combo_count < board_count
+        for combo_count, board_count in itertools.zip_longest(
+            sorted(combos, reverse=True), board_rank_dict.values(), fillvalue=1
+        )
+    ):
         raise ValueError("Board has a higher combo than the given combo.")
 
     ranks = []
-    combo_within = find_edit_distance_within(board_rank_dict, combos, distance=num_cards)
+    combo_within = find_edit_distance_within(
+        board_rank_dict, combos, distance=num_cards
+    )
 
-    for rank, (board_num, combo_num) in itertools.zip_longest(list(board_rank_dict.keys()),
-                                                              combo_within,
-                                                              fillvalue=-1):
+    for rank, (board_num, combo_num) in itertools.zip_longest(
+        list(board_rank_dict.keys()), combo_within, fillvalue=-1
+    ):
         # In a group that is lacking, add the required rank
         if combo_num > board_num:
             if rank == -1:
@@ -324,9 +339,12 @@ def generate_combo(*combos: int, board: Optional[List[Card]] = None) -> List[Car
     cards = []
     for rank in ranks:
         same_rank_cards = [car for car in board + cards if car.rank == rank]
-        suit_choices = [suit for suit in ALL_SUITS
-                        if suit not in
-                        [Card.INT_SUIT_TO_CHAR_SUIT[car.suit] for car in same_rank_cards]]
+        suit_choices = [
+            suit
+            for suit in ALL_SUITS
+            if suit
+            not in [Card.INT_SUIT_TO_CHAR_SUIT[car.suit] for car in same_rank_cards]
+        ]
 
         suit_candidate = random.choice(suit_choices)
         while is_flush(board + cards + [Card(Card.STR_RANKS[rank] + suit_candidate)]):
@@ -337,7 +355,9 @@ def generate_combo(*combos: int, board: Optional[List[Card]] = None) -> List[Car
     return cards
 
 
-def generate_sample_hand(rank_class: int, board: Optional[List[Card]] = None) -> List[Card]:
+def generate_sample_hand(
+    rank_class: int, board: Optional[List[Card]] = None
+) -> List[Card]:
     """
     Given a rank_class this function will generate a random list of cards from that rank
     class with uniform probability.
@@ -352,7 +372,9 @@ def generate_sample_hand(rank_class: int, board: Optional[List[Card]] = None) ->
         ValueError: If it's impossible to generate the given hand
     """
     if board and not 3 <= len(board) <= 5:
-        raise ValueError(f"Expected board to be of length 3, 4, or 5. Got {len(board)} instead")
+        raise ValueError(
+            f"Expected board to be of length 3, 4, or 5. Got {len(board)} instead"
+        )
 
     cards = []
     # straight flush

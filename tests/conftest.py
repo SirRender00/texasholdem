@@ -34,15 +34,15 @@ The path of the directory of the history files with INVALID pgns (as opposed to 
 
 
 def pytest_configure(config):
-    """ Configure pytest """
+    """Configure pytest"""
     config.addinivalue_line(
-        'markers',
-        'repeat(n): run the given test function `n` times.')
+        "markers", "repeat(n): run the given test function `n` times."
+    )
 
 
 @pytest.fixture()
 def __pytest_repeat_step_number(request):
-    """ Internal marker for how many times to repeat a test """
+    """Internal marker for how many times to repeat a test"""
     marker = request.node.get_closest_marker("repeat")
     count = marker and marker.args[0]
     if count > 1:
@@ -52,30 +52,30 @@ def __pytest_repeat_step_number(request):
 
 @pytest.hookimpl(trylast=True)
 def pytest_generate_tests(metafunc):
-    """ Generate number of tests corresponding to repeat marker """
-    marker = metafunc.definition.get_closest_marker('repeat')
+    """Generate number of tests corresponding to repeat marker"""
+    marker = metafunc.definition.get_closest_marker("repeat")
     count = int(marker.args[0]) if marker else 1
     if count > 1:
         metafunc.fixturenames.append("__pytest_repeat_step_number")
 
         def make_progress_id(curr, total=count):
-            return f'{curr + 1}-{total}'
+            return f"{curr + 1}-{total}"
 
         metafunc.parametrize(
-            '__pytest_repeat_step_number',
+            "__pytest_repeat_step_number",
             range(count),
             indirect=True,
-            ids=make_progress_id
+            ids=make_progress_id,
         )
 
 
 @pytest.hookimpl(tryfirst=True, hookwrapper=True)
 def pytest_runtest_makereport(item, call):
     # pylint: disable=unused-argument
-    """ Used for attaching reports to make available to fixtures """
+    """Used for attaching reports to make available to fixtures"""
     outcome = yield
     rep = outcome.get_result()
-    setattr(item, 'rep_' + rep.when, rep)
+    setattr(item, "rep_" + rep.when, rep)
 
 
 def strip_comments(history_path: Union[str, os.PathLike]) -> str:
@@ -85,19 +85,19 @@ def strip_comments(history_path: Union[str, os.PathLike]) -> str:
     Returns:
         str: The history string without comments
     """
-    with open(history_path, mode='r', encoding='ascii') as file:
+    with open(history_path, mode="r", encoding="ascii") as file:
         history_string = file.read()
 
         new_lines = []
-        for line in history_string.split('\n'):
-            comment_index = line.find('#')
+        for line in history_string.split("\n"):
+            comment_index = line.find("#")
 
             if comment_index == -1:
                 new_lines.append(line)
             elif comment_index != 0:
                 new_lines.append(line[:comment_index].strip())
 
-        return '\n'.join(new_lines)
+        return "\n".join(new_lines)
 
 
 @pytest.fixture()
@@ -111,7 +111,7 @@ def texas_game(request):
 
     def game_maker(*args, **kwargs):
         nonlocal game
-        default_kwargs = {'buyin': 500, 'big_blind': 5, 'small_blind': 2}
+        default_kwargs = {"buyin": 500, "big_blind": 5, "small_blind": 2}
         default_kwargs.update(kwargs)
         game = TexasHoldEm(*args, **default_kwargs)
         return game

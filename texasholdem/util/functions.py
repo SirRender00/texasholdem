@@ -30,7 +30,6 @@ def check_raise(exc_type: Type[Exception]):
     """
 
     def decorator(func: Callable[[_T], Tuple[bool, str]]) -> Callable[[_T], bool]:
-
         @wraps(func)
         def inner(*args, throws=False, **kwargs):
             ret, msg = func(*args, **kwargs)
@@ -43,8 +42,7 @@ def check_raise(exc_type: Type[Exception]):
     return decorator
 
 
-def handle(handler: Callable[[_E], Any],
-           exc_type: _E = Exception):
+def handle(handler: Callable[[_E], Any], exc_type: _E = Exception):
     """
     Decorator that wraps the entire function in a try-except statement
     that catches the given :code:`exc_type` and handles it with the given handler.
@@ -56,12 +54,11 @@ def handle(handler: Callable[[_E], Any],
     """
 
     def decorator(func: _F) -> _F:
-
         @wraps(func)
         def inner(*args, **kwargs):
             try:
                 return func(*args, **kwargs)
-            except exc_type as exc:             # # pylint: disable=broad-except
+            except exc_type as exc:  # # pylint: disable=broad-except
                 return handler(exc)
 
         return inner
@@ -79,7 +76,6 @@ def preflight(prerun: Callable[[_T], Any]):
     """
 
     def decorator(func: Callable[[_T], _R]) -> Callable[[_T], _R]:
-
         @wraps(func)
         def inner(*args, **kwargs):
             prerun(*args, **kwargs)

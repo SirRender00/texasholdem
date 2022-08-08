@@ -46,8 +46,7 @@ def prehand_checks(texas: TexasHoldEm):
 
     # Gather pre-info to check differences / info that will be overwritten
     player_chips = [texas.players[i].chips for i in range(texas.max_players)]
-    active_players = [i for i in range(texas.max_players)
-                      if player_chips[i] > 0]
+    active_players = [i for i in range(texas.max_players) if player_chips[i] > 0]
 
     # RUN PREHAND
     texas.start_hand()
@@ -58,107 +57,143 @@ def prehand_checks(texas: TexasHoldEm):
     game_running = len(active_players) >= 2
     hand_running = game_running and not texas._is_hand_over()
 
-    assert texas.is_game_running() == game_running, \
-        "Expected game to be running iff >= 2 active players"
-    assert texas.is_hand_running() == hand_running, \
-        "Expected hand to be running iff 2 or more players can take actions"
+    assert (
+        texas.is_game_running() == game_running
+    ), "Expected game to be running iff >= 2 active players"
+    assert (
+        texas.is_hand_running() == hand_running
+    ), "Expected hand to be running iff 2 or more players can take actions"
 
     if not game_running or not hand_running:
-        assert texas.hand_phase == HandPhase.PREHAND, \
-            "If game/hand was not running, expected HandPhase to reset to PREHAND"
+        assert (
+            texas.hand_phase == HandPhase.PREHAND
+        ), "If game/hand was not running, expected HandPhase to reset to PREHAND"
         return
 
     # check hand_phase
-    assert texas.hand_phase == HandPhase.PREFLOP, \
-        "Ran PREHAND, expected next HandPhase to be PREFLOP"
+    assert (
+        texas.hand_phase == HandPhase.PREFLOP
+    ), "Ran PREHAND, expected next HandPhase to be PREFLOP"
 
     # check blind locations
-    assert 0 <= texas.btn_loc < texas.max_players, \
-        f"Expected the blind to be in [0, {texas.max_players})"
+    assert (
+        0 <= texas.btn_loc < texas.max_players
+    ), f"Expected the blind to be in [0, {texas.max_players})"
 
     if len(active_players) > 2:
-        assert texas.sb_loc \
-            == active_players[(active_players.index(texas.btn_loc) + 1) % len(active_players)], \
-            "Expected the small blind to be to left of " \
+        assert (
+            texas.sb_loc
+            == active_players[
+                (active_players.index(texas.btn_loc) + 1) % len(active_players)
+            ]
+        ), (
+            "Expected the small blind to be to left of "
             f"big blind in a {len(active_players)}-player game"
+        )
     else:
-        assert texas.btn_loc == texas.sb_loc, \
-               "Expected the button and small blind to be the same place in a 2-player game"
+        assert (
+            texas.btn_loc == texas.sb_loc
+        ), "Expected the button and small blind to be the same place in a 2-player game"
 
-    assert texas.bb_loc \
-           == active_players[(active_players.index(texas.sb_loc) + 1) % len(active_players)], \
-           "Expected the big blind to be to the left of the small blind"
-    assert texas.current_player \
-           == active_players[(active_players.index(texas.bb_loc) + 1) % len(active_players)], \
-           "Expected the current player to be to the left of the big blind"
+    assert (
+        texas.bb_loc
+        == active_players[
+            (active_players.index(texas.sb_loc) + 1) % len(active_players)
+        ]
+    ), "Expected the big blind to be to the left of the small blind"
+    assert (
+        texas.current_player
+        == active_players[
+            (active_players.index(texas.bb_loc) + 1) % len(active_players)
+        ]
+    ), "Expected the current player to be to the left of the big blind"
 
     # check blind posting / blind states
     if player_chips[texas.sb_loc] <= texas.small_blind:
-        assert texas.players[texas.sb_loc].chips == 0, \
-               "Expected the small blind to post what they have if <= the small blind"
-        assert texas.players[texas.sb_loc].state == PlayerState.ALL_IN, \
-               "Expected the small blind to be ALL_IN after posting everything"
+        assert (
+            texas.players[texas.sb_loc].chips == 0
+        ), "Expected the small blind to post what they have if <= the small blind"
+        assert (
+            texas.players[texas.sb_loc].state == PlayerState.ALL_IN
+        ), "Expected the small blind to be ALL_IN after posting everything"
     else:
-        assert texas.players[texas.sb_loc].chips == player_chips[texas.sb_loc] - sb_posted, \
-               "Expected the small blind to post exactly the small blind"
+        assert (
+            texas.players[texas.sb_loc].chips == player_chips[texas.sb_loc] - sb_posted
+        ), "Expected the small blind to post exactly the small blind"
 
         if sb_posted < bb_posted:
-            assert texas.players[texas.sb_loc].state == PlayerState.TO_CALL, \
-                   "Expected the small blind to have state TO_CALL"
+            assert (
+                texas.players[texas.sb_loc].state == PlayerState.TO_CALL
+            ), "Expected the small blind to have state TO_CALL"
         else:
-            assert texas.players[texas.sb_loc].state == PlayerState.IN, \
-                   "Expected the small blind who posted more than the big blind to have state IN"
+            assert (
+                texas.players[texas.sb_loc].state == PlayerState.IN
+            ), "Expected the small blind who posted more than the big blind to have state IN"
 
     if player_chips[texas.bb_loc] <= texas.big_blind:
-        assert texas.players[texas.bb_loc].chips == 0, \
-               "Expected the big blind to post what they have if <= the big blind"
-        assert texas.players[texas.bb_loc].state == PlayerState.ALL_IN, \
-               "Expected the big blind to be ALL_IN after posting everything"
+        assert (
+            texas.players[texas.bb_loc].chips == 0
+        ), "Expected the big blind to post what they have if <= the big blind"
+        assert (
+            texas.players[texas.bb_loc].state == PlayerState.ALL_IN
+        ), "Expected the big blind to be ALL_IN after posting everything"
     else:
-        assert texas.players[texas.bb_loc].chips == player_chips[texas.bb_loc] - bb_posted, \
-               "Expected the big blind to post exactly the big blind"
-        assert texas.players[texas.bb_loc].state == PlayerState.IN, \
-               "Expected the big blind to have state IN"
+        assert (
+            texas.players[texas.bb_loc].chips == player_chips[texas.bb_loc] - bb_posted
+        ), "Expected the big blind to post exactly the big blind"
+        assert (
+            texas.players[texas.bb_loc].state == PlayerState.IN
+        ), "Expected the big blind to have state IN"
 
     for i in active_players:
         if i not in (texas.sb_loc, texas.bb_loc):
-            assert texas.players[i].chips == player_chips[i], \
-                f"Expected player {i} to not have posted anything"
+            assert (
+                texas.players[i].chips == player_chips[i]
+            ), f"Expected player {i} to not have posted anything"
 
-    assert sum(pot.get_total_amount() for pot in texas.pots) \
-           == sb_posted + bb_posted, \
-           "Expected pot to be the sum of sb posted and bb posted"
+    assert (
+        sum(pot.get_total_amount() for pot in texas.pots) == sb_posted + bb_posted
+    ), "Expected pot to be the sum of sb posted and bb posted"
 
     # check player states
     # players have TO_CALL, (we check the small blind above)
-    assert all(texas.players[i].state == PlayerState.TO_CALL
-               for i in active_players
-               if i not in (texas.sb_loc, texas.bb_loc)), \
-        "Expected all players to need to call in the pot"
+    assert all(
+        texas.players[i].state == PlayerState.TO_CALL
+        for i in active_players
+        if i not in (texas.sb_loc, texas.bb_loc)
+    ), "Expected all players to need to call in the pot"
 
     # if 0 chips skip
     for player_id, chips in enumerate(player_chips, 0):
         if chips == 0:
-            assert texas.players[player_id].state == PlayerState.SKIP, \
-                   f"Expected player {player_id} with 0 chips to have status SKIP"
+            assert (
+                texas.players[player_id].state == PlayerState.SKIP
+            ), f"Expected player {player_id} with 0 chips to have status SKIP"
 
     # check chips to call
     for i in active_players:
         if i not in (texas.sb_loc, texas.bb_loc):
-            chips_to_call = sum(texas.pots[pot_id].raised - texas.pots[pot_id].get_player_amount(i)
-                                for pot_id in range(texas.players[i].last_pot+1))
-            assert texas.chips_to_call(i) == chips_to_call, \
-                "Expected chips to call to be the raised " \
+            chips_to_call = sum(
+                texas.pots[pot_id].raised - texas.pots[pot_id].get_player_amount(i)
+                for pot_id in range(texas.players[i].last_pot + 1)
+            )
+            assert texas.chips_to_call(i) == chips_to_call, (
+                "Expected chips to call to be the raised "
                 "level of the last eligible pot - player amount"
+            )
 
     if texas.players[texas.sb_loc].state != PlayerState.ALL_IN:
-        assert texas.chips_to_call(texas.sb_loc) == max(0, bb_posted - sb_posted), \
-               "Expected small blind to have to call big_blind - small_blind number of chips"
-    assert texas.chips_to_call(texas.bb_loc) == 0, "Expected big blind to have to call 0 chips"
+        assert texas.chips_to_call(texas.sb_loc) == max(
+            0, bb_posted - sb_posted
+        ), "Expected small blind to have to call big_blind - small_blind number of chips"
+    assert (
+        texas.chips_to_call(texas.bb_loc) == 0
+    ), "Expected big blind to have to call 0 chips"
 
     # players have cards
-    assert all(len(texas.get_hand(i)) == 2
-               for i in active_players), "Expected all active players to have 2 cards."
+    assert all(
+        len(texas.get_hand(i)) == 2 for i in active_players
+    ), "Expected all active players to have 2 cards."
 
     # board does not have cards
     assert not texas.board, "Expected the board to be empty"
@@ -216,6 +251,7 @@ class LastRaiseChecker(GamePredicate):
     """
     Checks if the last raise attribute is correct.
     """
+
     before_last_raise = None
 
     def before(self, game: TexasHoldEm):
@@ -234,6 +270,7 @@ class MinRaiseChecker(GamePredicate):
     """
     Checks if the min raise method is correct.
     """
+
     def after(self, game: TexasHoldEm) -> bool:
         return game.min_raise() == max(game.big_blind, game.last_raise)
 
@@ -242,15 +279,16 @@ class RaiseOptionChecker(GamePredicate):
     """
     Checks that if the raise option is unset, then raise should be invalid
     """
+
     def before(self, game: TexasHoldEm) -> bool:
-        return not game.raise_option \
-               and game.validate_move(action=ActionType.RAISE,
-                                      total=game.value_to_total(game.min_raise))
+        return not game.raise_option and game.validate_move(
+            action=ActionType.RAISE, total=game.value_to_total(game.min_raise)
+        )
 
 
 GAME_PREDICATES = (
     EmptyPots(),
     LastRaiseChecker(),
     MinRaiseChecker(),
-    RaiseOptionChecker()
+    RaiseOptionChecker(),
 )

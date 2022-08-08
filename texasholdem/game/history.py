@@ -21,7 +21,7 @@ from texasholdem.game.hand_phase import HandPhase
 from texasholdem.evaluator import evaluator
 
 
-FILE_EXTENSION = 'pgn'
+FILE_EXTENSION = "pgn"
 """
 The extension for the game notation file.
 
@@ -41,6 +41,7 @@ class PrehandHistory:
     History of the Prehand Phase
 
     """
+
     btn_loc: int
     """
     The id of the player with the button
@@ -70,13 +71,17 @@ class PrehandHistory:
             str: The string representation of the prehand history: blind sizes, chips, and cards
 
         """
-        str_player_cards = {i: [str(card) for card in self.player_cards[i]] for i in canon_ids}
+        str_player_cards = {
+            i: [str(card) for card in self.player_cards[i]] for i in canon_ids
+        }
 
-        return f"Big Blind: {self.big_blind}\n" \
-               f"Small Blind: {self.small_blind}\n" \
-               f"Player Chips: {','.join(str(self.player_chips[i]) for i in canon_ids)}\n" \
-               f"Player Cards: " \
-               f"{','.join(['[' + ' '.join(str_player_cards[i]) + ']' for i in canon_ids])}"
+        return (
+            f"Big Blind: {self.big_blind}\n"
+            f"Small Blind: {self.small_blind}\n"
+            f"Player Chips: {','.join(str(self.player_chips[i]) for i in canon_ids)}\n"
+            f"Player Cards: "
+            f"{','.join(['[' + ' '.join(str_player_cards[i]) + ']' for i in canon_ids])}"
+        )
 
     @staticmethod
     def from_string(string: str) -> PrehandHistory:
@@ -91,28 +96,32 @@ class PrehandHistory:
             HistoryImportError: If missing information or a mismatch between cards and chips
 
         """
-        big_blind, small_blind, chips_str, cards_str = string.split('\n')
-        _, big_blind = big_blind.split(': ')
-        _, small_blind = small_blind.split(': ')
+        big_blind, small_blind, chips_str, cards_str = string.split("\n")
+        _, big_blind = big_blind.split(": ")
+        _, small_blind = small_blind.split(": ")
 
-        _, chips_str = chips_str.split(': ')
-        player_chips = [int(chip_str) for chip_str in chips_str.split(',')]
+        _, chips_str = chips_str.split(": ")
+        player_chips = [int(chip_str) for chip_str in chips_str.split(",")]
         num_players = len(player_chips)
 
-        _, cards_str = cards_str.split(': ')
-        cards_data = cards_str.split(',')
-        cards_data = [card_data.strip('[]').split(' ') for card_data in cards_data]
+        _, cards_str = cards_str.split(": ")
+        cards_data = cards_str.split(",")
+        cards_data = [card_data.strip("[]").split(" ") for card_data in cards_data]
         player_cards = [[Card(c1), Card(c2)] for c1, c2 in cards_data]
 
         if len(player_chips) != len(player_cards):
-            raise HistoryImportError(f"Mismatch number of player chips ({len(player_chips)}) "
-                                     f"and player cards ({len(player_cards)})")
+            raise HistoryImportError(
+                f"Mismatch number of player chips ({len(player_chips)}) "
+                f"and player cards ({len(player_cards)})"
+            )
 
-        return PrehandHistory(0,
-                              int(big_blind),
-                              int(small_blind),
-                              dict(zip(range(num_players), player_chips)),
-                              dict(zip(range(num_players), player_cards)))
+        return PrehandHistory(
+            0,
+            int(big_blind),
+            int(small_blind),
+            dict(zip(range(num_players), player_chips)),
+            dict(zip(range(num_players), player_cards)),
+        )
 
 
 @dataclass()
@@ -121,6 +130,7 @@ class PlayerAction:
     History of a Player Action
 
     """
+
     player_id: int
     """
     The player id
@@ -162,15 +172,17 @@ class PlayerAction:
         Returns:
             PlayerAction: The player action as represented by the string
         """
-        string = string.strip().strip('()')
+        string = string.strip().strip("()")
         data = string.split(",")
         player_id, action_type = int(data[0]), ActionType[data[1]]
         total = None if len(data) <= 2 else int(data[2])
         return PlayerAction(player_id=player_id, action_type=action_type, total=total)
 
     def __str__(self) -> str:
-        return f"Player {self.player_id} {self.action_type.name}" \
-               f"{f' to {self.total}' if self.action_type == ActionType.RAISE else ''}"
+        return (
+            f"Player {self.player_id} {self.action_type.name}"
+            f"{f' to {self.total}' if self.action_type == ActionType.RAISE else ''}"
+        )
 
 
 @dataclass()
@@ -179,6 +191,7 @@ class BettingRoundHistory:
     History of a Betting Round
 
     """
+
     new_cards: List[Card]
     """
     The new cards that were added this round
@@ -208,8 +221,10 @@ class BettingRoundHistory:
                 orbits[min_count] = []
             orbits[min_count].append(action.to_string(canon_ids))
 
-        orbit_lines = [f"{orbit_num}. " +
-                       ";".join(orbit_line) for orbit_num, orbit_line in orbits.items()]
+        orbit_lines = [
+            f"{orbit_num}. " + ";".join(orbit_line)
+            for orbit_num, orbit_line in orbits.items()
+        ]
         action_str = "\n".join(orbit_lines)
         return new_cards + "\n" + action_str
 
@@ -223,13 +238,13 @@ class BettingRoundHistory:
         Returns:
             BettingRoundHistory: The betting round as represented by the string
         """
-        data = string.split('\n')
+        data = string.split("\n")
         card_str, data = data[0], data[1:]
-        _, card_str = card_str.split('[')
-        card_str, _ = card_str.split(']')
+        _, card_str = card_str.split("[")
+        card_str, _ = card_str.split("]")
 
         if card_str:
-            new_cards = [Card(string) for string in card_str.split(',')]
+            new_cards = [Card(string) for string in card_str.split(",")]
         else:
             new_cards = []
 
@@ -238,7 +253,7 @@ class BettingRoundHistory:
             _, action_line = action_line.split(". ")
             action_str += action_line
             if i != len(data):
-                action_str += ';'
+                action_str += ";"
 
         actions = [PlayerAction.from_string(string) for string in action_str.split(";")]
 
@@ -251,6 +266,7 @@ class SettleHistory:
     History of the Settle Phase
 
     """
+
     new_cards: List[Card]
     """
     The new cards that were added this round
@@ -270,12 +286,22 @@ class SettleHistory:
         """
         pot_lists = []
         for pot_id, (amount, best_rank, winners_list) in self.pot_winners.items():
-            pot_lists.append((pot_id, amount, best_rank, [canon_ids[winner]
-                                                          for winner in winners_list]))
-        pot_strs = [f'(Pot {pot_id},{amount},{best_rank},{str(winners_list)})'
-                    for pot_id, amount, best_rank, winners_list in pot_lists]
-        return f"New Cards: [{','.join(str(card) for card in self.new_cards)}]\n" \
-               f"Winners: {';'.join(pot_strs)}"
+            pot_lists.append(
+                (
+                    pot_id,
+                    amount,
+                    best_rank,
+                    [canon_ids[winner] for winner in winners_list],
+                )
+            )
+        pot_strs = [
+            f"(Pot {pot_id},{amount},{best_rank},{str(winners_list)})"
+            for pot_id, amount, best_rank, winners_list in pot_lists
+        ]
+        return (
+            f"New Cards: [{','.join(str(card) for card in self.new_cards)}]\n"
+            f"Winners: {';'.join(pot_strs)}"
+        )
 
     @staticmethod
     def from_string(string: str) -> SettleHistory:
@@ -287,27 +313,35 @@ class SettleHistory:
         Returns:
             SettleHistory: The settle history as represented by the string
         """
-        cards_str, winners_str = string.split('\n')
-        _, cards_str = cards_str.split('[')
-        cards_str, _ = cards_str.split(']')
+        cards_str, winners_str = string.split("\n")
+        _, cards_str = cards_str.split("[")
+        cards_str, _ = cards_str.split("]")
 
         if cards_str:
-            new_cards = [Card(string) for string in cards_str.split(',')]
+            new_cards = [Card(string) for string in cards_str.split(",")]
         else:
             new_cards = []
 
-        _, winners_str = winners_str.split(': ')
-        pot_winners_data = [winner_str.strip('()')
-                            .replace(' ', '')
-                            .replace('[', '')
-                            .replace(']', '')
-                            .split(',')
-                            for winner_str in winners_str.split(';')]
-        pot_winners_data = [(data[0], data[1], data[2], data[3:])
-                            for data in pot_winners_data]
-        pot_winners = {int(pot_name[(pot_name.find('Pot') + 3):]):
-                       (int(amount), int(best_rank), [int(winner) for winner in winners_list])
-                       for pot_name, amount, best_rank, winners_list in pot_winners_data}
+        _, winners_str = winners_str.split(": ")
+        pot_winners_data = [
+            winner_str.strip("()")
+            .replace(" ", "")
+            .replace("[", "")
+            .replace("]", "")
+            .split(",")
+            for winner_str in winners_str.split(";")
+        ]
+        pot_winners_data = [
+            (data[0], data[1], data[2], data[3:]) for data in pot_winners_data
+        ]
+        pot_winners = {
+            int(pot_name[(pot_name.find("Pot") + 3) :]): (
+                int(amount),
+                int(best_rank),
+                [int(winner) for winner in winners_list],
+            )
+            for pot_name, amount, best_rank, winners_list in pot_winners_data
+        }
         return SettleHistory(new_cards, pot_winners)
 
     def __str__(self) -> str:
@@ -315,11 +349,17 @@ class SettleHistory:
         for pot_id, (amount, best_rank, winners_list) in self.pot_winners.items():
             winners_list = [str(winner) for winner in winners_list]
             single = len(winners_list) > 0
-            rank_str = f" with a {evaluator.rank_to_string(best_rank)}" if best_rank != -1 else ""
+            rank_str = (
+                f" with a {evaluator.rank_to_string(best_rank)}"
+                if best_rank != -1
+                else ""
+            )
 
-            pot_lists.append(f"Player{'s' if not single else ''} "
-                             f"{', '.join(winners_list)} {'wins' if single else 'splits'} "
-                             f"Pot {pot_id} (Chips {amount}){rank_str}")
+            pot_lists.append(
+                f"Player{'s' if not single else ''} "
+                f"{', '.join(winners_list)} {'wins' if single else 'splits'} "
+                f"Pot {pot_id} (Chips {amount}){rank_str}"
+            )
         return "\n".join(pot_lists)
 
 
@@ -333,6 +373,7 @@ class History:
     provides ways to write / read human-readable information to / from files.
 
     """
+
     prehand: PrehandHistory = None
     """
     The Prehand History
@@ -370,22 +411,26 @@ class History:
 
         """
         num_players = len(self.prehand.player_chips)
-        old_ids = [i % num_players
-                   for i in range(self.prehand.btn_loc, self.prehand.btn_loc + num_players)
-                   if self.prehand.player_chips[i % num_players] > 0]
+        old_ids = [
+            i % num_players
+            for i in range(self.prehand.btn_loc, self.prehand.btn_loc + num_players)
+            if self.prehand.player_chips[i % num_players] > 0
+        ]
         canon_ids = dict(zip(old_ids, range(len(old_ids))))
 
         string = ""
 
-        for history_item, name in [(self.prehand, HandPhase.PREHAND.name),
-                                   (self.preflop, HandPhase.PREFLOP.name),
-                                   (self.flop, HandPhase.FLOP.name),
-                                   (self.turn, HandPhase.TURN.name),
-                                   (self.river, HandPhase.RIVER.name),
-                                   (self.settle, HandPhase.SETTLE.name)]:
+        for history_item, name in [
+            (self.prehand, HandPhase.PREHAND.name),
+            (self.preflop, HandPhase.PREFLOP.name),
+            (self.flop, HandPhase.FLOP.name),
+            (self.turn, HandPhase.TURN.name),
+            (self.river, HandPhase.RIVER.name),
+            (self.settle, HandPhase.SETTLE.name),
+        ]:
             if history_item is not None:
                 string += f"{name.upper()}\n" + history_item.to_string(canon_ids)
-                string += '\n' if name == HandPhase.SETTLE.name else '\n\n'
+                string += "\n" if name == HandPhase.SETTLE.name else "\n\n"
 
         return string
 
@@ -399,15 +444,15 @@ class History:
 
         """
         new_lines = []
-        for line in string.split('\n'):
-            comment_index = line.find('#')
+        for line in string.split("\n"):
+            comment_index = line.find("#")
 
             if comment_index == -1:
                 new_lines.append(line)
             elif comment_index != 0:
                 new_lines.append(line[:comment_index].strip())
 
-        return '\n'.join(new_lines)
+        return "\n".join(new_lines)
 
     @staticmethod
     def from_string(string: str) -> History:
@@ -423,17 +468,19 @@ class History:
 
         """
         history = History()
-        sections = History._strip_comments(string).split('\n\n')
+        sections = History._strip_comments(string).split("\n\n")
 
         for section in sections:
-            newline = section.find('\n')
-            header, rest = section[:newline], section[(newline+1):]
+            newline = section.find("\n")
+            header, rest = section[:newline], section[(newline + 1) :]
             if header == HandPhase.PREHAND.name:
                 history_item = PrehandHistory
-            elif header in (HandPhase.PREFLOP.name,
-                            HandPhase.FLOP.name,
-                            HandPhase.TURN.name,
-                            HandPhase.RIVER.name):
+            elif header in (
+                HandPhase.PREFLOP.name,
+                HandPhase.FLOP.name,
+                HandPhase.TURN.name,
+                HandPhase.RIVER.name,
+            ):
                 history_item = BettingRoundHistory
             elif header == HandPhase.SETTLE.name:
                 # remove trailing newline for end of line
@@ -446,7 +493,9 @@ class History:
 
         return history
 
-    def export_history(self, path: Union[str, os.PathLike] = "./texas.pgn") -> os.PathLike:
+    def export_history(
+        self, path: Union[str, os.PathLike] = "./texas.pgn"
+    ) -> os.PathLike:
         """
         Exports the hand history to a human-readable file. If a directory is given,
         finds a name of the form :code:`texas(n).pgn` to export to. PGN files can consequently
@@ -473,7 +522,9 @@ class History:
         original_path = hist_path
         num = 1
         while hist_path.exists():
-            hist_path = original_path.parent / f"{original_path.stem}({num}).{FILE_EXTENSION}"
+            hist_path = (
+                original_path.parent / f"{original_path.stem}({num}).{FILE_EXTENSION}"
+            )
             num += 1
 
         with open(hist_path, mode="w+", encoding="ascii") as file:
@@ -498,10 +549,10 @@ class History:
         # pylint: disable=protected-access
         path = Path(path)
         if not path.exists():
-            raise HistoryImportError(f'File not found: {path.absolute()}')
+            raise HistoryImportError(f"File not found: {path.absolute()}")
 
         # reconstitute history
-        with open(path, mode='r', encoding='ascii') as file:
+        with open(path, mode="r", encoding="ascii") as file:
             try:
                 history = History.from_string(file.read())
             except ValueError as err:
@@ -513,8 +564,10 @@ class History:
         history._check_correct_board_len()
 
         if len(history.prehand.player_chips) <= 1:
-            raise HistoryImportError(f"Expected at least 2 players in this game, "
-                                     f"got {len(history.prehand.player_chips)}")
+            raise HistoryImportError(
+                f"Expected at least 2 players in this game, "
+                f"got {len(history.prehand.player_chips)}"
+            )
 
         return history
 
@@ -529,12 +582,12 @@ class History:
         if not self.settle:
             raise HistoryImportError("Settle section is missing")
 
-        for hand_phase in (HandPhase.PREFLOP,
-                           HandPhase.FLOP,
-                           HandPhase.TURN):
+        for hand_phase in (HandPhase.PREFLOP, HandPhase.FLOP, HandPhase.TURN):
             if self[hand_phase.next_phase()] and not self[hand_phase]:
-                raise HistoryImportError(f"Found a section for {hand_phase.next_phase().name} "
-                                         f"but not a section for {hand_phase.name}")
+                raise HistoryImportError(
+                    f"Found a section for {hand_phase.next_phase().name} "
+                    f"but not a section for {hand_phase.name}"
+                )
 
     def _check_unique_cards(self):
         """
@@ -543,10 +596,12 @@ class History:
 
         """
         cards = sum(self.prehand.player_cards.values(), [])
-        for hand_phase in (HandPhase.PREFLOP,
-                           HandPhase.FLOP,
-                           HandPhase.TURN,
-                           HandPhase.RIVER):
+        for hand_phase in (
+            HandPhase.PREFLOP,
+            HandPhase.FLOP,
+            HandPhase.TURN,
+            HandPhase.RIVER,
+        ):
             history_item = self[hand_phase]
             if history_item:
                 cards += history_item.new_cards
@@ -561,30 +616,40 @@ class History:
 
         """
         total_board_len = 0
-        for hand_phase in (HandPhase.PREFLOP,
-                           HandPhase.FLOP,
-                           HandPhase.TURN,
-                           HandPhase.RIVER):
+        for hand_phase in (
+            HandPhase.PREFLOP,
+            HandPhase.FLOP,
+            HandPhase.TURN,
+            HandPhase.RIVER,
+        ):
             history_item = self[hand_phase]
             if history_item:
                 if len(history_item.new_cards) != hand_phase.new_cards():
-                    raise HistoryImportError(f"Expected {hand_phase.new_cards()} "
-                                             f"new cards in phase {hand_phase.name}")
+                    raise HistoryImportError(
+                        f"Expected {hand_phase.new_cards()} "
+                        f"new cards in phase {hand_phase.name}"
+                    )
                 total_board_len += len(history_item.new_cards)
 
         # settle
         for _, (_, rank, _) in self.settle.pot_winners.items():
             if rank != -1:
                 if len(self.settle.new_cards) != 5 - total_board_len:
-                    raise HistoryImportError(f"Expected {5 - total_board_len} "
-                                             f"to come out during settle phase")
+                    raise HistoryImportError(
+                        f"Expected {5 - total_board_len} "
+                        f"to come out during settle phase"
+                    )
 
-    def __setitem__(self, hand_phase: HandPhase,
-                    history: Union[PrehandHistory, BettingRoundHistory, SettleHistory]) -> None:
+    def __setitem__(
+        self,
+        hand_phase: HandPhase,
+        history: Union[PrehandHistory, BettingRoundHistory, SettleHistory],
+    ) -> None:
         setattr(self, hand_phase.name.lower(), history)
 
-    def __getitem__(self, hand_phase: HandPhase) -> \
-            Union[PrehandHistory, BettingRoundHistory, SettleHistory]:
+    def __getitem__(
+        self, hand_phase: HandPhase
+    ) -> Union[PrehandHistory, BettingRoundHistory, SettleHistory]:
         return getattr(self, hand_phase.name.lower())
 
     def __contains__(self, hand_phase: HandPhase) -> bool:
@@ -600,10 +665,7 @@ class History:
             list[PlayerAction]: The cumulative actions of all players in the game
         """
         history = []
-        for history_item in (self.preflop,
-                             self.flop,
-                             self.turn,
-                             self.river):
+        for history_item in (self.preflop, self.flop, self.turn, self.river):
             if history_item:
                 history.extend(history_item.actions)
         return history

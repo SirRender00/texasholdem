@@ -16,11 +16,13 @@ import random
 import pytest
 
 from texasholdem.evaluator import evaluator
-from tests.evaluator.conftest import (generate_sample_hand,
-                                      less_hands_same_class,
-                                      FUZZ_COMPARE_WITH_BOARD,
-                                      GETTER_CONVENIENCE_RUNS,
-                                      MAX_HAND_RANK)
+from tests.evaluator.conftest import (
+    generate_sample_hand,
+    less_hands_same_class,
+    FUZZ_COMPARE_WITH_BOARD,
+    GETTER_CONVENIENCE_RUNS,
+    MAX_HAND_RANK,
+)
 
 
 @pytest.mark.repeat(FUZZ_COMPARE_WITH_BOARD)
@@ -47,10 +49,18 @@ def test_fuzz_compare_with_board(board_len):
 
     score1, score2 = evaluator.evaluate(hand1, board), evaluator.evaluate(hand2, board)
 
-    hand1 = list(min(itertools.combinations(board + hand1, 5),
-                     key=lambda hand: evaluator.evaluate([], list(hand))))
-    hand2 = list(min(itertools.combinations(board + hand2, 5),
-                     key=lambda hand: evaluator.evaluate([], list(hand))))
+    hand1 = list(
+        min(
+            itertools.combinations(board + hand1, 5),
+            key=lambda hand: evaluator.evaluate([], list(hand)),
+        )
+    )
+    hand2 = list(
+        min(
+            itertools.combinations(board + hand2, 5),
+            key=lambda hand: evaluator.evaluate([], list(hand)),
+        )
+    )
 
     if class1 > class2:
         assert score1 > score2, f"Expected {hand2} to be better than {hand1}"
@@ -83,8 +93,10 @@ def test_rank_to_string():
     class1 = random.choice(list(evaluator.LOOKUP_TABLE.RANK_CLASS_TO_STRING.keys()))
     hand = generate_sample_hand(class1)
     score = evaluator.evaluate([], hand)
-    assert evaluator.rank_to_string(score) \
-           == evaluator.LOOKUP_TABLE.RANK_CLASS_TO_STRING[class1]
+    assert (
+        evaluator.rank_to_string(score)
+        == evaluator.LOOKUP_TABLE.RANK_CLASS_TO_STRING[class1]
+    )
 
 
 @pytest.mark.repeat(GETTER_CONVENIENCE_RUNS)
@@ -95,5 +107,7 @@ def test_five_card_percentage():
     class1 = random.choice(list(evaluator.LOOKUP_TABLE.RANK_CLASS_TO_STRING.keys()))
     hand = generate_sample_hand(class1)
     score = evaluator.evaluate([], hand)
-    assert math.isclose(evaluator.get_five_card_rank_percentage(score),
-                        1 - float(score) / float(MAX_HAND_RANK))
+    assert math.isclose(
+        evaluator.get_five_card_rank_percentage(score),
+        1 - float(score) / float(MAX_HAND_RANK),
+    )

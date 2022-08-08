@@ -65,9 +65,7 @@ def get_rank_class(hand_rank: int) -> int:
             Example, straight flush is class 1, high card is class 9, full house is class 3.
 
     """
-    max_rank = min(rank
-                   for rank in LOOKUP_TABLE.MAX_TO_RANK_CLASS
-                   if hand_rank <= rank)
+    max_rank = min(rank for rank in LOOKUP_TABLE.MAX_TO_RANK_CLASS if hand_rank <= rank)
     return LOOKUP_TABLE.MAX_TO_RANK_CLASS[max_rank]
 
 
