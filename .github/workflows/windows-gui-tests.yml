@@ -33,14 +33,14 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install poetry
       run: |
-        curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
-    - name: Load cached venv
-      id: cached-pip-wheels
-      uses: actions/cache@v2
-      with:
-        path: ~/.cache
-        key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+        curl -sSL https://install.python-poetry.org | python
+#    - name: Load cached venv
+#      id: cached-pip-wheels
+#      uses: actions/cache@v2
+#      with:
+#        path: ~/.cache
+#        key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
     - name: Install dependencies
-      run: $HOME/.poetry/bin/poetry install --no-interaction
+      run: $HOME/AppData/Roaming/Python/Scripts/poetry install --no-interaction
     - name: Run tests with pytest
-      run: $HOME/.poetry/bin/poetry run pytest ./tests/gui/text_gui.py
+      run: $HOME/AppData/Roaming/Python/Scripts/poetry run pytest ./tests/gui/text_gui.py

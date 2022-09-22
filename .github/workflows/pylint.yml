@@ -19,21 +19,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Python 3.9
+    - name: Set up Python 3.10
       uses: actions/setup-python@v2
       with:
-        python-version: 3.9
+        python-version: '3.10'
     - name: Install poetry
-      uses: snok/install-poetry@v1.3.1
+      uses: snok/install-poetry@v1
       with:
         virtualenvs-create: true
         virtualenvs-in-project: true
-    - name: Load cached venv
-      id: cached-poetry-dependencies
-      uses: actions/cache@v2
-      with:
-        path: .venv
-        key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+#    - name: Load cached venv
+#      id: cached-poetry-dependencies
+#      uses: actions/cache@v2
+#      with:
+#        path: .venv
+#        key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
     - name: Install dependencies
       run: poetry install --no-interaction
       if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
@@ -41,3 +41,7 @@ jobs:
       run: |
         poetry run pylint texasholdem
         poetry run pylint tests
+    - name: Analysing the code with black
+      run: |
+        poetry run black --check texasholdem
+        poetry run black --check tests
