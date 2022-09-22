@@ -41,3 +41,7 @@ jobs:
       run: |
         poetry run pylint texasholdem
         poetry run pylint tests
+    - name: Analysing the code with black
+      run: |
+        poetry run black --check texasholdem
+        poetry run black --check tests
