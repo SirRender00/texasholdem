@@ -34,12 +34,12 @@ jobs:
     - name: Install poetry
       run: |
         curl -sSL https://install.python-poetry.org | python
-    - name: Load cached venv
-      id: cached-pip-wheels
-      uses: actions/cache@v2
-      with:
-        path: ~/.cache
-        key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+#    - name: Load cached venv
+#      id: cached-pip-wheels
+#      uses: actions/cache@v2
+#      with:
+#        path: ~/.cache
+#        key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
     - name: Install dependencies
       run: $HOME/AppData/Roaming/Python/Scripts/poetry install --no-interaction
     - name: Run tests with pytest
