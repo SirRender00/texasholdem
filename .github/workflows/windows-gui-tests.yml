@@ -41,6 +41,6 @@ jobs:
         path: ~/.cache
         key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
     - name: Install dependencies
-      run: $HOME/.poetry/bin/poetry install --no-interaction
+      run: $HOME/AppData/Roaming/Python/Scripts/poetry install --no-interaction
     - name: Run tests with pytest
-      run: $HOME/.poetry/bin/poetry run pytest ./tests/gui/text_gui.py
+      run: $HOME/AppData/Roaming/Python/Scripts/poetry run pytest ./tests/gui/text_gui.py
