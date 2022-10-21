@@ -45,7 +45,7 @@ jobs:
       if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
 
     - name: Generate Coverage Report
-      run: poetry run coverage run -m pytest --workers auto
+      run: poetry run coverage run -m pytest
 
     - name: Upload Coverage to Codecov
       uses: codecov/codecov-action@v3
