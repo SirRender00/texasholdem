@@ -46,7 +46,7 @@ jobs:
 
     - name: Generate Coverage Report
       run: |
-        poetry run coverage run -m pytest
+        poetry run coverage run --omit tests/* -m pytest
         poetry run coverage xml
 
     - name: Upload Coverage to Codecov
