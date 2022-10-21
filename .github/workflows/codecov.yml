@@ -1,0 +1,55 @@
+name: Code Coverage
+
+on:
+  push:
+    branches:
+      - "main"
+      - "[0-9]+.[0-9]+"
+  pull_request:
+    branches:
+      - "main"
+      - "[0-9]+.[0-9]+"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.10'
+
+    - name: Install poetry
+      uses: snok/install-poetry@v1
+      with:
+        virtualenvs-create: true
+        virtualenvs-in-project: true
+
+#    - name: Load cached venv
+#      id: cached-poetry-dependencies
+#      uses: actions/cache@v2
+#      with:
+#        path: .venv
+#        key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+
+    - name: Install dependencies
+      run: poetry install --no-interaction
+
+      if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+
+    - name: Generate Coverage Report
+      run: |
+        poetry run coverage run --omit="texasholdem/gui/*" --source=texasholdem/ -m pytest
+        poetry run coverage xml
+
+    - name: Upload Coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: coverage.xml
