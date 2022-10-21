@@ -1,5 +1,6 @@
 # texasholdem
 ![Pytest Status](https://github.com/SirRender00/texasholdem/actions/workflows/pytest.yml/badge.svg)
+[![codecov](https://codecov.io/github/SirRender00/texasholdem/branch/main/graph/badge.svg?token=1PH1NHTGXP)](https://codecov.io/github/SirRender00/texasholdem)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://raw.githubusercontent.com/SirRender00/texasholdem/main/LICENSE)
 [![Documentation Status](https://readthedocs.org/projects/texasholdem/badge/?version=stable)](https://texasholdem.readthedocs.io/en/stable/?badge=stable)
 ![Pylint Status](https://github.com/SirRender00/texasholdem/actions/workflows/pylint.yml/badge.svg)
