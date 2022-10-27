@@ -1,7 +1,7 @@
 Changes in 0.7.0
 ==========================
 
-What's New in 0.7
+What's New in 0.7.0
 ------------------------
 This release features an overhaul to the GUI system and specifically the :class:`~texasholdem.gui.text_gui.TextGUI`
 had a massive overhaul. See more at :ref:`guis`.
