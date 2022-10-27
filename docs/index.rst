@@ -11,6 +11,7 @@ texasholdem |release|
    guis
    evaluator
    reference
+   changelog
 
 A python package for Texas Hold 'Em Poker, providing
 
