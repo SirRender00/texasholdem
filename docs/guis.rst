@@ -46,6 +46,8 @@ to any future GUI.
     `windows-curses <https://pypi.org/project/windows-curses/>`_ to make it compatible. Some features may not
     be fully supported due to OS restrictions (e.g. resizing during the game).
 
+    Because of the dependency on :code:`windows-curses`, **only python 3.10 or lower is supported for Windows**.
+
 Example Usage
 ^^^^^^^^^^^^^^^
 To play with default settings where you can see every players' cards and take turns for each one::
