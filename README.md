@@ -16,9 +16,10 @@ A python package for Texas Hold 'Em Poker providing
 
 | Version Name | Latest Tag | Release Notes | Patch Notes | Documentation | Release Date | End Support Date |
 | ------------ | ---------- | ------------- | ----------- | ------------- | ------------ | ---------------- |
-| 0.7          | v0.7.2     | [Release Notes](https://github.com/SirRender00/texasholdem/releases/tag/v0.7.0) | [Patch Notes](https://github.com/SirRender00/texasholdem/releases/tag/v0.7.2) | [Documentation](https://texasholdem.readthedocs.io/en/0.7/) | 16 April 2022 | |
-| 0.6          | v0.6.5     | [Release Notes](https://github.com/SirRender00/texasholdem/releases/tag/v0.6.0) | [Patch Notes](https://github.com/SirRender00/texasholdem/releases/tag/v0.6.5) | [Documentation](https://texasholdem.readthedocs.io/en/0.6/) | 24 March 2022 | |
-| 0.5          | v0.5.3     | [Release Notes](https://github.com/SirRender00/texasholdem/releases/tag/v0.5.0) | [Patch Notes](https://github.com/SirRender00/texasholdem/releases/tag/v0.5.3) | [Documentation](https://texasholdem.readthedocs.io/en/0.5/) | 21 March 2022 | |
+| 0.8          | v0.8-alpha.0     | [Release Notes](https://github.com/SirRender00/texasholdem/releases/tag/v0.8-alpha.0) | [Patch Notes](https://github.com/SirRender00/texasholdem/releases/tag/v0.8-alpha.0) | [Documentation](https://texasholdem.readthedocs.io/en/0.8/) | 2 November 2022 | |
+| 0.7          | v0.7.2           | [Release Notes](https://github.com/SirRender00/texasholdem/releases/tag/v0.7.0) | [Patch Notes](https://github.com/SirRender00/texasholdem/releases/tag/v0.7.2) | [Documentation](https://texasholdem.readthedocs.io/en/0.7/) | 16 April 2022 | |
+| 0.6          | v0.6.5           | [Release Notes](https://github.com/SirRender00/texasholdem/releases/tag/v0.6.0) | [Patch Notes](https://github.com/SirRender00/texasholdem/releases/tag/v0.6.5) | [Documentation](https://texasholdem.readthedocs.io/en/0.6/) | 24 March 2022 | |
+| 0.5          | v0.5.3           | [Release Notes](https://github.com/SirRender00/texasholdem/releases/tag/v0.5.0) | [Patch Notes](https://github.com/SirRender00/texasholdem/releases/tag/v0.5.3) | [Documentation](https://texasholdem.readthedocs.io/en/0.5/) | 21 March 2022 | |
 
 Current Roadmap \
 [v1.0.0](https://github.com/SirRender00/texasholdem/wiki/Version-1.0.0-Roadmap)
