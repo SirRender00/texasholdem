@@ -22,7 +22,7 @@ include = [
 [tool.poetry.dependencies]
 python = "^3.8"
 Deprecated = "^1.2.13"
-windows-curses = { version = "^2.3.1a2", markers = "sys_platform == 'win32'" }
+windows-curses = { version = "^2.3.1", markers = "sys_platform == 'win32'" }
 
 [tool.poetry.dev-dependencies]
 py = "^1.11.0"
