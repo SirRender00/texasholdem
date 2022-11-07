@@ -23,7 +23,7 @@ copyright = '2022, Evyn Machi'
 author = 'Evyn Machi'
 
 # The full version, including alpha/beta/rc tags
-release = 'v0.8-alpha.0'
+release = 'v0.8.0'
 
 
 # -- General configuration ---------------------------------------------------
