@@ -190,7 +190,6 @@ class LookupTable:
 
         # for each choice of a set of four rank
         for i in backwards_ranks:
-
             # and for each possible kicker rank
             kickers = list(backwards_ranks[:])
             kickers.remove(i)
@@ -204,7 +203,6 @@ class LookupTable:
 
         # for each three of a kind
         for i in backwards_ranks:
-
             # and for each choice of pair rank
             pair_ranks = list(backwards_ranks[:])
             pair_ranks.remove(i)
@@ -218,7 +216,6 @@ class LookupTable:
 
         # pick three of one rank
         for b_rank in backwards_ranks:
-
             kickers = list(backwards_ranks[:])
             kickers.remove(b_rank)
 
@@ -234,7 +231,6 @@ class LookupTable:
         rank = LookupTable.MAX_THREE_OF_A_KIND + 1
 
         for two_pair in itertools.combinations(backwards_ranks, 2):
-
             pair1, pair2 = two_pair
             kickers = list(backwards_ranks[:])
             kickers.remove(pair1)
@@ -253,7 +249,6 @@ class LookupTable:
 
         # choose a pair
         for pairrank in backwards_ranks:
-
             kickers = list(backwards_ranks[:])
             kickers.remove(pairrank)
 
