@@ -45,3 +45,6 @@ jobs:
       run: |
         poetry run black --check texasholdem
         poetry run black --check tests
+    - name: Ensuring docs can compile
+      run: |
+        poetry run python -m sphinx -T -E -b html -d _build/doctrees -D language=en docs docs/out/html
