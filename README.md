@@ -6,7 +6,7 @@
 ![Pylint Status](https://github.com/SirRender00/texasholdem/actions/workflows/pylint.yml/badge.svg)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-A python package for Texas Hold 'Em Poker providing
+A python package for Texas Hold 'Em Poker providing:
 - Fast evaluation of hand strengths 
 - Export & import human-readable game history
 - GUIs to view games and game history
