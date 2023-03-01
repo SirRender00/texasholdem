@@ -65,8 +65,12 @@ def random_agent(game: TexasHoldEm, no_fold: bool = False) -> Tuple[ActionType, 
         possible.remove(ActionType.CHECK)
 
     # not enough chips to raise
-    if max_raise < min_raise:
+    if not game.raise_option:
         possible.remove(ActionType.RAISE)
+    elif max_raise < min_raise:
+        possible.remove(ActionType.RAISE)
+        if chips:
+            possible.append(ActionType.ALL_IN)
 
     action_type, total = random.choice(possible), None
     if action_type == ActionType.RAISE:
