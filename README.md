@@ -16,31 +16,18 @@ A python package for Texas Hold 'Em Poker providing:
 
 | Version Name | Latest Tag | Release Notes | Patch Notes | Documentation | Release Date | End Support Date |
 | ------------ | ---------- | ------------- | ----------- | ------------- | ------------ | ---------------- |
-| 0.8          | v0.8.0     | [Release Notes](https://github.com/SirRender00/texasholdem/releases/tag/v0.8.0) | [Patch Notes](https://github.com/SirRender00/texasholdem/releases/tag/v0.8.0) | [Documentation](https://texasholdem.readthedocs.io/en/0.8/) | 6 November 2022 | |
-| 0.7          | v0.7.2     | [Release Notes](https://github.com/SirRender00/texasholdem/releases/tag/v0.7.0) | [Patch Notes](https://github.com/SirRender00/texasholdem/releases/tag/v0.7.2) | [Documentation](https://texasholdem.readthedocs.io/en/0.7/) | 16 April 2022 | |
-| 0.6          | v0.6.5     | [Release Notes](https://github.com/SirRender00/texasholdem/releases/tag/v0.6.0) | [Patch Notes](https://github.com/SirRender00/texasholdem/releases/tag/v0.6.5) | [Documentation](https://texasholdem.readthedocs.io/en/0.6/) | 24 March 2022 | 31 December 2022 |
-| 0.5          | v0.5.3     | [Release Notes](https://github.com/SirRender00/texasholdem/releases/tag/v0.5.0) | [Patch Notes](https://github.com/SirRender00/texasholdem/releases/tag/v0.5.3) | [Documentation](https://texasholdem.readthedocs.io/en/0.5/) | 21 March 2022 | 31 December 2022 |
+| 0.8          | v0.8.1     | [Release Notes](https://github.com/SirRender00/texasholdem/releases/tag/v0.8.0) | [Patch Notes](https://github.com/SirRender00/texasholdem/releases/tag/v0.8.1) | [Documentation](https://texasholdem.readthedocs.io/en/0.8/) | 6 November 2022 | |
+| 0.7          | v0.7.3     | [Release Notes](https://github.com/SirRender00/texasholdem/releases/tag/v0.7.0) | [Patch Notes](https://github.com/SirRender00/texasholdem/releases/tag/v0.7.3) | [Documentation](https://texasholdem.readthedocs.io/en/0.7/) | 16 April 2022 | |
 
 Current Roadmap \
 [v1.0.0](https://github.com/SirRender00/texasholdem/wiki/Version-1.0.0-Roadmap)
 
-## Changelog v0.7
-This release features an overhaul to the GUI system and specifically the `TextGUI`
-had a massive overhaul.
-
-### Features
-
-- Added an `AbstractGUI` class for common functionality for all GUIs.
-- The new `TextGUI`
-    - A new history panel
-    - Support any number of players 2 thru 9
-    - Chip animations
-    - Improved UX
+## Changelog v0.8
 
 ### Other Changes
 
-- Simplification of a few steps in a betting round
-- Uncaps the python dependency
+- Bumped test suite python dependency from 3.10 to 3.11 
+- Adds support for python 3.11 for Windows
 
 ## Contributing
 Want a new feature, found a bug, or have questions? Feel free to add to our issue board on Github!
