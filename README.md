@@ -22,23 +22,12 @@ A python package for Texas Hold 'Em Poker providing:
 Current Roadmap \
 [v1.0.0](https://github.com/SirRender00/texasholdem/wiki/Version-1.0.0-Roadmap)
 
-## Changelog v0.7
-This release features an overhaul to the GUI system and specifically the `TextGUI`
-had a massive overhaul.
-
-### Features
-
-- Added an `AbstractGUI` class for common functionality for all GUIs.
-- The new `TextGUI`
-    - A new history panel
-    - Support any number of players 2 thru 9
-    - Chip animations
-    - Improved UX
+## Changelog v0.8
 
 ### Other Changes
 
-- Simplification of a few steps in a betting round
-- Uncaps the python dependency
+- Bumped test suite python dependency from 3.10 to 3.11 
+- Adds support for python 3.11 for Windows
 
 ## Contributing
 Want a new feature, found a bug, or have questions? Feel free to add to our issue board on Github!
