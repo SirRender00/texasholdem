@@ -39,21 +39,9 @@ if you want to be added as a contributor and check out the
 
 What's New in |release|
 ------------------------
-This release features an overhaul to the GUI system and specifically the :class:`~texasholdem.gui.text_gui.TextGUI`
-had a massive overhaul. See more at :ref:`guis`.
 
 Features
 ^^^^^^^^^
 
-    - Added an :class:`~texasholdem.gui.abstract_gui.AbstractGUI` class for common functionality for all GUIs.
-    - The new :class:`~texasholdem.gui.text_gui.TextGUI`
-        - A new history panel
-        - Support any number of players 2 thru 9
-        - Chip animations
-        - Improved UX
-
-Other Changes
-^^^^^^^^^^^^^^^
-
-    - Simplification of a few steps in a betting round
-    - Uncaps the python dependency
+    - New class :class:`~texasholdem.game.move.MoveIterator` which is a special collection of moves which includes attributes such as :attr:`~texasholdem.game.move.MoveIterator.action_types` and :attr:`~texasholdem.game.move.MoveIterator.raise_range`. Also supports iteration and checking for membership with the :code:`in` operator. Use the :meth:`~texasholdem.game.move.MoveIterator.sample()` method to sample from the collection.
+    - New method :meth:`~texasholdem.game.game.TexasHoldEm.get_available_moves()` which returns a :class:`~texasholdem.game.move.MoveIterator` of the available moves for the current player.

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "texasholdem"
-version = "0.8.1"
+version = "0.9.0"
 description = "A texasholdem python package"
 authors = ["Evyn Machi <evyn.machi@gmail.com>"]
 keywords = ['texasholdem', 'holdem', 'poker']
