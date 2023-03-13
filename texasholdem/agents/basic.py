@@ -7,8 +7,6 @@ Basic agents are included in this module:
 
 from typing import Tuple
 
-import random
-
 from texasholdem.game.game import TexasHoldEm
 from texasholdem.game.action_type import ActionType
 from texasholdem.game.player_state import PlayerState
@@ -50,8 +48,4 @@ def random_agent(game: TexasHoldEm, no_fold: bool = False) -> Tuple[ActionType, 
     if no_fold:
         del moves[ActionType.FOLD]
 
-    action_type, total = random.choice(moves.action_types), None
-    if action_type == ActionType.RAISE:
-        total = random.choice(moves.raise_range)
-
-    return action_type, total
+    return moves.sample()

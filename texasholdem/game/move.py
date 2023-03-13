@@ -1,14 +1,17 @@
 """
 The move module includes classes related to collections of moves
 """
-
-from typing import Dict, Tuple, Optional
+import random
+from typing import Dict, Tuple, Optional, Union, List
 from collections.abc import Sequence
 import warnings
+
+from deprecated.sphinx import versionadded
 
 from texasholdem.game.action_type import ActionType
 
 
+@versionadded(version="0.9.0")
 class MoveIterator(Sequence):
     """
     Arguments:
@@ -24,7 +27,7 @@ class MoveIterator(Sequence):
 
         self._action_types = list(sorted(moves.keys(), key=tuple(ActionType).index))
 
-    def __contains__(self, item):
+    def __contains__(self, item) -> bool:
         if isinstance(item, ActionType):
             return item in self._action_types
         if isinstance(item, Tuple):
@@ -43,10 +46,10 @@ class MoveIterator(Sequence):
             return super().__contains__(item)
         return False
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self._action_types) + len(self._raise_range) - 1
 
-    def __getitem__(self, item: int):
+    def __getitem__(self, item: int) -> ActionType:
         if item < len(self._action_types):
             return self._action_types[item], None
         if not self._raise_range:
@@ -55,7 +58,7 @@ class MoveIterator(Sequence):
             return ActionType.RAISE, self._raise_range[item - len(self._action_types)]
         raise IndexError
 
-    def __delitem__(self, key):
+    def __delitem__(self, key) -> None:
         if isinstance(key, ActionType):
             if key in self._action_types:
                 self._action_types.__delitem__(key)
@@ -65,17 +68,17 @@ class MoveIterator(Sequence):
                 self._raise_range = range(0)
         raise KeyError
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         move_dict = {move: None for move in self._action_types}
         if self._raise_range:
             move_dict[ActionType.RAISE] = self._raise_range
         return self.__class__.__name__ + f"({repr(move_dict)})"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return repr(self)
 
     @property
-    def action_types(self):
+    def action_types(self) -> List[ActionType]:
         """
         Returns:
             List[ActionType]: A list of action types represented
@@ -83,7 +86,7 @@ class MoveIterator(Sequence):
         return self._action_types
 
     @property
-    def raise_range(self):
+    def raise_range(self) -> range:
         """
         The range of the represented raise action, if no raise is possible this is just range(0)
 
@@ -91,3 +94,30 @@ class MoveIterator(Sequence):
             range: The range of the represented raise action.
         """
         return self._raise_range
+
+    def sample(
+        self, num=1
+    ) -> Union[
+        Tuple[ActionType, Optional[int]], List[Tuple[ActionType, Optional[int]]]
+    ]:
+        """
+        Arguments:
+            num (int): The number of samples
+        Returns:
+            Union[Tuple[ActionType, Optional[int]], List[Tuple[ActionType, Optional[int]]]]:
+                The sample(s) of action, total tuples
+        """
+        action_types = random.choices(self.action_types, k=num)
+        if ActionType.RAISE in self:
+            totals = random.choices(self.raise_range, k=num)
+            totals = [
+                totals[i] if action_types[i] == ActionType.RAISE else None
+                for i in range(num)
+            ]
+        else:
+            totals = [None for _ in range(num)]
+
+        samples = list(zip(action_types, totals))
+        if num == 1:
+            return samples[0]
+        return samples

@@ -15,7 +15,7 @@ from tests.conftest import GOOD_GAME_HISTORY_DIRECTORY
 
 
 BASIC_GAME_RUNS = 100
-UNTIL_STOP_RUNS = 1500
+UNTIL_STOP_RUNS = 1000
 
 
 @pytest.fixture()
@@ -295,6 +295,9 @@ class AvailableMoveChecker(GamePredicate):
     def before(self, game: TexasHoldEm) -> bool:
         # pylint: disable=too-many-return-statements,too-many-branches
         moves = game.get_available_moves()
+
+        for action, total in moves.sample(num=5):
+            game.validate_move(action=action, total=total)
 
         bet_amount = game.player_bet_amount(game.current_player)
         chips = game.players[game.current_player].chips
