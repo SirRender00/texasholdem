@@ -4,15 +4,12 @@ Config for game tests. Includes:
     - Call player fixture
     - And a method containing assert checks for the prehand for a game
 """
-import random
-
 import pytest
 
 from texasholdem.game.game import TexasHoldEm
 from texasholdem.game.hand_phase import HandPhase
 from texasholdem.game.action_type import ActionType
 from texasholdem.game.player_state import PlayerState
-from texasholdem.game.move import MoveIterator
 
 from tests.conftest import GOOD_GAME_HISTORY_DIRECTORY
 
@@ -296,6 +293,7 @@ class AvailableMoveChecker(GamePredicate):
     """
 
     def before(self, game: TexasHoldEm) -> bool:
+        # pylint: disable=too-many-return-statements,too-many-branches
         moves = game.get_available_moves()
 
         bet_amount = game.player_bet_amount(game.current_player)
