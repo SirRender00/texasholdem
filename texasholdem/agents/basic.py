@@ -7,8 +7,6 @@ Basic agents are included in this module:
 
 from typing import Tuple
 
-import random
-
 from texasholdem.game.game import TexasHoldEm
 from texasholdem.game.action_type import ActionType
 from texasholdem.game.player_state import PlayerState
