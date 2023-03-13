@@ -30,6 +30,13 @@ game.history
    :undoc-members:
    :show-inheritance:
 
+game.move
+-------------------------------------
+
+.. automodule:: texasholdem.game.move
+   :members:
+   :undoc-members:
+
 game.player\_state
 -------------------------------------
 

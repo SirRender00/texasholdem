@@ -6,7 +6,6 @@ Config for all tests. Includes:
 import os
 from typing import Union, Tuple
 from pathlib import Path
-import random
 
 import pytest
 
@@ -15,6 +14,7 @@ import tests
 from texasholdem.game.game import TexasHoldEm
 from texasholdem.game.action_type import ActionType
 from texasholdem.game.player_state import PlayerState
+from texasholdem import agents
 
 
 GOOD_GAME_HISTORY_DIRECTORY = Path(tests.__file__).parent / "pgns/test_good_pgns"
@@ -147,34 +147,4 @@ def random_agent():
         - If RAISE, the value will be uniformly random in [min_raise, # of chips]
 
     """
-
-    def get_action(game: TexasHoldEm, no_fold: bool = False) -> Tuple[ActionType, int]:
-        bet_amount = game.player_bet_amount(game.current_player)
-        chips = game.players[game.current_player].chips
-        min_raise = game.value_to_total(game.min_raise(), game.current_player)
-        max_raise = bet_amount + chips
-
-        possible = list(ActionType)
-        possible.remove(ActionType.ALL_IN)
-
-        # A player did not raise
-        if game.players[game.current_player].state == PlayerState.IN:
-            possible.remove(ActionType.CALL)
-            if no_fold:
-                possible.remove(ActionType.FOLD)
-
-        # A player raised
-        if game.players[game.current_player].state == PlayerState.TO_CALL:
-            possible.remove(ActionType.CHECK)
-
-        # not enough chips to raise
-        if max_raise < min_raise:
-            possible.remove(ActionType.RAISE)
-
-        action_type, value = random.choice(possible), None
-        if action_type == ActionType.RAISE:
-            value = random.randint(min_raise, max_raise)
-
-        return action_type, value
-
-    return get_action
+    return agents.basic.random_agent
