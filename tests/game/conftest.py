@@ -4,12 +4,15 @@ Config for game tests. Includes:
     - Call player fixture
     - And a method containing assert checks for the prehand for a game
 """
+import random
+
 import pytest
 
 from texasholdem.game.game import TexasHoldEm
 from texasholdem.game.hand_phase import HandPhase
 from texasholdem.game.action_type import ActionType
 from texasholdem.game.player_state import PlayerState
+from texasholdem.game.move import MoveIterator
 
 from tests.conftest import GOOD_GAME_HISTORY_DIRECTORY
 
@@ -282,8 +285,56 @@ class RaiseOptionChecker(GamePredicate):
 
     def before(self, game: TexasHoldEm) -> bool:
         return not game.raise_option and game.validate_move(
-            action=ActionType.RAISE, total=game.value_to_total(game.min_raise)
+            action=ActionType.RAISE,
+            total=game.value_to_total(game.min_raise(), game.current_player),
         )
+
+
+class AvailableMoveChecker(GamePredicate):
+    """
+    Checks that the get_available_moves() function is all valid
+    """
+
+    def before(self, game: TexasHoldEm) -> bool:
+        moves = game.get_available_moves()
+
+        bet_amount = game.player_bet_amount(game.current_player)
+        chips = game.players[game.current_player].chips
+        min_raise = game.value_to_total(game.min_raise(), game.current_player)
+        max_raise = bet_amount + chips
+
+        if (
+            game.players[game.current_player].state == PlayerState.IN
+            and ActionType.CALL in moves
+        ):
+            return True
+        if (
+            game.players[game.current_player].state == PlayerState.TO_CALL
+            and ActionType.CHECK in moves
+        ):
+            return True
+
+        if not game.raise_option:
+            if ActionType.RAISE in moves:
+                return True
+        elif max_raise < min_raise:
+            if game.chips_to_call(game.current_player) < chips:
+                if (ActionType.RAISE, max_raise) not in moves:
+                    return True
+            else:
+                if ActionType.RAISE in moves:
+                    return True
+        elif ActionType.RAISE in moves:
+            if (ActionType.RAISE, min_raise) not in moves:
+                return True
+            if (ActionType.RAISE, min_raise - 1) in moves:
+                return True
+            if (ActionType.RAISE, max_raise) not in moves:
+                return True
+            if (ActionType.RAISE, max_raise + 1) in moves:
+                return True
+
+        return False
 
 
 GAME_PREDICATES = (
@@ -291,4 +342,5 @@ GAME_PREDICATES = (
     LastRaiseChecker(),
     MinRaiseChecker(),
     RaiseOptionChecker(),
+    AvailableMoveChecker(),
 )

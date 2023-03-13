@@ -46,34 +46,12 @@ def random_agent(game: TexasHoldEm, no_fold: bool = False) -> Tuple[ActionType, 
             available moves.
 
     """
-    bet_amount = game.player_bet_amount(game.current_player)
-    chips = game.players[game.current_player].chips
-    min_raise = game.value_to_total(game.min_raise(), game.current_player)
-    max_raise = bet_amount + chips
+    moves = game.get_available_moves()
+    if no_fold:
+        del moves[ActionType.FOLD]
 
-    possible = list(ActionType)
-    possible.remove(ActionType.ALL_IN)
-
-    # A player did not raise
-    if game.players[game.current_player].state == PlayerState.IN:
-        possible.remove(ActionType.CALL)
-        if no_fold:
-            possible.remove(ActionType.FOLD)
-
-    # A player raised
-    if game.players[game.current_player].state == PlayerState.TO_CALL:
-        possible.remove(ActionType.CHECK)
-
-    # not enough chips to raise
-    if not game.raise_option:
-        possible.remove(ActionType.RAISE)
-    elif max_raise < min_raise:
-        possible.remove(ActionType.RAISE)
-        if chips:
-            possible.append(ActionType.ALL_IN)
-
-    action_type, total = random.choice(possible), None
+    action_type, total = random.choice(moves.action_types), None
     if action_type == ActionType.RAISE:
-        total = random.randint(min_raise, max_raise)
+        total = random.choice(moves.raise_range)
 
     return action_type, total

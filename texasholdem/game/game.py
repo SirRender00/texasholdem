@@ -32,6 +32,7 @@ from texasholdem.game.history import (
 from texasholdem.game.action_type import ActionType
 from texasholdem.game.hand_phase import HandPhase
 from texasholdem.game.player_state import PlayerState
+from texasholdem.game.move import MoveIterator
 from texasholdem.evaluator import evaluator
 from texasholdem.util.functions import check_raise
 
@@ -693,7 +694,7 @@ class TexasHoldEm:
     def min_raise(self):
         """
         Returns:
-            The minimum amount a player can raise by.
+            int: The minimum amount a player can raise by.
         """
         return max(self.big_blind, self.last_raise)
 
@@ -822,6 +823,41 @@ class TexasHoldEm:
                     f"than the chips to call {chips_to_call}",
                 )
         return True, ""
+
+    @versionadded(version="0.9.0")
+    def get_available_moves(self):
+        """
+        Returns:
+            MoveIterator: A special iterator over the possible moves for the current player,
+                includes attributes such as :attr:`~texasholdem.game.move.action_types` and
+                :attr:`~texasholdem.game.move.raise_range`.
+        """
+        bet_amount = self.player_bet_amount(self.current_player)
+        chips = self.players[self.current_player].chips
+        min_raise = self.value_to_total(self.min_raise(), self.current_player)
+        max_raise = bet_amount + chips
+
+        possible = {action: None for action in ActionType}
+        possible[ActionType.RAISE] = range(min_raise, max_raise + 1)
+        del possible[ActionType.ALL_IN]
+
+        # A player did not raise
+        if self.players[self.current_player].state == PlayerState.IN:
+            del possible[ActionType.CALL]
+
+        # A player raised
+        if self.players[self.current_player].state == PlayerState.TO_CALL:
+            del possible[ActionType.CHECK]
+
+        # not enough chips to raise
+        if not self.raise_option:
+            del possible[ActionType.RAISE]
+        elif max_raise < min_raise:
+            del possible[ActionType.RAISE]
+            if chips > self.chips_to_call(self.current_player):
+                possible[ActionType.RAISE] = range(max_raise, max_raise + 1)
+
+        return MoveIterator(possible)
 
     def _take_action(self, action: ActionType, total: Optional[int] = None):
         """
