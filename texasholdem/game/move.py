@@ -78,7 +78,7 @@ class MoveIterator(Sequence):
         return repr(self)
 
     @property
-    def action_types(self) -> list[ActionType]:
+    def action_types(self) -> List[ActionType]:
         """
         Returns:
             List[ActionType]: A list of action types represented

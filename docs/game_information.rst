@@ -61,7 +61,8 @@ There is a method :meth:`~texasholdem.game.game.TexasHoldEm.get_available_moves(
 :class:`~texasholdem.game.move.MoveIterator`) of all the possible moves for the current player. The
 :class:`~texasholdem.game.move.MoveIterator` class includes a few attributes such as
 :attr:`~texasholdem.game.move.action_types` and :attr:`~texasholdem.game.move.raise_range`.
-Also supports iteration and checking for membership with the :code:`in` operator.
+Also supports iteration and checking for membership with the :code:`in` operator. Use the
+:meth:`~texasholdem.game.move.MoveIterator.sample()` method to sample from the collection.
 
 Canonical Loop
 ***************
