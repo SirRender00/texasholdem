@@ -871,7 +871,8 @@ class TextGUI(AbstractGUI):
         for action_type in (*moves.action_types, ActionType.ALL_IN):
             if action_type == ActionType.RAISE:
                 ret.append(
-                    f"{action_type.name} to {moves.raise_range.start} - {moves.raise_range.stop - 1}"
+                    f"{action_type.name} to "
+                    f"{moves.raise_range.start} - {moves.raise_range.stop - 1}"
                 )
             else:
                 ret.append(action_type.name)
