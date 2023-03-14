@@ -407,12 +407,19 @@ _ERROR_BLOCK_SIZE = _BlockDim(rows=1, cols=80)
 _HISTORY_BLOCK_SIZE = _BlockDim(rows=-1, cols=28)
 _ACTION_BLOCK_SIZE = _BlockDim(rows=1, cols=2)
 _VERSION_BLOCK_SIZE = _BlockDim(rows=1, cols=25)
+_AVAILABLE_ACTIONS_BLOCK_SIZE = _BlockDim(rows=1, cols=-1)
 
 # OFFSETS & SIZE MULTIPLIERS
 _HISTORY_BLOCK_SIZE_FACTOR = 0.95
 _TABLE_ELLIPSE_OFFSET = (-15, -2)
+_AVAILABLE_ACTIONS_OFFSET = (
+    _TABLE_ELLIPSE_OFFSET[0],
+    _PROMPT_BLOCK_SIZE.rows + _ERROR_BLOCK_SIZE.rows + 1,
+)
 _PLAYER_ELLIPSE_SIZE_FACTOR = 0.72
 _TABLE_ELLIPSE_SIZE_FACTOR = 0.5
+_AVAILABLE_ACTIONS_SIZE_FACTOR = _PLAYER_ELLIPSE_SIZE_FACTOR
+_AVAILABLE_ACTIONS_FREE_SPACE = 10
 _PLAYER_BET_ELLIPSE_SIZE_FACTOR = 0.35
 _TABLE_STEPS_RESOLUTION = 400
 
@@ -691,6 +698,16 @@ class TextGUI(AbstractGUI):
             (cols - _BOARD_BLOCK_SIZE[1]) // 2 + _TABLE_ELLIPSE_OFFSET[0],
         )
 
+        # Place the available actions above the prompt
+        avail_cols = round(cols * _AVAILABLE_ACTIONS_SIZE_FACTOR)
+        self.main_block.new_block(
+            "AVAILABLE_ACTIONS",
+            _AVAILABLE_ACTIONS_BLOCK_SIZE[0],
+            avail_cols,
+            rows - _AVAILABLE_ACTIONS_OFFSET[1],
+            (cols - avail_cols) // 2 + _AVAILABLE_ACTIONS_OFFSET[0],
+        )
+
         # Place history on the right
         self.main_block.new_block(
             "HISTORY",
@@ -848,6 +865,19 @@ class TextGUI(AbstractGUI):
                 table_ellipse.char_at(rad),
             )
 
+    def _available_actions_block(self):
+        moves = self.game.get_available_moves()
+        ret = []
+        for action_type in (*moves.action_types, ActionType.ALL_IN):
+            if action_type == ActionType.RAISE:
+                ret.append(
+                    f"{action_type.name} to "
+                    f"{moves.raise_range.start} - {moves.raise_range.stop - 1}"
+                )
+            else:
+                ret.append(action_type.name)
+        return [(" " * _AVAILABLE_ACTIONS_FREE_SPACE).join(ret)]
+
     def refresh(self):
         """
         Refreshes the display
@@ -882,6 +912,12 @@ class TextGUI(AbstractGUI):
             self.main_block.blocks[f"PLAYER_CHIPS_{player_id}"].add_content(
                 content=self._player_bet_block(player_id)
             )
+
+        # available actions
+        self.main_block.blocks["AVAILABLE_ACTIONS"].add_content(
+            content=self._available_actions_block(),
+            justify=_Justify.CENTER,
+        )
 
         # history
         self.main_block.blocks["HISTORY"].add_content(
@@ -986,6 +1022,10 @@ class TextGUI(AbstractGUI):
         self.set_visible_players(set(self.visible_players).union(extras))
 
         self.display_state()
+
+        # clear available actions
+        self.main_block.blocks["AVAILABLE_ACTIONS"].erase()
+
         self.main_block.refresh()
 
         self.wait_until_prompted()

@@ -25,7 +25,9 @@ class MoveIterator(Sequence):
         if ActionType.RAISE in moves:
             self._raise_range = moves[ActionType.RAISE]
 
-        self._action_types = list(sorted(moves.keys(), key=tuple(ActionType).index))
+        self._action_types = list(
+            sorted(moves.keys(), key=tuple(ActionType).index, reverse=True)
+        )
 
     def __contains__(self, item) -> bool:
         if isinstance(item, ActionType):
