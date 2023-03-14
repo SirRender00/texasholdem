@@ -75,6 +75,22 @@ def display_checks(game, gui):
 
     assert_content_in_block(gui, "VERSION", version("texasholdem"))
 
+    moves = game.get_available_moves()
+    for action_type in moves.action_types:
+        assert_content_in_block(gui, "AVAILABLE_ACTIONS", action_type.name)
+        if action_type == ActionType.RAISE:
+            assert_content_in_block(
+                gui, "AVAILABLE_ACTIONS", str(moves.raise_range.start)
+            )
+            assert_content_in_block(
+                gui, "AVAILABLE_ACTIONS", str(moves.raise_range.stop - 1)
+            )
+
+    action_types = set(ActionType)
+    action_types.remove(ActionType.ALL_IN)
+    for action_type in action_types.difference(moves.action_types):
+        assert_content_not_in_block(gui, "AVAILABLE_ACTIONS", str(action_type.name))
+
 
 def test_import():
     # pylint: disable=import-outside-toplevel,unused-import
