@@ -291,6 +291,10 @@ class TexasHoldEm:
         self.hand_history: Optional[History] = None
         self._action = None, None
         self._hand_gen = None
+        
+    @property        
+    def action(self):
+        return self._action
 
     def _prehand(self):
         """
