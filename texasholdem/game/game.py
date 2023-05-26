@@ -248,6 +248,7 @@ class TexasHoldEm:
         hand_phase (HandPhase): The current hand phase
         game_state (GameState): The current GameState
         hand_history (History): The history of the current hand.
+        action (Tuple[ActionType, Optional[int]]) : get the last action of the game.
 
     """
 
@@ -294,7 +295,10 @@ class TexasHoldEm:
         
     @property        
     def action(self) -> Tuple[ActionType, Optional[int]]:
-
+        """
+        Get the last action (check, call, raise of flop).
+        
+        """
         return self._action
 
     def _prehand(self):
