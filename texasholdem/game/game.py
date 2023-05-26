@@ -293,7 +293,8 @@ class TexasHoldEm:
         self._hand_gen = None
         
     @property        
-    def action(self) -> tuple:
+    def action(self) -> Tuple[ActionType, Optional[int]]:
+
         return self._action
 
     def _prehand(self):
