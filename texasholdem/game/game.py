@@ -293,13 +293,13 @@ class TexasHoldEm:
         self._action = None, None
         self._hand_gen = None
         
-    @property        
+    @property
     def action(self) -> Tuple[ActionType, Optional[int]]:
         """
         Get the last action (check, call, raise of flop).
-        
         """
         return self._action
+
 
     def _prehand(self):
         """
