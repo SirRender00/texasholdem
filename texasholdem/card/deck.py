@@ -1,3 +1,4 @@
+from __future__ import annotations
 import random
 from typing import List
 
@@ -61,3 +62,19 @@ class Deck:
                 Deck._FULL_DECK.append(Card(rank + suit))
 
         return list(Deck._FULL_DECK)
+
+    def copy(self, shuffle: bool = True) -> Deck:
+        """
+        Make a copy of the deck
+
+        Args:
+            shuffle (bool): Shuffle the deck when copying, defaults to true
+        Returns:
+           Deck: A copy of the deck
+
+        """
+        deck = Deck()
+        deck.cards = self.cards.copy()
+        if shuffle:
+            deck.shuffle()
+        return deck

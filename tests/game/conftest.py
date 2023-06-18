@@ -4,6 +4,8 @@ Config for game tests. Includes:
     - Call player fixture
     - And a method containing assert checks for the prehand for a game
 """
+import random
+
 import pytest
 
 from texasholdem.game.game import TexasHoldEm
@@ -338,10 +340,30 @@ class AvailableMoveChecker(GamePredicate):
         return False
 
 
+class CopyChecker(GamePredicate):
+    """
+    Checks that if the raise option is unset, then raise should be invalid
+    """
+
+    game_copy = None
+    shuffle = True
+
+    def before(self, game: TexasHoldEm) -> bool:
+        self.shuffle = random.randint(0, 1) == 1
+        self.game_copy = game.copy(shuffle=self.shuffle)
+
+    def after(self, game: TexasHoldEm) -> bool:
+        last_action = game.hand_history.combined_actions()[-1]
+        self.game_copy.take_action(last_action.action_type, total=last_action.total)
+
+        return self.game_copy.hand_history.to_string() != game.hand_history.to_string()
+
+
 GAME_PREDICATES = (
     EmptyPots(),
     LastRaiseChecker(),
     MinRaiseChecker(),
     RaiseOptionChecker(),
     AvailableMoveChecker(),
+    CopyChecker(),
 )
