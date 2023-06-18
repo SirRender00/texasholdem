@@ -10,6 +10,8 @@ It also includes the main :class:`TexasHoldEm` class.
 
 """
 from __future__ import annotations
+
+import itertools
 import os
 from typing import Iterator, Callable, Dict, Tuple, Optional, Union, List, Iterable
 from collections import deque
@@ -384,6 +386,8 @@ class TexasHoldEm:
         """
         if loc is None:
             loc = self.current_player
+
+        loc = loc % self.max_players
 
         start, stop, step = loc, loc + self.max_players, 1
         if reverse:
@@ -1272,3 +1276,100 @@ class TexasHoldEm:
 
             game.take_action(action, total=total)
         yield game
+
+    def copy(self, shuffle: bool = True):
+        """
+        Arguments:
+            shuffle (bool): Shuffle the deck, defaults to true.
+        Returns:
+            TexasHoldEm: A copy of the game.
+
+        """
+        # pylint: disable=protected-access
+        game = TexasHoldEm(
+            buyin=self.buyin,
+            big_blind=self.big_blind,
+            small_blind=self.small_blind,
+            max_players=len(self.players),
+        )
+
+        # general info
+        game.num_hands = self.num_hands
+
+        # button and blinds
+        game.btn_loc = self.btn_loc
+        game.sb_loc = self.sb_loc
+        game.bb_loc = self.bb_loc
+
+        if not self.is_hand_running():
+            # read chips
+            for i in game.player_iter(0):
+                game.players[i].chips = self.players[i].chips
+            return game
+
+        # replay last hand
+
+        # set button location
+        game.btn_loc = next(self.player_iter(loc=self.btn_loc - 1, reverse=True))
+
+        # read chips
+        for i in game.player_iter(0):
+            game.players[i].chips = self.hand_history.prehand.player_chips[i]
+
+        # cards
+        deck = self._deck.copy(shuffle=shuffle)
+        deck.cards = [
+            card
+            for card in deck.cards
+            if card
+            not in itertools.chain.from_iterable(
+                self.hand_history.prehand.player_cards.values()
+            )
+        ]
+
+        # stack deck
+        if self.hand_history.settle:
+            deck.cards = list(self.hand_history.settle.new_cards) + deck.cards
+
+        # player actions in a stack
+        player_actions: List[Tuple[int, ActionType, Optional[int]]] = []
+        for bet_round in (
+            self.hand_history.river,
+            self.hand_history.turn,
+            self.hand_history.flop,
+            self.hand_history.preflop,
+        ):
+            if bet_round:
+                deck.cards = [
+                    card for card in deck.cards if card not in bet_round.new_cards
+                ]
+                deck.cards = bet_round.new_cards + deck.cards
+                for action in reversed(bet_round.actions):
+                    player_actions.insert(
+                        0, (action.player_id, action.action_type, action.total)
+                    )
+
+        # stack player cards on top of deck
+        for i in self.player_iter(
+            loc=self.btn_loc, filter_states=(PlayerState.SKIP,), reverse=True
+        ):
+            deck.cards = self.hands[i] + deck.cards
+
+        # swap decks
+        game._deck = deck
+
+        # start hand (deck will deal)
+        game.start_hand()
+
+        while player_actions:
+            player_id, action, total = player_actions.pop(0)
+
+            if player_id != game.current_player:
+                raise ValueError(
+                    f"Unexpected error when copying: action player {player_id} "
+                    f"is not current player {game.current_player}"
+                )
+
+            game.take_action(action, total=total)
+
+        return game
