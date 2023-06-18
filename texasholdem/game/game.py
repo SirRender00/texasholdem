@@ -1373,3 +1373,10 @@ class TexasHoldEm:
             game.take_action(action, total=total)
 
         return game
+
+    def __copy__(self):
+        return self.copy(shuffle=False)
+
+    def __deepcopy__(self, memodict: dict = None):
+        memodict = memodict if memodict else {}
+        return self.copy(shuffle=False)
