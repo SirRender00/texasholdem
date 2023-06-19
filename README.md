@@ -16,7 +16,7 @@ A python package for Texas Hold 'Em Poker providing:
 
 | Version Name | Latest Tag | Release Notes | Patch Notes | Documentation | Release Date | End Support Date |
 | ------------ | ---------- | ------------- | ----------- | ------------- | ------------ | ---------------- |
-| 0.10         | v0.10.0-alpha.0     | [Release Notes](https://github.com/SirRender00/texasholdem/releases/tag/v0.10-alpha.0) | [Patch Notes](https://github.com/SirRender00/texasholdem/releases/tag/v0.10-alpha.0) | [Documentation](https://texasholdem.readthedocs.io/en/0.10/) | 18 June 2023 | |
+| 0.10         | v0.10.0-alpha.1     | [Release Notes](https://github.com/SirRender00/texasholdem/releases/tag/v0.10-alpha.1) | [Patch Notes](https://github.com/SirRender00/texasholdem/releases/tag/v0.10-alpha.1) | [Documentation](https://texasholdem.readthedocs.io/en/0.10/) | 19 June 2023 | |
 | 0.9          | v0.9.0     | [Release Notes](https://github.com/SirRender00/texasholdem/releases/tag/v0.9.0) | [Patch Notes](https://github.com/SirRender00/texasholdem/releases/tag/v0.9.0) | [Documentation](https://texasholdem.readthedocs.io/en/0.9/) | 14 March 2023 | |
 | 0.8          | v0.8.1     | [Release Notes](https://github.com/SirRender00/texasholdem/releases/tag/v0.8.0) | [Patch Notes](https://github.com/SirRender00/texasholdem/releases/tag/v0.8.1) | [Documentation](https://texasholdem.readthedocs.io/en/0.8/) | 6 November 2022 | 30 June 2023 |
 | 0.7          | v0.7.3     | [Release Notes](https://github.com/SirRender00/texasholdem/releases/tag/v0.7.0) | [Patch Notes](https://github.com/SirRender00/texasholdem/releases/tag/v0.7.3) | [Documentation](https://texasholdem.readthedocs.io/en/0.7/) | 16 April 2022 | 30 June 2023 |
