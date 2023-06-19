@@ -1,4 +1,4 @@
-Changes in 0.10-alpha.0
+Changes in 0.10-alpha.1
 ==========================
 
 Features
