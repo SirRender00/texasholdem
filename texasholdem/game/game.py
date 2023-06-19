@@ -11,7 +11,6 @@ It also includes the main :class:`TexasHoldEm` class.
 """
 from __future__ import annotations
 
-import itertools
 import os
 from typing import Iterator, Callable, Dict, Tuple, Optional, Union, List, Iterable
 from collections import deque
@@ -1318,14 +1317,6 @@ class TexasHoldEm:
 
         # cards
         deck = self._deck.copy(shuffle=shuffle)
-        deck.cards = [
-            card
-            for card in deck.cards
-            if card
-            not in itertools.chain.from_iterable(
-                self.hand_history.prehand.player_cards.values()
-            )
-        ]
 
         # stack deck
         if self.hand_history.settle:
@@ -1340,26 +1331,20 @@ class TexasHoldEm:
             self.hand_history.preflop,
         ):
             if bet_round:
-                deck.cards = [
-                    card for card in deck.cards if card not in bet_round.new_cards
-                ]
                 deck.cards = bet_round.new_cards + deck.cards
                 for action in reversed(bet_round.actions):
                     player_actions.insert(
                         0, (action.player_id, action.action_type, action.total)
                     )
 
-        # stack player cards on top of deck
-        for i in self.player_iter(
-            loc=self.btn_loc, filter_states=(PlayerState.SKIP,), reverse=True
-        ):
-            deck.cards = self.hands[i] + deck.cards
+        # start hand (deck will deal)
+        game.start_hand()
+
+        for i, cards in self.hands.items():
+            game.hands[i] = cards.copy()
 
         # swap decks
         game._deck = deck
-
-        # start hand (deck will deal)
-        game.start_hand()
 
         while player_actions:
             player_id, action, total = player_actions.pop(0)
