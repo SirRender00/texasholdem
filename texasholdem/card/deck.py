@@ -78,3 +78,10 @@ class Deck:
         if shuffle:
             deck.shuffle()
         return deck
+
+    def __copy__(self):
+        return self.copy(shuffle=False)
+
+    def __deepcopy__(self, memodict=None):
+        memodict = memodict if memodict else {}
+        return self.copy(shuffle=False)
