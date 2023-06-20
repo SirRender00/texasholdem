@@ -24,12 +24,12 @@ A python package for Texas Hold 'Em Poker providing:
 Current Roadmap \
 [v1.0.0](https://github.com/SirRender00/texasholdem/wiki/Version-1.0.0-Roadmap)
 
-## Changelog v0.9
+## Changelog v0.10
 
 ### Features
 
-- New class `texasholdem.game.move.MoveIterator` which is a special collection of moves which includes attributes such as `action_types` and `raise_range`. Also supports iteration and checking for membership with the `in` operator. Use the `sample()` method to sample from the collection.
-- New method `texasholdem.game.game.TexasHoldEm.get_available_moves()` which returns a `MoveIterator` of the available moves for the current player.
+Ability to create a copy of the TexasHoldEm object
+- You can do a simple ```deepcopy()``` or ```copy()``` of a TexasHoldEm object. It will give you another TexasHoldEm with the exact game state.
 
 ## Contributing
 Want a new feature, found a bug, or have questions? Feel free to add to our issue board on Github!
@@ -49,6 +49,18 @@ pip install texasholdem
 For the latest experimental version
 ```bash
 pip install texasholdem --pre
+```
+
+
+If you want a specific version. You can see all the previous versions with
+```bash
+pip install texasholdem==
+```
+You will see every version of texasholdem.
+
+Then you finish the previous command with the version you want. Let's say you want the  0.10a1 version. You can have it with 
+```bash
+pip install texasholdem==0.10a1
 ```
 
 ## Quickstart
