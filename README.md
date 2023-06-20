@@ -28,8 +28,10 @@ Current Roadmap \
 
 ### Features
 
-Ability to create a copy of the TexasHoldEm object
-- You can do a simple ```deepcopy()``` or ```copy()``` of a TexasHoldEm object. It will give you another TexasHoldEm with the exact game state.
+- Ability to create a copy of the TexasHoldEm object
+  You can do a simple ```deepcopy()``` or ```copy()``` of a TexasHoldEm object. It will give you another TexasHoldEm with the exact game state.
+
+  
 
 ## Contributing
 Want a new feature, found a bug, or have questions? Feel free to add to our issue board on Github!
