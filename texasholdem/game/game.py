@@ -1276,7 +1276,7 @@ class TexasHoldEm:
             game.take_action(action, total=total)
         yield game
 
-    def copy(self, shuffle: bool = True, players_cards: List = []):
+    def copy(self, shuffle: bool = True, players_cards: List = None):
         """
         Arguments:
             shuffle (bool): Shuffle the deck, defaults to true.
@@ -1285,6 +1285,9 @@ class TexasHoldEm:
 
         """
         # pylint: disable=protected-access
+
+        if players_cards is None:
+            players_cards = []
         game = TexasHoldEm(
             buyin=self.buyin,
             big_blind=self.big_blind,
@@ -1326,7 +1329,7 @@ class TexasHoldEm:
         for player in game.players:
             if (
                 player.player_id not in players_cards
-                and player.player_id in game.hands.keys()
+                and player.player_id in game.hands
             ):
                 game._deck.cards.extend(game.hands[player.player_id])
                 game.hands[player.player_id] = []
@@ -1337,7 +1340,7 @@ class TexasHoldEm:
             # Give new cards to some players
             if (
                 player.player_id not in players_cards
-                and player.player_id in game.hands.keys()
+                and player.player_id in game.hands
             ):
                 if len(game.hands[player.player_id]) != 0:
                     print("erreur")
