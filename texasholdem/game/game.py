@@ -1276,7 +1276,7 @@ class TexasHoldEm:
             game.take_action(action, total=total)
         yield game
 
-    def copy(self, shuffle: bool = True, players_cards : List = []):
+    def copy(self, shuffle: bool = True, players_cards: List = []):
         """
         Arguments:
             shuffle (bool): Shuffle the deck, defaults to true.
@@ -1322,23 +1322,28 @@ class TexasHoldEm:
         if self.hand_history.settle:
             deck.cards = list(self.hand_history.settle.new_cards) + deck.cards
 
-        #Remove cards of selected players
-        for p in game.players:
-            if p.player_id not in players_cards and p.player_id in game.hands.keys():
-                game._deck.cards.extend(game.hands[p.player_id])
-                game.hands[p.player_id] = []
-    
-        game._deck.shuffle() #shuffle the deck 
+        # Remove cards of selected players
+        for player in game.players:
+            if (
+                player.player_id not in players_cards
+                and player.player_id in game.hands.keys()
+            ):
+                game._deck.cards.extend(game.hands[player.player_id])
+                game.hands[player.player_id] = []
 
-        
-        for p in game.players:
-            #Give new cards to some players
-            if p.player_id not in players_cards and p.player_id in game.hands.keys():
-                if len(game.hands[p.player_id]) != 0:
-                print("erreur")
-                game.hands[p.player_id] = []
-            
-            game.hands[p.player_id] = game._deck.draw(2)
+        game._deck.shuffle()  # shuffle the deck
+
+        for player in game.players:
+            # Give new cards to some players
+            if (
+                player.player_id not in players_cards
+                and player.player_id in game.hands.keys()
+            ):
+                if len(game.hands[player.player_id]) != 0:
+                    print("erreur")
+                    game.hands[player.player_id] = []
+
+            game.hands[player.player_id] = game._deck.draw(2)
 
         # player actions in a stack
         player_actions: List[Tuple[int, ActionType, Optional[int]]] = []
