@@ -16,7 +16,7 @@ A python package for Texas Hold 'Em Poker providing:
 
 | Version Name | Latest Tag | Release Notes | Patch Notes | Documentation | Release Date | End Support Date |
 | ------------ | ---------- | ------------- | ----------- | ------------- | ------------ | ---------------- |
-| 0.10         | v0.10.0-alpha.1     | [Release Notes](https://github.com/SirRender00/texasholdem/releases/tag/v0.10-alpha.1) | [Patch Notes](https://github.com/SirRender00/texasholdem/releases/tag/v0.10-alpha.1) | [Documentation](https://texasholdem.readthedocs.io/en/0.10/) | 19 June 2023 | |
+| 0.10         | v0.10.0    | [Release Notes](https://github.com/SirRender00/texasholdem/releases/tag/v0.10.0) | [Patch Notes](https://github.com/SirRender00/texasholdem/releases/tag/v0.10.0) | [Documentation](https://texasholdem.readthedocs.io/en/0.10/) | 3 July 2023 | |
 | 0.9          | v0.9.0     | [Release Notes](https://github.com/SirRender00/texasholdem/releases/tag/v0.9.0) | [Patch Notes](https://github.com/SirRender00/texasholdem/releases/tag/v0.9.0) | [Documentation](https://texasholdem.readthedocs.io/en/0.9/) | 14 March 2023 | |
 | 0.8          | v0.8.1     | [Release Notes](https://github.com/SirRender00/texasholdem/releases/tag/v0.8.0) | [Patch Notes](https://github.com/SirRender00/texasholdem/releases/tag/v0.8.1) | [Documentation](https://texasholdem.readthedocs.io/en/0.8/) | 6 November 2022 | 30 June 2023 |
 | 0.7          | v0.7.3     | [Release Notes](https://github.com/SirRender00/texasholdem/releases/tag/v0.7.0) | [Patch Notes](https://github.com/SirRender00/texasholdem/releases/tag/v0.7.3) | [Documentation](https://texasholdem.readthedocs.io/en/0.7/) | 16 April 2022 | 30 June 2023 |
@@ -24,12 +24,13 @@ A python package for Texas Hold 'Em Poker providing:
 Current Roadmap \
 [v1.0.0](https://github.com/SirRender00/texasholdem/wiki/Version-1.0.0-Roadmap)
 
-## Changelog v0.9
+## Changelog v0.10
 
 ### Features
 
-- New class `texasholdem.game.move.MoveIterator` which is a special collection of moves which includes attributes such as `action_types` and `raise_range`. Also supports iteration and checking for membership with the `in` operator. Use the `sample()` method to sample from the collection.
-- New method `texasholdem.game.game.TexasHoldEm.get_available_moves()` which returns a `MoveIterator` of the available moves for the current player.
+- Ability to create a copy of the TexasHoldEm object. You can do a simple ```deepcopy()``` or ```copy()``` of a TexasHoldEm object. It will give you another TexasHoldEm with the exact game state.
+  Or you can also use `copy()` method which will construct a copy of the game state.
+- Added available actions printing in the TextGUI.
 
 ## Contributing
 Want a new feature, found a bug, or have questions? Feel free to add to our issue board on Github!
