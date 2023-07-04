@@ -1334,7 +1334,8 @@ class TexasHoldEm:
                 game._deck.cards.extend(game.hands[player.player_id])
                 game.hands[player.player_id] = []
 
-        game._deck.shuffle()  # shuffle the deck
+        if game._deck:
+            game._deck.shuffle()  # shuffle the deck
 
         for player in game.players:
             # Give new cards to some players
