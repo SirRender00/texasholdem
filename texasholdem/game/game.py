@@ -1276,18 +1276,16 @@ class TexasHoldEm:
             game.take_action(action, total=total)
         yield game
 
-    def copy(self, shuffle: bool = True, players_cards: List = None):
+    def copy(self, shuffle: bool = True, cards_players_to_keep : List = None):
         """
         Arguments:
             shuffle (bool): Shuffle the deck, defaults to true.
+            cards_players_to_keep (List): List of player ids to keep cards for.
         Returns:
             TexasHoldEm: A copy of the game.
 
         """
         # pylint: disable=protected-access
-
-        if players_cards is None:
-            players_cards = []
         game = TexasHoldEm(
             buyin=self.buyin,
             big_blind=self.big_blind,
@@ -1325,30 +1323,6 @@ class TexasHoldEm:
         if self.hand_history.settle:
             deck.cards = list(self.hand_history.settle.new_cards) + deck.cards
 
-        # Remove cards of selected players
-        for player in game.players:
-            if (
-                player.player_id not in players_cards
-                and player.player_id in game.hands
-            ):
-                game._deck.cards.extend(game.hands[player.player_id])
-                game.hands[player.player_id] = []
-
-        if game._deck:
-            game._deck.shuffle()  # shuffle the deck
-
-        for player in game.players:
-            # Give new cards to some players
-            if (
-                player.player_id not in players_cards
-                and player.player_id in game.hands
-            ):
-                if len(game.hands[player.player_id]) != 0:
-                    print("erreur")
-                    game.hands[player.player_id] = []
-
-            game.hands[player.player_id] = game._deck.draw(2)
-
         # player actions in a stack
         player_actions: List[Tuple[int, ActionType, Optional[int]]] = []
         for bet_round in (
@@ -1368,7 +1342,8 @@ class TexasHoldEm:
         game.start_hand()
 
         for i, cards in self.hands.items():
-            game.hands[i] = cards.copy()
+            if cards_players_to_keep and i in cards_players_to_keep:
+                game.hands[i] = cards.copy()
 
         # swap decks
         game._deck = deck
