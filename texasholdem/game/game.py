@@ -1276,7 +1276,7 @@ class TexasHoldEm:
             game.take_action(action, total=total)
         yield game
 
-    def copy(self, shuffle: bool = True, cards_players_to_keep : List = None):
+    def copy(self, shuffle: bool = True, cards_players_to_keep: List = None):
         """
         Arguments:
             shuffle (bool): Shuffle the deck, defaults to true.
