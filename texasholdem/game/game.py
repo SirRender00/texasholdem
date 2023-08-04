@@ -1284,10 +1284,11 @@ class TexasHoldEm:
             game.take_action(action, total=total)
         yield game
 
-    def copy(self, shuffle: bool = True):
+    def copy(self, shuffle: bool = True, cards_players_to_keep: List = None):
         """
         Arguments:
             shuffle (bool): Shuffle the deck, defaults to true.
+            cards_players_to_keep (List): List of player ids to keep cards for.
         Returns:
             TexasHoldEm: A copy of the game.
 
@@ -1349,7 +1350,8 @@ class TexasHoldEm:
         game.start_hand()
 
         for i, cards in self.hands.items():
-            game.hands[i] = cards.copy()
+            if cards_players_to_keep and i in cards_players_to_keep:
+                game.hands[i] = cards.copy()
 
         # swap decks
         game._deck = deck

@@ -34,6 +34,9 @@ sphinx-rtd-theme = "^1.2.0"
 black = "^23.7.0"
 coverage = "^7.1.0"
 
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.0"
+
 [tool.pylint.master]
 disable = ["import-error", "missing-module-docstring", "unknown-option-value"]
 
