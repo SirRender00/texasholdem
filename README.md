@@ -14,23 +14,18 @@ A python package for Texas Hold 'Em Poker providing:
 - Compliance with World Series of Poker Official Rules
 - And more
 
-| Version Name | Latest Tag | Release Notes | Patch Notes | Documentation | Release Date | End Support Date |
-| ------------ | ---------- | ------------- | ----------- | ------------- | ------------ | ---------------- |
-| 0.10         | v0.10.0    | [Release Notes](https://github.com/SirRender00/texasholdem/releases/tag/v0.10.0) | [Patch Notes](https://github.com/SirRender00/texasholdem/releases/tag/v0.10.0) | [Documentation](https://texasholdem.readthedocs.io/en/0.10/) | 3 July 2023 | |
-| 0.9          | v0.9.0     | [Release Notes](https://github.com/SirRender00/texasholdem/releases/tag/v0.9.0) | [Patch Notes](https://github.com/SirRender00/texasholdem/releases/tag/v0.9.0) | [Documentation](https://texasholdem.readthedocs.io/en/0.9/) | 14 March 2023 | |
-| 0.8          | v0.8.1     | [Release Notes](https://github.com/SirRender00/texasholdem/releases/tag/v0.8.0) | [Patch Notes](https://github.com/SirRender00/texasholdem/releases/tag/v0.8.1) | [Documentation](https://texasholdem.readthedocs.io/en/0.8/) | 6 November 2022 | 30 June 2023 |
-| 0.7          | v0.7.3     | [Release Notes](https://github.com/SirRender00/texasholdem/releases/tag/v0.7.0) | [Patch Notes](https://github.com/SirRender00/texasholdem/releases/tag/v0.7.3) | [Documentation](https://texasholdem.readthedocs.io/en/0.7/) | 16 April 2022 | 30 June 2023 |
+| Version Name | Latest Tag | Release Notes                                                                    | Patch Notes                                                                    | Documentation                                                | Release Date  | End Support Date |
+|--------------|------------|----------------------------------------------------------------------------------|--------------------------------------------------------------------------------|--------------------------------------------------------------|---------------| ---------------- |
+| 0.11         | v0.11.0    | [Release Notes](https://github.com/SirRender00/texasholdem/releases/tag/v0.11.0) | [Patch Notes](https://github.com/SirRender00/texasholdem/releases/tag/v0.11.0) | [Documentation](https://texasholdem.readthedocs.io/en/0.11/) | 30 March 2024 | |
 
 Current Roadmap \
 [v1.0.0](https://github.com/SirRender00/texasholdem/wiki/Version-1.0.0-Roadmap)
 
-## Changelog v0.10
+## Changelog v0.11.0
 
-### Features
+### Other Changes
 
-- Ability to create a copy of the TexasHoldEm object. You can do a simple ```deepcopy()``` or ```copy()``` of a TexasHoldEm object. It will give you another TexasHoldEm with the exact game state.
-  Or you can also use `copy()` method which will construct a copy of the game state.
-- Added available actions printing in the TextGUI.
+- Upgraded to support python 3.12
 
 ## Contributing
 Want a new feature, found a bug, or have questions? Feel free to add to our issue board on Github!
