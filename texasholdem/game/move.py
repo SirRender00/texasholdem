@@ -52,7 +52,7 @@ class MoveIterator(Sequence):
         return len(self._action_types) + len(self._raise_range) - 1
 
     def __getitem__(self, item: int) -> ActionType:
-        if item < len(self._action_types):
+        if item < len(self._action_types) - 1:
             return self._action_types[item], None
         if not self._raise_range:
             raise IndexError
