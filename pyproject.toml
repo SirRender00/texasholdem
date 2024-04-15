@@ -31,7 +31,7 @@ pytest-parallel = "^0.1.1"
 pylint = "^3.1.0"
 sphinx = "^7.1.2"
 sphinx-rtd-theme = "^2.0.0"
-black = "^23.12.1"
+black = "^24.4.0"
 coverage = "^7.4.0"
 
 [tool.pylint.master]
